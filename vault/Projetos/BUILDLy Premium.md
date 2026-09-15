@@ -21,8 +21,8 @@ com Google Sheets + Apps Script como backend.
 | Item | Valor |
 |---|---|
 | App que a equipe usa hoje | https://jonacir2023.github.io/buildly2/buildly-completo.html — **outro repositório**, código antigo |
-| Este repositório (Buildly3) | **não publicado** — GitHub Pages nunca foi ligado |
-| Repositório | `Jonacir2023/Buildly3`, branch `main` |
+| Este repositório (GO, ex-Buildly3) | GitHub Pages ligado — ver endereço abaixo |
+| Repositório | `Jonacir2023/GO`, branch `main` |
 | Pasta local (Mac) | `~/Buildly3` |
 | Planilha | "Buildly3" — `19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw` |
 | Backend | Apps Script como web app (`/exec`) — ver [[Notas/Contrato do Backend]] |

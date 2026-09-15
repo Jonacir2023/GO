@@ -1,4 +1,4 @@
-# CLAUDE.md — BUILDLy Premium (Buildly3)
+# CLAUDE.md — BUILDLy Premium (GO)
 
 Plataforma de gestão de obra da Cesbe S.A. Páginas HTML/JS estáticas, **sem build**, publicadas
 no GitHub Pages, com Google Sheets + Apps Script como backend.

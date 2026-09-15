@@ -4,7 +4,7 @@ tags: [índice, início]
 
 # BUILDLy Premium — Base de Conhecimento
 
-Cofre Obsidian do repositório `Jonacir2023/Buildly3`. Guarda o que o código não diz sozinho:
+Cofre Obsidian do repositório `Jonacir2023/GO`. Guarda o que o código não diz sozinho:
 por que as coisas são como são, o que já foi decidido, e o que ainda está em aberto.
 
 > **Para o Claude:** leia [[Projetos/BUILDLy Premium]] antes de mexer em qualquer coisa deste
