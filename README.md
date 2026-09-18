@@ -1,4 +1,4 @@
-# BUILDLy Premium v2
+# BUILDLy Premium (Buildly3)
 
 Sistema integrado de gestão de obras que combina 4 aplicativos em um só:
 
@@ -7,19 +7,33 @@ Sistema integrado de gestão de obras que combina 4 aplicativos em um só:
 - **RDO** — diário de obras
 - **Custos** — controle de notas fiscais
 
+Este repositório (`Jonacir2023/GO`, pasta local `~/Buildly3`) é a fonte única desta
+plataforma — substitui `Jonacir2023/buildly2` e `Jonacir2023/buidly`. Ver `MANIFEST.md`.
+
 ## 🚀 Deployment
 
-A aplicação é uma **Single Page Application (SPA)** hospedada via **GitHub Pages**.
+A aplicação é uma **Single Page Application (SPA)** hospedada via **GitHub Pages**,
+publicada a partir de `main`/root deste repositório.
 
 ### URLs de Acesso
 
 | App | URL |
 |-----|-----|
-| **BUILDLy Premium Completo** | https://jonacir2023.github.io/buildly2/buildly-completo.html |
-| **Pauta (Standalone)** | https://jonacir2023.github.io/buildly2/pauta.html |
-| **Check-in (Standalone)** | https://jonacir2023.github.io/buildly2/Check-in.html |
-| **Custos (Standalone)** | https://jonacir2023.github.io/buildly2/custos.html |
-| **RDO (Standalone)** | https://jonacir2023.github.io/buildly2/rdo.html |
+| **BUILDLy Premium Completo** | https://jonacir2023.github.io/GO/buildly-completo.html |
+| **Pauta (Standalone)** | https://jonacir2023.github.io/GO/pauta.html |
+| **Check-in (Standalone)** | https://jonacir2023.github.io/GO/Check-in.html |
+| **Custos (Standalone)** | https://jonacir2023.github.io/GO/custos.html |
+| **RDO (Standalone)** | https://jonacir2023.github.io/GO/rdo.html |
+
+**Este app é isolado do `buildly2` em toda camada — decisão de 26/08, travada por
+`scripts/verificar_isolamento.py`.** Nem código (arquivo próprio), nem `localStorage` (prefixo
+`buildly3::`, testado em `tests/test_espaco_proprio.py`), nem backend: este repositório tem seu
+próprio `/exec` do Apps Script e sua própria planilha, exclusivos — não a mesma do `buildly2` nem
+de qualquer outro app da conta. Consequência: **não existe, e não deve existir, nenhuma
+importação automática de dado de outro app.** Trocar de endereço é seguro — nada se mistura —
+mas o app abre com o histórico local vazio nesse aparelho, e não há caminho de restauração
+que dependa de outro projeto. Ver `vault/Decisões/2026-08-26 Isolamento definitivo entre
+projetos.md` e `vault/Notas/Armazenamento Local.md`.
 
 ## 📦 Arquivos
 
@@ -115,8 +129,8 @@ Se quiser testar localmente:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/Jonacir2023/buildly2.git
-cd buildly2
+git clone https://github.com/Jonacir2023/GO.git
+cd GO
 
 # Abra em um servidor local (opcional, para evitar CORS issues)
 python -m http.server 8000
@@ -126,11 +140,10 @@ python -m http.server 8000
 
 ## 📞 Informações
 
-- **GitHub**: https://github.com/Jonacir2023/buildly2
+- **GitHub**: https://github.com/Jonacir2023/GO
 - **Google Sheets**: https://docs.google.com/spreadsheets/d/19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw
 - **Autor**: Jonacir (jonacir70@icloud.com)
 
 ---
 
-**Versão:** 2.0 (Premium)  
-**Data**: 2026-08-08
+**Versão:** 3.0 (Premium)
