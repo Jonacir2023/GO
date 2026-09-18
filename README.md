@@ -25,14 +25,15 @@ publicada a partir de `main`/root deste repositório.
 | **Custos (Standalone)** | https://jonacir2023.github.io/GO/custos.html |
 | **RDO (Standalone)** | https://jonacir2023.github.io/GO/rdo.html |
 
-**Trocar do `buildly2` para este endereço não arrisca o dado do outro app, mas também não traz
-histórico junto.** Os dois moram na mesma origem (`jonacir2023.github.io`), mas desde a correção
-de 26/08 este app prefixa toda chave de `localStorage` com `buildly3::` e não lê, escreve nem
-apaga nada fora desse prefixo — nem o `buildly2` nem qualquer outro app da mesma conta (testado
-em `tests/test_espaco_proprio.py`). Não existe migração automática do histórico do `buildly2`:
-o app abre com o histórico **local** vazio nesse aparelho. Recuperar RDOs antigos exigiria
-restauração de backup na nuvem, e só funciona se as duas planilhas forem a mesma — não
-confirmado. Ver `vault/Notas/Armazenamento Local.md` e `vault/Projetos/BUILDLy Premium.md`.
+**Este app é isolado do `buildly2` em toda camada — decisão de 26/08, travada por
+`scripts/verificar_isolamento.py`.** Nem código (arquivo próprio), nem `localStorage` (prefixo
+`buildly3::`, testado em `tests/test_espaco_proprio.py`), nem backend: este repositório tem seu
+próprio `/exec` do Apps Script e sua própria planilha, exclusivos — não a mesma do `buildly2` nem
+de qualquer outro app da conta. Consequência: **não existe, e não deve existir, nenhuma
+importação automática de dado de outro app.** Trocar de endereço é seguro — nada se mistura —
+mas o app abre com o histórico local vazio nesse aparelho, e não há caminho de restauração
+que dependa de outro projeto. Ver `vault/Decisões/2026-08-26 Isolamento definitivo entre
+projetos.md` e `vault/Notas/Armazenamento Local.md`.
 
 ## 📦 Arquivos
 

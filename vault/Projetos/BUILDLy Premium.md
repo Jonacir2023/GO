@@ -175,15 +175,16 @@ o `buildly2`).
 
 - [ ] **Comunicar a troca para a equipe.** Ação do usuário, não de código: passar o novo endereço
       para cada apontador. **Não é o caso de "mão única" que a nota chegou a dizer — corrigido em
-      18/09, achado por review de PR:** os dois endereços moram na mesma origem
-      (`jonacir2023.github.io`), mas desde 26/08 o Buildly3 prefixa toda chave com `buildly3::` e
-      **não enxerga nada do `buildly2`**, nem no formato antigo (`history[data]`) nem em qualquer
-      outra chave — testado em `tests/test_espaco_proprio.py`. Consequência real: **não há
-      migração automática nenhuma**. O app abre com histórico local vazio nesse aparelho. Hoje
-      isso não é problema — a obra atual já está zerada de propósito (ver cabeçalho desta nota) —
-      mas nunca prometa "nada se perde" à equipe: se algum dia houver RDO real só no `buildly2`,
-      recuperar exigiria restauração de backup na nuvem, e só funciona se as duas planilhas forem
-      a mesma (não confirmado).
+      18/09, achado por review de PR.** O Buildly3 é isolado do `buildly2` em toda camada, por
+      decisão de 26/08 ([[Decisões/2026-08-26 Isolamento definitivo entre projetos]]), travada por
+      `scripts/verificar_isolamento.py`: código próprio, `localStorage` com prefixo `buildly3::`
+      (testado em `tests/test_espaco_proprio.py`), e **`/exec` e planilha próprios — não os do
+      `buildly2`**. Consequência real: **não há migração automática nenhuma** entre os dois. O
+      app abre com histórico local vazio nesse aparelho. Hoje isso não é problema — a obra atual
+      já está zerada de propósito (ver cabeçalho desta nota) — mas nunca prometa "nada se perde"
+      à equipe: se algum dia houver RDO real só no `buildly2`, recuperar é exportação manual de
+      lá, feita pelo usuário — este app não tem, e não deve ter, nenhum caminho automático até o
+      backend de outro projeto.
 - [ ] **Confirmar em aparelho real:** `migrarHistoricoParaMultiRdo()` — que converte o histórico
       **do próprio Buildly3** do formato antigo (por data) para o novo (`data#apontador`) — roda
       sozinha e é idempotente, mas nunca foi vista rodando num celular de verdade. Isto não tem
