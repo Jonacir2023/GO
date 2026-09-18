@@ -20,9 +20,9 @@ com Google Sheets + Apps Script como backend.
 
 | Item | Valor |
 |---|---|
-| App que a equipe usa hoje | https://jonacir2023.github.io/buildly2/buildly-completo.html — **outro repositório**, código antigo |
-| Este repositório (Buildly3) | **não publicado** — GitHub Pages nunca foi ligado |
-| Repositório | `Jonacir2023/Buildly3`, branch `main` |
+| App que a equipe usa hoje, na prática | https://jonacir2023.github.io/buildly2/buildly-completo.html — **outro repositório**, código antigo. Confirmado pelo usuário em 18/09. |
+| Este repositório (Buildly3) | **publicado** em https://jonacir2023.github.io/GO/buildly-completo.html — Pages ligado. Falta só a equipe passar a abrir este endereço. |
+| Repositório | `Jonacir2023/GO`, branch `main` |
 | Pasta local (Mac) | `~/Buildly3` |
 | Planilha | "Buildly3" — `19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw` |
 | Backend | Apps Script como web app (`/exec`) — ver [[Notas/Contrato do Backend]] |
@@ -165,18 +165,23 @@ O que fica valendo:
 | Banco | Supabase **P3** |
 | Fora do escopo | `diario-obras`, `buildly2` |
 
-### Bloqueando tudo: o Buildly3 não está publicado
+### Publicação: Pages ligado, troca da equipe ainda pendente
 
-- [ ] **Decidir qual app é o oficial.** Descoberto em 26/08: o GitHub Pages **nunca foi ligado**
-      neste repositório. Tudo que foi feito de 21 a 26/08 está em `main` e **em nenhum celular**.
-      A equipe usa `jonacir2023.github.io/buildly2/`, que é outro repositório com o código
-      anterior. Ver [[Registro/2026-08-26]].
-- [ ] **Se for publicar o Buildly3:** Settings → Pages → Deploy from a branch → `main` / `root`.
-      **Atenção antes:** os dois endereços moram na mesma origem (`jonacir2023.github.io`), então
-      compartilham o mesmo `localStorage`. Os dados da equipe viajam sozinhos — mas a migração do
-      histórico (`data` → `data#apontador`) é **porta de mão única**: depois de abrir o Buildly3,
-      o buildly2 não enxerga mais os RDOs, porque procura por `history[data]`. Nada se perde, mas
-      não dá para ir e voltar entre os dois.
+Confirmado pelo usuário em 18/09: o GitHub Pages **já está ligado** neste repositório
+(`jonacir2023.github.io/GO/…`). O que ainda não aconteceu é a equipe **de fato abrir** esse
+endereço — no celular, hoje, quem aponta ainda usa `jonacir2023.github.io/buildly2/`. README.md
+corrigido para apontar para o endereço certo (estava todo escrito como se este repositório fosse
+o `buildly2`).
+
+- [ ] **Comunicar a troca para a equipe.** Ação do usuário, não de código: passar o novo endereço
+      para cada apontador. **Atenção ao pedir a troca:** os dois endereços moram na mesma origem
+      (`jonacir2023.github.io`) e compartilham `localStorage`. A migração do histórico
+      (`data` → `data#apontador`) é **porta de mão única** — depois de abrir o Buildly3 num
+      aparelho, o `buildly2` não enxerga mais os RDOs daquele aparelho (procura por
+      `history[data]`). Nada se perde, mas não dá pra ir e voltar.
+- [ ] **Confirmar em aparelho real após a troca:** RDOs antigos aparecem no calendário
+      (`migrarHistoricoParaMultiRdo()` já é automática e idempotente, mas nunca foi vista rodar
+      num celular de verdade) — mesmo item da lista abaixo.
 
 ### Bloqueando tudo: implantar o Apps Script
 

@@ -124,7 +124,9 @@ with sync_playwright() as p:
           itens:[{id:'p1', nome:'A'}, {id:'p2', nome:'B'}]}];
         const c = state.colaboradores.categorias[0];
         baixarDoCadastro(c); (c.itens||[]).forEach(baixarDoCadastro);
-        const vis = categoriasVigentes('2026-08-30', {}).length;
+        // inativoEm vem do relógio real (todayISO()) — comparar contra ele
+        // mesmo, não contra uma data cravada que o tempo ultrapassa.
+        const vis = categoriasVigentes(c.inativoEm, {}).length;
         const visAntes = categoriasVigentes('2020-01-01', {}).length;
         return {vis, visAntes, itens: c.itens.length};
     }""")

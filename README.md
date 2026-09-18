@@ -1,4 +1,4 @@
-# BUILDLy Premium v2
+# BUILDLy Premium (Buildly3)
 
 Sistema integrado de gestão de obras que combina 4 aplicativos em um só:
 
@@ -7,19 +7,29 @@ Sistema integrado de gestão de obras que combina 4 aplicativos em um só:
 - **RDO** — diário de obras
 - **Custos** — controle de notas fiscais
 
+Este repositório (`Jonacir2023/GO`, pasta local `~/Buildly3`) é a fonte única desta
+plataforma — substitui `Jonacir2023/buildly2` e `Jonacir2023/buidly`. Ver `MANIFEST.md`.
+
 ## 🚀 Deployment
 
-A aplicação é uma **Single Page Application (SPA)** hospedada via **GitHub Pages**.
+A aplicação é uma **Single Page Application (SPA)** hospedada via **GitHub Pages**,
+publicada a partir de `main`/root deste repositório.
 
 ### URLs de Acesso
 
 | App | URL |
 |-----|-----|
-| **BUILDLy Premium Completo** | https://jonacir2023.github.io/buildly2/buildly-completo.html |
-| **Pauta (Standalone)** | https://jonacir2023.github.io/buildly2/pauta.html |
-| **Check-in (Standalone)** | https://jonacir2023.github.io/buildly2/Check-in.html |
-| **Custos (Standalone)** | https://jonacir2023.github.io/buildly2/custos.html |
-| **RDO (Standalone)** | https://jonacir2023.github.io/buildly2/rdo.html |
+| **BUILDLy Premium Completo** | https://jonacir2023.github.io/GO/buildly-completo.html |
+| **Pauta (Standalone)** | https://jonacir2023.github.io/GO/pauta.html |
+| **Check-in (Standalone)** | https://jonacir2023.github.io/GO/Check-in.html |
+| **Custos (Standalone)** | https://jonacir2023.github.io/GO/custos.html |
+| **RDO (Standalone)** | https://jonacir2023.github.io/GO/rdo.html |
+
+**Atenção ao trocar do `buildly2` para este endereço:** os dois moram na mesma origem
+(`jonacir2023.github.io`) e compartilham o mesmo `localStorage`. A troca é segura — nada se
+perde — mas a migração do histórico (`data` → `data#apontador`) é de mão única: depois de abrir
+este app num aparelho, o `buildly2` não enxerga mais os RDOs daquele aparelho. Ver
+`vault/Projetos/BUILDLy Premium.md`.
 
 ## 📦 Arquivos
 
@@ -115,8 +125,8 @@ Se quiser testar localmente:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/Jonacir2023/buildly2.git
-cd buildly2
+git clone https://github.com/Jonacir2023/GO.git
+cd GO
 
 # Abra em um servidor local (opcional, para evitar CORS issues)
 python -m http.server 8000
@@ -126,11 +136,10 @@ python -m http.server 8000
 
 ## 📞 Informações
 
-- **GitHub**: https://github.com/Jonacir2023/buildly2
+- **GitHub**: https://github.com/Jonacir2023/GO
 - **Google Sheets**: https://docs.google.com/spreadsheets/d/19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw
 - **Autor**: Jonacir (jonacir70@icloud.com)
 
 ---
 
-**Versão:** 2.0 (Premium)  
-**Data**: 2026-08-08
+**Versão:** 3.0 (Premium)
