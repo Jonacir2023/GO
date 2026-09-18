@@ -25,11 +25,14 @@ publicada a partir de `main`/root deste repositório.
 | **Custos (Standalone)** | https://jonacir2023.github.io/GO/custos.html |
 | **RDO (Standalone)** | https://jonacir2023.github.io/GO/rdo.html |
 
-**Atenção ao trocar do `buildly2` para este endereço:** os dois moram na mesma origem
-(`jonacir2023.github.io`) e compartilham o mesmo `localStorage`. A troca é segura — nada se
-perde — mas a migração do histórico (`data` → `data#apontador`) é de mão única: depois de abrir
-este app num aparelho, o `buildly2` não enxerga mais os RDOs daquele aparelho. Ver
-`vault/Projetos/BUILDLy Premium.md`.
+**Trocar do `buildly2` para este endereço não arrisca o dado do outro app, mas também não traz
+histórico junto.** Os dois moram na mesma origem (`jonacir2023.github.io`), mas desde a correção
+de 26/08 este app prefixa toda chave de `localStorage` com `buildly3::` e não lê, escreve nem
+apaga nada fora desse prefixo — nem o `buildly2` nem qualquer outro app da mesma conta (testado
+em `tests/test_espaco_proprio.py`). Não existe migração automática do histórico do `buildly2`:
+o app abre com o histórico **local** vazio nesse aparelho. Recuperar RDOs antigos exigiria
+restauração de backup na nuvem, e só funciona se as duas planilhas forem a mesma — não
+confirmado. Ver `vault/Notas/Armazenamento Local.md` e `vault/Projetos/BUILDLy Premium.md`.
 
 ## 📦 Arquivos
 

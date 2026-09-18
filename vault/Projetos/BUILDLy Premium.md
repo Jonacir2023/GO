@@ -174,14 +174,21 @@ corrigido para apontar para o endereço certo (estava todo escrito como se este 
 o `buildly2`).
 
 - [ ] **Comunicar a troca para a equipe.** Ação do usuário, não de código: passar o novo endereço
-      para cada apontador. **Atenção ao pedir a troca:** os dois endereços moram na mesma origem
-      (`jonacir2023.github.io`) e compartilham `localStorage`. A migração do histórico
-      (`data` → `data#apontador`) é **porta de mão única** — depois de abrir o Buildly3 num
-      aparelho, o `buildly2` não enxerga mais os RDOs daquele aparelho (procura por
-      `history[data]`). Nada se perde, mas não dá pra ir e voltar.
-- [ ] **Confirmar em aparelho real após a troca:** RDOs antigos aparecem no calendário
-      (`migrarHistoricoParaMultiRdo()` já é automática e idempotente, mas nunca foi vista rodar
-      num celular de verdade) — mesmo item da lista abaixo.
+      para cada apontador. **Não é o caso de "mão única" que a nota chegou a dizer — corrigido em
+      18/09, achado por review de PR:** os dois endereços moram na mesma origem
+      (`jonacir2023.github.io`), mas desde 26/08 o Buildly3 prefixa toda chave com `buildly3::` e
+      **não enxerga nada do `buildly2`**, nem no formato antigo (`history[data]`) nem em qualquer
+      outra chave — testado em `tests/test_espaco_proprio.py`. Consequência real: **não há
+      migração automática nenhuma**. O app abre com histórico local vazio nesse aparelho. Hoje
+      isso não é problema — a obra atual já está zerada de propósito (ver cabeçalho desta nota) —
+      mas nunca prometa "nada se perde" à equipe: se algum dia houver RDO real só no `buildly2`,
+      recuperar exigiria restauração de backup na nuvem, e só funciona se as duas planilhas forem
+      a mesma (não confirmado).
+- [ ] **Confirmar em aparelho real:** `migrarHistoricoParaMultiRdo()` — que converte o histórico
+      **do próprio Buildly3** do formato antigo (por data) para o novo (`data#apontador`) — roda
+      sozinha e é idempotente, mas nunca foi vista rodando num celular de verdade. Isto não tem
+      relação com o `buildly2`; é só sobre o histórico que o próprio Buildly3 acumular daqui pra
+      frente.
 
 ### Bloqueando tudo: implantar o Apps Script
 
