@@ -48,6 +48,45 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ## Histórico
 
+### 18/09/2026 — Modelo C: tema escuro em todo o app
+
+Redesign visual completo, pedido pelo usuário. Processo: piloto de paleta azul/cinza corporativo
+claro (rejeitado), três protótipos de UI num canvas de design (Modelo A verde/lista, Modelo B
+azul/painel com gaveta de índice, Modelo C recolorido a partir de uma referência visual anexada
+pelo usuário — fundo azul-acinzentado `#4a5162`, acento pêssego `#dda583`, secundário
+verde-petróleo `#89ab9d`). Modelo C escolhido; aplicado primeiro como piloto em
+`buildly-completo.html`, depois nos 10 arquivos HTML restantes da raiz.
+
+Vira tema **escuro** de verdade, não troca de acento: os dois sistemas de tokens do app
+(`buildly-completo`/`pauta`/`Check-in`/`custos` de um lado; `rdo`/`medicoes`/`documentos`/
+`manutencao`/`resumo-tempo`/`reuniao` — "Paleta Concreto Rústico" — do outro) tinham fundo claro
+com cards brancos; ambos teriam texto invisível ou superfícies berrantes se só o `--accent`
+trocasse.
+
+Bugs sistêmicos achados no processo (repetidos em vários arquivos por herdarem o mesmo
+boilerplate — cada um corrigido uma vez e replicado):
+- Duas variáveis (`--bg-dark` usada como cor de **texto** em `.sec-title`/`.modal-title`; `--ink`
+  usada como **fundo** em `.btn-secondary`/`.toast`) só funcionavam porque, no tema claro, uma
+  delas por acaso tinha o valor "certo" pro papel errado. Ao virar escuras as duas, o texto some.
+- `#f0ece7`/`#ffffff` usados sem passar pela variável de card ora eram fundo de superfície, ora
+  cor de texto claro sobre cabeçalho escuro — o mesmo hex, dois papéis. Precisou checar
+  `background:` vs `color:` em cada ocorrência, não só trocar o valor.
+- `<button>` de aba em `custos.html` sem `background` explícito herdava o branco nativo do
+  navegador — invisível no tema claro original, virou barra branca berrante no escuro.
+  `rgba(255,255,255,0.5)`/`0.7`/`0.95` (efeito "vidro sobre concreto claro") e um
+  `inset 0 1px 0 rgba(255,255,255,0.6)` (brilho "concreto polido") tinham o mesmo problema: opacidade
+  pensada pra um fundo claro vira uma mancha/linha branca sobre fundo escuro.
+
+Preservado deliberadamente **sem** conversão: toda simulação de papel impresso/PDF (`@media
+print`, a seção CSS "PDF do RDO" de ~140 linhas nos 6 arquivos da paleta Concreto Rústico, e o
+HTML de relatório gerado via JS) — página impressa continua clara, papel branco, textos legíveis
+com tinta escura, como sempre foi.
+
+Testado a cada arquivo: as 7 suítes de domínio, sintaxe e isolamento; verificação visual real
+(Playwright, 390px e 1440px) em pelo menos uma tela por arquivo, screenshots enviados ao usuário
+antes de cada rodada. Pendente, fora do escopo desta rodada: layout desktop estrutural (hoje é o
+mobile esticado num container mais largo, não um painel nativo de tela cheia).
+
 ### 26/08/2026 — A lixeira do cadastro de colaboradores não removia ninguém
 
 Primeira regressão vinda da leva de 25/08, relatada pelo usuário no mesmo dia em que o código

@@ -9,10 +9,10 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#e8e4df;--bg-card:#f0ece7;--bg-dark:#1c1c1c;--bg-mid:#2e2b28;
-  --ink:#1c1a18;--ink-soft:#4a4540;--ink-faint:#8a8178;
-  --accent:#d4541a;--accent2:#e8a030;--line:#ccc5bc;
-  --green:#2d6a40;--red:#b83228;--blue:#1e3f6e;--yellow:#c99500;
+  --bg:#4a5162;--bg-card:#5a6272;--bg-dark:#3a3f49;--bg-mid:#454c59;
+  --ink:#f5f6f7;--ink-soft:#9aa4b2;--ink-faint:#7b8290;
+  --accent:#dda583;--accent2:#89ab9d;--line:#666f80;
+  --green:#7cb083;--red:#d98a7c;--blue:#8ea3c9;--yellow:#d9b26a;
   --serif:'Barlow Condensed','Arial Narrow',sans-serif;
   --sans:'Barlow',-apple-system,sans-serif;
   --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.12)
@@ -20,28 +20,28 @@
 html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh;width:100%}
 body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 
-.hdr{background:var(--bg-dark);color:#f0ece7;padding:16px 16px 12px;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent);width:100%;max-width:480px}
+.hdr{background:var(--bg-dark);color:#fff;padding:16px 16px 12px;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent);width:100%;max-width:480px}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.hdr-logo{font-family:var(--serif);font-size:26px;font-weight:800;letter-spacing:1px;color:#f0ece7}
+.hdr-logo{font-family:var(--serif);font-size:26px;font-weight:800;letter-spacing:1px;color:#fff}
 .hdr-logo span{color:var(--accent)}
 .hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
-.hdr-settings{background:none;border:1px solid rgba(255,255,255,.2);color:#aaa;font-size:14px;padding:6px 8px;border-radius:6px;cursor:pointer}
+.hdr-settings{background:none;border:1px solid rgba(255,255,255,.2);color:#9aa4b2;font-size:14px;padding:6px 8px;border-radius:6px;cursor:pointer}
 .hdr-settings:hover{background:rgba(255,255,255,.08)}
 
 .tabs{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:99;width:100%;max-width:480px;display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;padding:14px 16px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
-.tab.active{color:#f0ece7;border-bottom-color:var(--accent)}
+.tab{background:none;border:none;flex:none;padding:14px 16px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;color:#9aa4b2;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{color:#fff;border-bottom-color:var(--accent)}
 
 .page{display:none;padding:0}
 .page.active{display:block;padding-top:140px}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--bg-dark);margin-bottom:12px}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;margin-bottom:12px}
 
 .frow{margin-bottom:10px}
 .frow label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
-.frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#fff;color:var(--ink);transition:border .2s;outline:none}
+.frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:60px}
 .frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -49,44 +49,44 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
 .btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#b8431a}
-.btn-secondary{background:var(--bg-dark);color:#f0ece7}
+.btn-primary:hover{background:#c68f6d}
+.btn-secondary{background:var(--bg-dark);color:#fff}
 .btn-full{width:100%;justify-content:center;margin-bottom:8px}
 .btn-sm{padding:6px 12px;font-size:12px}
 
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--serif);letter-spacing:.4px;text-transform:uppercase}
-.badge-red{background:#fde8e8;color:var(--red)}
-.badge-blue{background:#dde8f5;color:var(--blue)}
-.badge-green{background:#e1f0e6;color:var(--green)}
+.badge-red{background:#4a3d3a;color:var(--red)}
+.badge-blue{background:#38414f;color:var(--blue)}
+.badge-green{background:#384a3d;color:var(--green)}
 
 .notif{position:fixed;top:60px;left:16px;right:16px;padding:12px;border-radius:8px;background:var(--green);color:white;font-size:13px;font-weight:600;z-index:200;display:none}
 .notif.show{display:block}
 
-.card{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid #dbd4cb}
+.card{background:#5a6272;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid #454c59}
 .card-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
 .card-desc{font-size:12px;color:var(--ink-soft);margin-bottom:6px}
 .card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
-.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #f0ece7;font-size:11px;color:var(--ink-faint)}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #5a6272;font-size:11px;color:var(--ink-faint)}
 
-.item-row{background:#f9f7f5;padding:10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)}
+.item-row{background:#454c59;padding:10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)}
 .item-row-header{display:flex;justify-content:space-between;margin-bottom:6px}
 .item-row-title{font-weight:700;color:var(--ink)}
 .item-row-actions{display:flex;gap:4px}
-.item-row-actions button{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#b83228}
+.item-row-actions button{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#d98a7c}
 
 .stat-box{background:var(--bg-card);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid var(--line)}
 .stat-label{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
 .stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--accent);margin-top:4px}
 
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:var(--bg-dark);color:#f0ece7;padding:8px;text-align:left;font-weight:700}
+th{background:var(--bg-dark);color:#fff;padding:8px;text-align:left;font-weight:700}
 td{padding:8px;border-bottom:1px solid var(--line)}
-tr:hover{background:#f9f7f5}
+tr:hover{background:#454c59}
 
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;overflow-y:auto}
 .modal.open{display:flex}
-.modal-content{background:white;border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative;margin:auto}
-.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#999}
+.modal-content{background:#5a6272;border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative;margin:auto}
+.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#9aa4b2}
 .modal-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:15px}
 
 /* ══════════════════════════════════════════════════════════════
@@ -116,10 +116,10 @@ tr:hover{background:#f9f7f5}
 <header class="hdr" style="height:70px">
   <div class="hdr-top">
     <div style="display:flex;align-items:center;gap:10px">
-      <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#f0ece7" onclick="voltarParaHome()">⬅️</button>
+      <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#fff" onclick="voltarParaHome()">⬅️</button>
       <div>
         <div class="hdr-logo">CUS<span>TOS</span></div>
-        <div style="font-size:11px;color:#aaa">Controle de Notas Fiscais</div>
+        <div style="font-size:11px;color:#9aa4b2">Controle de Notas Fiscais</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -189,7 +189,7 @@ tr:hover{background:#f9f7f5}
     <div class="sec-title">📦 Itens da Nota Fiscal</div>
     <div id="lista-itens-novo"></div>
 
-    <div style="background:#f9f7f5;padding:12px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line)">
+    <div style="background:#454c59;padding:12px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line)">
       <div class="frow">
         <label>Descrição do Item</label>
         <input type="text" id="item-descricao" placeholder="Ex: Cimento"/>
@@ -205,7 +205,7 @@ tr:hover{background:#f9f7f5}
         </div>
         <div class="frow">
           <label>Total</label>
-          <input type="number" id="item-total" disabled style="background:#f0ece7"/>
+          <input type="number" id="item-total" disabled style="background:#5a6272"/>
         </div>
       </div>
       <button class="btn btn-secondary btn-full btn-sm" onclick="adicionarItem()">+ ADICIONAR ITEM</button>
@@ -379,7 +379,7 @@ async function onFotoNFSelecionada(ev) {
     fotoNFTemp = await comprimirFotoNF(file, 1280, 0.72);
     renderFotoNFPreview();
   } catch (err) {
-    notify('❌ Falha ao processar a foto: ' + err.message, '#b83228');
+    notify('❌ Falha ao processar a foto: ' + err.message, '#d98a7c');
   }
 }
 
@@ -402,7 +402,7 @@ function renderFotoNFPreview() {
   }
 }
 
-function notify(msg, cor = '#2d6a40') {
+function notify(msg, cor = '#7cb083') {
   const n = document.getElementById('notif');
   n.textContent = msg;
   n.style.background = cor;
@@ -443,7 +443,7 @@ function adicionarItem() {
   const total = quantidade * preco_unitario;
 
   if (!descricao || quantidade === 0 || preco_unitario === 0) {
-    notify('❌ Preencha descrição, quantidade e preço', '#b83228');
+    notify('❌ Preencha descrição, quantidade e preço', '#d98a7c');
     return;
   }
 
@@ -506,7 +506,7 @@ function salvarNotaFiscal() {
   const observacoes = document.getElementById('nf-observacoes').value.trim();
 
   if (!numero || !data || !fornecedor || itensTemp.length === 0) {
-    notify('❌ Preencha NF, data, fornecedor e adicione itens', '#b83228');
+    notify('❌ Preencha NF, data, fornecedor e adicione itens', '#d98a7c');
     return;
   }
 
@@ -532,7 +532,7 @@ function salvarNotaFiscal() {
     S.set('notasfiscais', notasFiscais);
   } catch (err) {
     notasFiscais.pop();
-    notify('❌ Sem espaço para salvar (foto muito pesada?). Tente sem foto ou apague notas antigas.', '#b83228');
+    notify('❌ Sem espaço para salvar (foto muito pesada?). Tente sem foto ou apague notas antigas.', '#d98a7c');
     return;
   }
 
@@ -547,7 +547,7 @@ function salvarNotaFiscal() {
   renderItensTemp();
   atualizarTotalNF();
 
-  notify('✅ Nota Fiscal salva com sucesso!', '#2d6a40');
+  notify('✅ Nota Fiscal salva com sucesso!', '#7cb083');
 }
 
 function renderListar() {
@@ -584,7 +584,7 @@ function renderListar() {
       </div>
       <div class="card-footer">
         <span>${formatarMoeda(nf.total_nf)}</span>
-        <button onclick="deletarNF(${nf.id})" style="background:none;border:none;color:#b83228;cursor:pointer;font-weight:700">🗑️ DELETAR</button>
+        <button onclick="deletarNF(${nf.id})" style="background:none;border:none;color:#d98a7c;cursor:pointer;font-weight:700">🗑️ DELETAR</button>
       </div>
     </div>
   `).join('') : '<p style="color:var(--ink-faint)">Nenhuma nota fiscal</p>';

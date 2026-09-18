@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#2c2c2c">
+<meta name="theme-color" content="#3a3f49">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Medições">
@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Medições">
-<meta name="theme-color" content="#2c2c2c">
+<meta name="theme-color" content="#3a3f49">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   
@@ -20,21 +20,21 @@
   
   :root {
     /* Paleta Concreto Rústico */
-    --bg:          #e8e4df;        /* concreto claro desgastado */
-    --bg-card:     #f0ece7;        /* concreto polido */
-    --bg-dark:     #2c2c2c;        /* concreto escuro */
-    --bg-mid:      #3d3935;        /* concreto médio */
-    --ink:         #1c1a18;        /* quase preto industrial */
-    --ink-soft:    #4a4540;        /* cinza concreto */
-    --ink-faint:   #8a8178;        /* cinza claro */
-    --accent:      #d4541a;        /* laranja óxido de ferro */
-    --accent-soft: #e8a030;        /* amarelo capacete */
+    --bg:          #4a5162;        /* concreto claro desgastado */
+    --bg-card:     #5a6272;        /* concreto polido */
+    --bg-dark:     #3a3f49;        /* concreto escuro */
+    --bg-mid:      #454c59;        /* concreto médio */
+    --ink:         #f5f6f7;        /* quase preto industrial */
+    --ink-soft:    #9aa4b2;        /* cinza concreto */
+    --ink-faint:   #7b8290;        /* cinza claro */
+    --accent:      #dda583;        /* laranja óxido de ferro */
+    --accent-soft: #89ab9d;        /* amarelo capacete */
     --accent-dim:  rgba(212,84,26,0.12);
-    --line:        #ccc5bc;        /* junta de concreto */
-    --line-soft:   #dbd4cb;        /* risco superficial */
-    --green:       #3a6b45;        /* verde segurança */
-    --red:         #b83228;        /* vermelho alerta */
-    --blue:        #2a4a72;        /* azul projeto */
+    --line:        #666f80;        /* junta de concreto */
+    --line-soft:   #666f80;        /* risco superficial */
+    --green:       #7cb083;        /* verde segurança */
+    --red:         #d98a7c;        /* vermelho alerta */
+    --blue:        #8ea3c9;        /* azul projeto */
     --serif:       'Barlow Condensed', 'Arial Narrow', sans-serif;
     --sans:        'Barlow', -apple-system, sans-serif;
     /* Textura concreto via SVG inline */
@@ -89,8 +89,8 @@
     background: var(--bg-dark);
     background-image:
       var(--texture),
-      linear-gradient(180deg, #363230 0%, #2c2c2c 100%);
-    color: #f0ece7;
+      linear-gradient(180deg, #454c59 0%, #3a3f49 100%);
+    color: #fff;
     padding: 16px 14px 12px;
     box-shadow: 0 3px 16px rgba(0,0,0,0.35);
     border-bottom: 3px solid var(--accent);
@@ -123,7 +123,7 @@
     letter-spacing: 0.4px;
     line-height: 1.1;
     text-transform: uppercase;
-    color: #f0ece7;
+    color: #fff;
   }
   .header-obra {
     font-size: 10px;
@@ -216,7 +216,7 @@
     border: 2px solid var(--line);
     border-bottom: 3px solid var(--line);
     border-radius: 4px;
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,.06);
     font-size: 11px;
     font-weight: 800;
     font-family: var(--serif);
@@ -247,7 +247,7 @@
     border-radius: 4px;
     border: 1px solid var(--line);
     border-bottom: 2px solid var(--line);
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,.06);
     font-size: 16px;
     cursor: pointer;
     display: flex;
@@ -403,7 +403,7 @@
     border-top: 3px solid var(--line);
     box-shadow:
       0 2px 8px rgba(0,0,0,0.08),
-      inset 0 1px 0 rgba(255,255,255,0.6);
+      inset 0 1px 0 rgba(255,255,255,.05);
     position: relative;
   }
 
@@ -442,7 +442,7 @@
     padding: 10px 12px;
     border: 1px solid var(--line);
     border-bottom: 2px solid var(--line);
-    background: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,.06);
     border-radius: 4px;
     font-size: 15px;
     font-family: var(--sans);
@@ -454,7 +454,7 @@
     outline: none;
     border-color: var(--accent);
     border-bottom-color: var(--accent);
-    background: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,.10);
     box-shadow: 0 0 0 3px rgba(212,84,26,0.12);
   }
   textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
@@ -477,7 +477,7 @@
     border: 1px solid var(--line);
     border-bottom: 2px solid var(--line);
     border-radius: 4px;
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,.06);
     font-size: 12px;
     font-weight: 700;
     font-family: var(--serif);
@@ -525,7 +525,7 @@
     font-family: var(--serif);
     font-weight: 700;
     font-size: 14px;
-    color: #f0ece7;
+    color: #fff;
     letter-spacing: .5px;
     text-transform: uppercase;
     white-space: nowrap;
@@ -656,7 +656,7 @@
   }
   .badge-op { background: rgba(45,106,79,0.15); color: var(--green); }
   .badge-pa { background: rgba(193,57,43,0.15); color: var(--red); }
-  .badge-leve { background: rgba(245,179,52,0.2); color: #8a6315; }
+  .badge-leve { background: rgba(245,179,52,0.2); color: #d9b26a; }
   .badge-med { background: rgba(200,84,31,0.18); color: var(--accent); }
   .badge-grave { background: rgba(193,57,43,0.18); color: var(--red); }
   
@@ -679,7 +679,7 @@
   }
   .btn-primary { background: var(--accent); color: white; box-shadow: 0 2px 6px rgba(200,84,31,0.25); }
   .btn-primary:active { transform: translateY(1px); }
-  .btn-secondary { background: var(--ink); color: white; }
+  .btn-secondary { background: var(--bg-dark); color: white; }
   .btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
   .btn-whatsapp { background: #25D366; color: white; }
   .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -776,7 +776,7 @@
   
   /* OUTPUT */
   .output-box {
-    background: #f8f6f0;
+    background: #454c59;
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 12px;
@@ -844,7 +844,7 @@
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background: var(--ink);
+    background: var(--bg-dark);
     color: white;
     padding: 11px 18px;
     border-radius: 24px;
@@ -972,7 +972,7 @@
   .cal-day:active { transform: scale(0.95); }
   .cal-day.empty { background: transparent; border: none; cursor: default; }
   .cal-day.has-data {
-    background: linear-gradient(180deg, #fff 0%, #fef3d3 100%);
+    background: linear-gradient(180deg, #454c59 0%, #453f30 100%);
     border-color: var(--accent-soft);
   }
   .cal-day.today {
@@ -994,7 +994,7 @@
   .cal-day.today .cal-day-dot { background: white; }
   
   .info-card {
-    background: linear-gradient(135deg, #fef3d3 0%, #fef9e7 100%);
+    background: linear-gradient(135deg, #453f30 0%, #403b2e 100%);
     border: 1px solid var(--accent-soft);
     border-radius: 8px;
     padding: 12px 14px;
@@ -1006,7 +1006,7 @@
     color: var(--ink);
   }
   .info-card.editing {
-    background: linear-gradient(135deg, #ffd6c2 0%, #fee9de 100%);
+    background: linear-gradient(135deg, #4a3d33 0%, #463d36 100%);
     border-color: var(--accent);
   }
   
@@ -1258,7 +1258,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
 <div class="topbar">
 <header class="header" style="height:70px">
   <div class="header-top">
-    <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#f0ece7;align-self:flex-start;margin-top:4px" onclick="voltarParaHome()">⬅️</button>
+    <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#fff;align-self:flex-start;margin-top:4px" onclick="voltarParaHome()">⬅️</button>
     <div class="header-id">
       <div class="header-empresa" id="hdrEmpresa">EMPRESA</div>
       <h1>Medições</h1>
@@ -1743,7 +1743,7 @@ function renderFormMedicaoItens(contrato) {
     const qtdAnt = qtdAnteriorAteMedicao(contrato, it.id);
     const saldoInicial = it.quantidade - qtdAnt;
     return `
-      <div style="background:rgba(255,255,255,.5);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:8px">
+      <div style="background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px">${escapeHtml(it.item)} — ${escapeHtml(it.descricao)}</div>
         <div style="font-size:11px;color:var(--ink-faint);margin-bottom:6px">Contratado: ${fmtQtd(it.quantidade)} ${escapeHtml(it.unidade)} · R$ ${fmtR$(it.valorUnitario)}/un</div>
         <div class="grid-2" style="gap:6px">
