@@ -239,10 +239,12 @@ Já estão no ar (mesclados em 24/08), mas nenhum foi visto num aparelho de verd
 
 ### Decisão futura, sem prazo
 
-- [ ] **Migrar para Supabase?** `/app-supabase/` no mesmo repositório é uma geração paralela do
-      mesmo sistema (só o módulo "Gestão de Equipes" completo). Vale considerar se aparecer
-      necessidade real de gerenciar várias obras ao mesmo tempo — Sheets não escala bem para
-      multi-tenancy. Ver `MANIFEST.md` na raiz.
+- [ ] **Migrar para Supabase?** Existe uma geração paralela do mesmo sistema em Supabase no
+      repositório `Jonacir2023/buildly` (ex-`buidly`) — chegou a ter uma cópia em `/app-supabase/`
+      neste repo, removida em 18/09 por misturar repositórios (só o módulo "Gestão de Equipes"
+      completo lá). Vale considerar migrar se aparecer necessidade real de gerenciar várias obras
+      ao mesmo tempo — Sheets não escala bem para multi-tenancy — mas como projeto próprio deste
+      repositório, nunca como pasta importada de outro. Ver `MANIFEST.md` na raiz.
 
 ---
 
