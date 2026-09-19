@@ -117,6 +117,15 @@ preferências de estilo.
     `buildly-completo`) — mas `custos.html` ainda não o tem, porque hoje não chama o backend.
     Ao ligar `custos/salvar`, leve o shim junto.
 
+24. **CSS de relatório impresso nunca usa nome de classe genérico sem escopar sob `.pdf-doc`.**
+    A seção "PDF do RDO" (~140 linhas, copiada nos 6 arquivos da paleta Concreto Rústico)
+    definia `.section-title`, `.stat-num`, `.stat-label`, `.badge` etc. sem prefixo — como o
+    app usa esses mesmos nomes na tela, o CSS pensado pra papel branco (cinza-escuro sobre
+    fundo claro) vazava por cima do CSS de tela (fundo escuro), deixando números como "0
+    PRESENTES"/"0 TOTAL MM" praticamente invisíveis. Não apareceu em teste automatizado nem em
+    Chromium — só em print visual real. Toda classe nova dentro dessa seção começa com
+    `.pdf-doc `, sempre. Ver [[Projetos/BUILDLy Premium]], histórico de 19/09.
+
 ---
 
 ## Relacionado

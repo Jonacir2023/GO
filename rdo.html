@@ -320,7 +320,7 @@
   .resumo-ativ-total {
     font-size: 16px;
     font-weight: 700;
-    color: var(--accent);
+    color: #fff;
     font-family: var(--serif);
     white-space: nowrap;
   }
@@ -385,7 +385,7 @@
   .resumo-efetivo-media {
     font-size: 20px;
     font-weight: 700;
-    color: var(--green);
+    color: #fff;
     font-family: var(--serif);
   }
 
@@ -416,7 +416,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: var(--accent);
+    color: #fff;
     margin-bottom: 12px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--line);
@@ -625,7 +625,7 @@
   }
   .item-meta .mat, .item-meta .num {
     font-family: 'SF Mono', Menlo, monospace;
-    color: var(--accent);
+    color: #fff;
     font-weight: 600;
   }
   .item-extra {
@@ -768,7 +768,7 @@
   .op-item.selected { background: rgba(45, 106, 79, 0.08); }
   .op-item-name { font-weight: 600; font-size: 14px; }
   .op-item-meta { font-size: 11px; color:#fff; margin-top: 1px; }
-  .op-item-meta .mat { color: var(--accent); font-family: 'SF Mono', Menlo, monospace; font-weight: 600; }
+  .op-item-meta .mat { color: #fff; font-family: 'SF Mono', Menlo, monospace; font-weight: 600; }
   .op-cat-label {
     padding: 6px 12px;
     background: var(--line-soft);
@@ -814,7 +814,7 @@
     font-family: var(--serif);
     font-size: 20px;
     font-weight: 700;
-    color: var(--accent);
+    color: #fff;
     line-height: 1;
   }
   .stat-label {
@@ -1069,7 +1069,7 @@
     gap: 6px;
   }
   .dia-semana {
-    color: var(--accent);
+    color: #fff;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1106,93 +1106,93 @@
    células estreitas das tabelas — o mesmo 12pt saía maior num lugar que noutro. */
 .pdf-doc, .pdf-doc * { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
-.header-table {
+.pdf-doc .header-table {
     width: 100%;
     border-bottom: 3px solid #1a2b4d;
     padding-bottom: 12px;
     margin-bottom: 15px;
 }
-.header-logo-cell { width: 90px; vertical-align: bottom; padding-right: 14px; }
-.header-logo-cell img { height: 38px; max-width: 90px; width: auto; object-fit: contain; display: block; }
-.header-left { vertical-align: bottom; }
-.header-right { width: 30%; text-align: right; vertical-align: bottom; }
-.rdo-head h1 { margin: 0 0 2px 0; font-size: 20pt; color: #1a1a1a; font-weight: 800; text-transform: uppercase; }
-.rdo-head .sub { color: #666; font-size: 10pt; font-weight: 600; }
-.header-right .num { font-size: 22pt; font-weight: 800; color: #2C3E50; line-height: 1; }
-.header-right .rdo-label { font-size: 9pt; color: #666; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+.pdf-doc .header-logo-cell { width: 90px; vertical-align: bottom; padding-right: 14px; }
+.pdf-doc .header-logo-cell img { height: 38px; max-width: 90px; width: auto; object-fit: contain; display: block; }
+.pdf-doc .header-left { vertical-align: bottom; }
+.pdf-doc .header-right { width: 30%; text-align: right; vertical-align: bottom; }
+.pdf-doc .rdo-head h1 { margin: 0 0 2px 0; font-size: 20pt; color: #1a1a1a; font-weight: 800; text-transform: uppercase; }
+.pdf-doc .rdo-head .sub { color: #666; font-size: 10pt; font-weight: 600; }
+.pdf-doc .header-right .num { font-size: 22pt; font-weight: 800; color: #2C3E50; line-height: 1; }
+.pdf-doc .header-right .rdo-label { font-size: 9pt; color: #666; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
 
-.info-grid { display: table; width: 100%; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; margin-bottom: 20px; }
-.info-row { display: table-row; }
-.info-col { display: table-cell; width: 25%; padding: 12px 15px; border-right: 1px solid #e9ecef; }
-.info-col:last-child { border-right: none; }
-.info-label { color: #868e96; text-transform: uppercase; font-weight: 800; font-size: 7.5pt; letter-spacing: 0.5px; margin-bottom: 4px; }
-.info-val { font-weight: 700; font-size: 10pt; color: #343a40; }
+.pdf-doc .info-grid { display: table; width: 100%; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; margin-bottom: 20px; }
+.pdf-doc .info-row { display: table-row; }
+.pdf-doc .info-col { display: table-cell; width: 25%; padding: 12px 15px; border-right: 1px solid #e9ecef; }
+.pdf-doc .info-col:last-child { border-right: none; }
+.pdf-doc .info-label { color: #868e96; text-transform: uppercase; font-weight: 800; font-size: 7.5pt; letter-spacing: 0.5px; margin-bottom: 4px; }
+.pdf-doc .info-val { font-weight: 700; font-size: 10pt; color: #343a40; }
 
-.section-title { background: #2C3E50; color: #ffffff; padding: 8px 15px; font-weight: 800; font-size: 10.5pt; letter-spacing: 0.5px; margin-bottom: 12px; border-radius: 2px; page-break-after: avoid; }
+.pdf-doc .section-title { background: #2C3E50; color: #ffffff; padding: 8px 15px; font-weight: 800; font-size: 10.5pt; letter-spacing: 0.5px; margin-bottom: 12px; border-radius: 2px; page-break-after: avoid; }
 
-.stats-grid { display: table; width: 100%; margin-bottom: 22px; border-collapse: collapse; }
-.stat-row { display: table-row; }
-.stat-box { display: table-cell; width: 50%; padding: 10px 12px; border: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
-.stat-box:nth-child(2n) { text-align: center; font-weight: 800; }
-.stat-head .stat-box { background: #f8f9fa; text-align: center; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
-.stat-num { font-size: 12pt; font-weight: 800; color: #495057; line-height: 1; }
-.stat-label { font-size: 12pt; font-weight: 600; color: #495057; letter-spacing: 0px; }
+.pdf-doc .stats-grid { display: table; width: 100%; margin-bottom: 22px; border-collapse: collapse; }
+.pdf-doc .stat-row { display: table-row; }
+.pdf-doc .stat-box { display: table-cell; width: 50%; padding: 10px 12px; border: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
+.pdf-doc .stat-box:nth-child(2n) { text-align: center; font-weight: 800; }
+.pdf-doc .stat-head .stat-box { background: #f8f9fa; text-align: center; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
+.pdf-doc .stat-num { font-size: 12pt; font-weight: 800; color: #495057; line-height: 1; }
+.pdf-doc .stat-label { font-size: 12pt; font-weight: 600; color: #495057; letter-spacing: 0px; }
 
-table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; table-layout: fixed; }
-table.data-table th, table.data-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; vertical-align: middle; }
-table.data-table th { background: #f8f9fa; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
-table.data-table td { font-size: 12pt; color: #212529; }
-table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
+.pdf-doc table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; table-layout: fixed; }
+.pdf-doc table.data-table th, .pdf-doc table.data-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; vertical-align: middle; }
+.pdf-doc table.data-table th { background: #f8f9fa; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
+.pdf-doc table.data-table td { font-size: 12pt; color: #212529; }
+.pdf-doc table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
 
-.badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: bold; text-transform: uppercase; }
-.badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.badge-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.badge-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-.badge-info { background: #d9e8f5; color: #1e3f6e; border: 1px solid #bcd4ea; }
+.pdf-doc .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: bold; text-transform: uppercase; }
+.pdf-doc .badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.pdf-doc .badge-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.pdf-doc .badge-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.pdf-doc .badge-info { background: #d9e8f5; color: #1e3f6e; border: 1px solid #bcd4ea; }
 
 /* Kanban do Check-in. Usa display:table-cell como o .split-grid acima, que e o
    que sobrevive a paginacao do A4 — flex quebra na impressao. */
-.kanban-grid { display: table; width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 5px 0; margin-bottom: 22px; }
-.kanban-col { display: table-cell; width: 33.33%; vertical-align: top; }
-.kanban-col-head { padding: 6px 8px; font-weight: 800; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .5px; border-radius: 3px 3px 0 0; }
-.kanban-afazer .kanban-col-head { background: #dde8f5; color: #1e3f6e; }
-.kanban-fazendo .kanban-col-head { background: #fff3cd; color: #856404; }
-.kanban-concluido .kanban-col-head { background: #d4edda; color: #155724; }
-.kanban-card { border: 1px solid #dee2e6; border-top: none; padding: 7px 8px; page-break-inside: avoid; }
-.kanban-card-tit { font-weight: 700; font-size: 8.5pt; color: #212529; margin-bottom: 3px; }
-.kanban-card-desc { font-size: 7.5pt; color: #495057; margin-bottom: 4px; }
-.kanban-card-meta { font-size: 7.5pt; color: #6c757d; margin-top: 3px; }
-.kanban-vazio { border: 1px dashed #dee2e6; border-top: none; padding: 12px 8px; font-size: 8pt; color: #adb5bd; text-align: center; }
+.pdf-doc .kanban-grid { display: table; width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 5px 0; margin-bottom: 22px; }
+.pdf-doc .kanban-col { display: table-cell; width: 33.33%; vertical-align: top; }
+.pdf-doc .kanban-col-head { padding: 6px 8px; font-weight: 800; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .5px; border-radius: 3px 3px 0 0; }
+.pdf-doc .kanban-afazer .kanban-col-head { background: #dde8f5; color: #1e3f6e; }
+.pdf-doc .kanban-fazendo .kanban-col-head { background: #fff3cd; color: #856404; }
+.pdf-doc .kanban-concluido .kanban-col-head { background: #d4edda; color: #155724; }
+.pdf-doc .kanban-card { border: 1px solid #dee2e6; border-top: none; padding: 7px 8px; page-break-inside: avoid; }
+.pdf-doc .kanban-card-tit { font-weight: 700; font-size: 8.5pt; color: #212529; margin-bottom: 3px; }
+.pdf-doc .kanban-card-desc { font-size: 7.5pt; color: #495057; margin-bottom: 4px; }
+.pdf-doc .kanban-card-meta { font-size: 7.5pt; color: #6c757d; margin-top: 3px; }
+.pdf-doc .kanban-vazio { border: 1px dashed #dee2e6; border-top: none; padding: 12px 8px; font-size: 8pt; color: #adb5bd; text-align: center; }
 
-.split-grid { display: table; width: 100%; margin-bottom: 22px; table-layout: fixed; }
-.split-col { display: table-cell; width: 50%; }
-.split-col:first-child { padding-right: 10px; }
-.split-col:last-child { padding-left: 10px; }
+.pdf-doc .split-grid { display: table; width: 100%; margin-bottom: 22px; table-layout: fixed; }
+.pdf-doc .split-col { display: table-cell; width: 50%; }
+.pdf-doc .split-col:first-child { padding-right: 10px; }
+.pdf-doc .split-col:last-child { padding-left: 10px; }
 
 /* Começa em página nova na impressão. Em tela não tem efeito. */
-.quebra-pagina { page-break-before: always; break-before: page; }
-table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
-table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
-.pdf-foto { margin: 0; page-break-inside: avoid; break-inside: avoid; }
+.pdf-doc .quebra-pagina { page-break-before: always; break-before: page; }
+.pdf-doc table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
+.pdf-doc table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
+.pdf-doc .pdf-foto { margin: 0; page-break-inside: avoid; break-inside: avoid; }
 /* Nenhuma linha de foto nem de tabela pode ser partida entre páginas */
-table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-inside: avoid; }
+.pdf-doc table.fotos-table tr, .pdf-doc table.data-table tr { page-break-inside: avoid; break-inside: avoid; }
 /* height:auto preserva a proporção original da foto — sem corte e sem distorção.
    Antes havia altura fixa com object-fit:cover, que recortava as bordas. */
-.pdf-foto img { width: 100%; height: auto; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
-.pdf-foto figcaption { font-size: 12pt; color: #495057; margin-top: 4px; line-height: 1.3; }
+.pdf-doc .pdf-foto img { width: 100%; height: auto; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
+.pdf-doc .pdf-foto figcaption { font-size: 12pt; color: #495057; margin-top: 4px; line-height: 1.3; }
 
-.jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; margin-bottom: 22px; }
+.pdf-doc .jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; margin-bottom: 22px; }
 /* 12pt declarado em cada elemento da caixa, sem depender de herança */
-.jornada-box, .jornada-box * { font-size: 12pt; line-height: 1.4; }
-.jornada-box strong { color: #343a40; display: block; margin-bottom: 6px; font-weight: 800; }
-.jornada-box div { margin-bottom: 3px; color: #495057; }
+.pdf-doc .jornada-box, .pdf-doc .jornada-box * { font-size: 12pt; line-height: 1.4; }
+.pdf-doc .jornada-box strong { color: #343a40; display: block; margin-bottom: 6px; font-weight: 800; }
+.pdf-doc .jornada-box div { margin-bottom: 3px; color: #495057; }
 
-.signature-grid { display: table; width: 100%; margin-top: 50px; text-align: center; page-break-inside: avoid; }
-.sig-row { display: table-row; }
-.sig-box { display: table-cell; width: 50%; padding: 0 30px; }
-.sig-line { border-top: 1px solid #212529; margin-bottom: 8px; margin-top: 50px; }
+.pdf-doc .signature-grid { display: table; width: 100%; margin-top: 50px; text-align: center; page-break-inside: avoid; }
+.pdf-doc .sig-row { display: table-row; }
+.pdf-doc .sig-box { display: table-cell; width: 50%; padding: 0 30px; }
+.pdf-doc .sig-line { border-top: 1px solid #212529; margin-bottom: 8px; margin-top: 50px; }
 
-.footer { margin-top: 30px; text-align: center; font-size: 8pt; color: #adb5bd; border-top: 1px solid #e9ecef; padding-top: 10px; }
+.pdf-doc .footer { margin-top: 30px; text-align: center; font-size: 8pt; color: #adb5bd; border-top: 1px solid #e9ecef; padding-top: 10px; }
 
 #padAssOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
 #padAssOverlay .pad-box { background: #fff; border-radius: 12px; padding: 14px; width: 100%; max-width: 520px; }
@@ -1267,7 +1267,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
       <div class="header-empresa" id="hdrEmpresa">EMPRESA</div>
       <h1>Diário de Obras</h1>
       <div class="header-obra" id="hdrObra">—</div>
-      <div id="hdrCidade" style="font-size:12px;color:var(--accent);opacity:0.8;margin-top:2px;display:none"></div>
+      <div id="hdrCidade" style="font-size:12px;color:#fff;margin-top:2px;display:none"></div>
     </div>
     <div class="header-logo" id="hdrLogo">LOGO</div>
   </div>
@@ -4634,7 +4634,7 @@ function renderEfetivoDia() {
     if (presentes.length > 0) {
       html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
         <div style="font-weight:600;color:var(--ink)">${cat.icon} ${escapeHtml(cat.nome)}</div>
-        <div style="font-size:15px;font-weight:700;color:var(--accent)">${presentes.length}</div>
+        <div style="font-size:15px;font-weight:700;color:#fff">${presentes.length}</div>
       </div>`;
     }
   });
@@ -4680,7 +4680,7 @@ function renderEquipDia() {
   ordenados.forEach(g => {
     html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
       <div style="font-weight:600">${g.isMotorista ? '🚛' : '🚜'} ${escapeHtml(g.desc)}</div>
-      <div style="font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:8px">${g.count} un.</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';
@@ -4699,7 +4699,7 @@ function renderEquipDia() {
           onchange="salvarHorimetro('${eq.id}', 'ini', this.value)" style="flex:1;min-width:0">
         <input type="number" inputmode="decimal" step="0.1" min="0" placeholder="Final" value="${hEq.fim || ''}"
           onchange="salvarHorimetro('${eq.id}', 'fim', this.value)" style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap">${tot !== null ? tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' h' : '— h'}</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap">${tot !== null ? tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' h' : '— h'}</div>
       </div>
     </div>`;
   });
@@ -4912,7 +4912,7 @@ function renderVeiculosLevesDia() {
   ordenados.forEach(g => {
     html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
       <div style="font-weight:600">🚗 ${escapeHtml(g.desc)}</div>
-      <div style="font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:8px">${g.count} un.</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';

@@ -76,7 +76,7 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 
 .stat-box{background:var(--bg-card);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid var(--line)}
 .stat-label{font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--accent);margin-top:4px}
+.stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:#fff;margin-top:4px}
 
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{background:var(--bg-dark);color:#fff;padding:8px;text-align:left;font-weight:700}
@@ -609,7 +609,7 @@ function renderResumo() {
     .map(([cat, valor]) => `
       <div class="stat-box">
         <div class="stat-label">${cat}</div>
-        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--accent)">${formatarMoeda(valor)}</div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#fff">${formatarMoeda(valor)}</div>
         <div style="font-size:11px;color:#fff;margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
       </div>
     `).join('');
@@ -621,7 +621,7 @@ function renderResumo() {
     .map(([forn, valor]) => `
       <div class="stat-box">
         <div class="stat-label">${forn}</div>
-        <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--accent)">${formatarMoeda(valor)}</div>
+        <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:#fff">${formatarMoeda(valor)}</div>
       </div>
     `).join('') + '</div>';
 
