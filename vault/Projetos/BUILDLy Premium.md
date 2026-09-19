@@ -74,6 +74,11 @@ nunca teve o app instalado.
 Testado: as 7 suítes, sintaxe e isolamento; verificação visual (Playwright, 390px) da nova
 página, incluindo o preenchimento do nome via `?lider=`.
 
+Fechando o fluxo: bloco "Convidar Líder" na aba Check-in — nome opcional + botão que monta o
+link de `envio-pauta.html` (com `?lider=` se preenchido) e abre `wa.me/?text=`. Sem telefone
+fixo: `wa.me` sem número abre o seletor de contato do WhatsApp, então o gestor manda um líder de
+cada vez escolhendo o contato na hora do envio.
+
 ### 18/09/2026 — Modelo C: tema escuro em todo o app
 
 Redesign visual completo, pedido pelo usuário. Processo: piloto de paleta azul/cinza corporativo
