@@ -698,6 +698,15 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
     </div>
 
     <div class="sec">
+      <div class="sec-title">📲 Convidar Líder</div>
+      <div class="frow">
+        <label>Nome do líder</label>
+        <input type="text" id="checkin-whats-lider" placeholder="Opcional — pré-preenche o formulário"/>
+      </div>
+      <button class="btn btn-full" onclick="checkinEnviarLinkWhatsapp()" style="background:var(--green)">📲 Enviar link por WhatsApp</button>
+    </div>
+
+    <div class="sec">
       <div class="sec-title">📌 Kanban de Assuntos</div>
       <div class="kanban-wrap" id="checkin-kanban-checkin"></div>
     </div>
@@ -2299,6 +2308,18 @@ async function checkinCarregarDaPlanilha() {
     checkinCarregarAssuntosDaPauta(),
     checkinCarregarHistoricoDoServidor()
   ]);
+}
+
+// Abre o WhatsApp com o link de envio-pauta.html pronto para escolher o
+// contato. wa.me sem número abre o seletor de conversa — assim não é preciso
+// saber o telefone do líder de antemão, só mandar um de cada vez.
+function checkinEnviarLinkWhatsapp() {
+  const nome = document.getElementById('checkin-whats-lider').value.trim();
+  const base = location.href.replace(/[^/]*$/, '') + 'envio-pauta.html';
+  const link = nome ? base + '?lider=' + encodeURIComponent(nome) : base;
+  const texto = (nome ? `Oi ${nome}! ` : 'Oi! ') +
+    'Envie por aqui o assunto que você quer levar para a próxima reunião de Check-in: ' + link;
+  window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
 }
 
 // Reenvia à planilha os status que mudaram aqui e ainda não foram aceitos.

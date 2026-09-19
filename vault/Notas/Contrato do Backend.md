@@ -183,6 +183,15 @@ front-end chama.
 
 ---
 
+## Um front-end pode chamar dois endpoints na mesma gravação
+
+`envio-pauta.html` (link público enviado a um líder, sem o resto do app) grava o mesmo assunto
+em `pauta/criar` **e** `checkin/salvar` na mesma submissão, em paralelo. Não é redundância: o
+líder pode estar num aparelho que nunca abriu o app, então a sincronização local
+Pauta→Check-in (que só roda dentro do mesmo navegador, via `localStorage`) não tem como
+alcançá-lo. Gravar direto nos dois evita depender de alguém abrir o app antes da próxima
+reunião.
+
 ## Relacionado
 
 - [[Projetos/BUILDLy Premium]]

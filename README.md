@@ -42,6 +42,11 @@ projetos.md` e `vault/Notas/Armazenamento Local.md`.
 - `Check-in.html` — App de Check-in (pode ser usado standalone)
 - `custos.html` — App de Custos (pode ser usado standalone)
 - `rdo.html` — App de RDO/Diário de Obras (pode ser usado standalone)
+- `envio-pauta.html` — Formulário público, sem o resto do app: um líder abre o link
+  (`?lider=Nome` pré-preenche o campo) e envia um assunto direto para a planilha —
+  cai na Pauta e no Check-in ao mesmo tempo, pronto para a próxima reunião. Não usa
+  `localStorage`. Se o backend tiver código de acesso (`APP_TOKEN`) ativado, inclua
+  `&token=SEUCODIGO` no link.
 
 ## 🔄 Sincronização
 
