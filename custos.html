@@ -10,7 +10,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#4a5162;--bg-card:#5a6272;--bg-dark:#3a3f49;--bg-mid:#454c59;
-  --ink:#f5f6f7;--ink-soft:#9aa4b2;--ink-faint:#7b8290;
+  --ink:#ffffff;--ink-soft:#9aa4b2;--ink-faint:#7b8290;
   --accent:#dda583;--accent2:#89ab9d;--line:#666f80;
   --green:#7cb083;--red:#d98a7c;--blue:#8ea3c9;--yellow:#d9b26a;
   --serif:'Barlow Condensed','Arial Narrow',sans-serif;
@@ -25,12 +25,12 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 .hdr-logo{font-family:var(--serif);font-size:26px;font-weight:800;letter-spacing:1px;color:#fff}
 .hdr-logo span{color:var(--accent)}
 .hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
-.hdr-settings{background:none;border:1px solid rgba(255,255,255,.2);color:#9aa4b2;font-size:14px;padding:6px 8px;border-radius:6px;cursor:pointer}
+.hdr-settings{background:none;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:14px;padding:6px 8px;border-radius:6px;cursor:pointer}
 .hdr-settings:hover{background:rgba(255,255,255,.08)}
 
 .tabs{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:99;width:100%;max-width:480px;display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
 .tabs::-webkit-scrollbar{display:none}
-.tab{background:none;border:none;flex:none;padding:14px 16px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;color:#9aa4b2;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab{background:none;border:none;flex:none;padding:14px 16px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;color:#fff;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
 .tab.active{color:#fff;border-bottom-color:var(--accent)}
 
 .page{display:none;padding:0}
@@ -40,7 +40,7 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 .sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;margin-bottom:12px}
 
 .frow{margin-bottom:10px}
-.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow label{display:block;font-size:12px;font-weight:600;color:#fff;margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
 .frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:60px}
@@ -64,9 +64,9 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 
 .card{background:#5a6272;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid #454c59}
 .card-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.card-desc{font-size:12px;color:var(--ink-soft);margin-bottom:6px}
+.card-desc{font-size:12px;color:#fff;margin-bottom:6px}
 .card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
-.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #5a6272;font-size:11px;color:var(--ink-faint)}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #5a6272;font-size:11px;color:#fff}
 
 .item-row{background:#454c59;padding:10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)}
 .item-row-header{display:flex;justify-content:space-between;margin-bottom:6px}
@@ -75,7 +75,7 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 .item-row-actions button{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#d98a7c}
 
 .stat-box{background:var(--bg-card);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid var(--line)}
-.stat-label{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.stat-label{font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
 .stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--accent);margin-top:4px}
 
 table{width:100%;border-collapse:collapse;font-size:12px}
@@ -86,7 +86,7 @@ tr:hover{background:#454c59}
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;overflow-y:auto}
 .modal.open{display:flex}
 .modal-content{background:#5a6272;border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative;margin:auto}
-.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#9aa4b2}
+.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#fff}
 .modal-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:15px}
 
 /* ══════════════════════════════════════════════════════════════
@@ -119,7 +119,7 @@ tr:hover{background:#454c59}
       <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#fff" onclick="voltarParaHome()">⬅️</button>
       <div>
         <div class="hdr-logo">CUS<span>TOS</span></div>
-        <div style="font-size:11px;color:#9aa4b2">Controle de Notas Fiscais</div>
+        <div style="font-size:11px;color:#fff">Controle de Notas Fiscais</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -471,7 +471,7 @@ function renderItensTemp() {
       <div class="item-row-header">
         <div>
           <div class="item-row-title">${item.descricao}</div>
-          <div style="font-size:11px;color:var(--ink-faint)">
+          <div style="font-size:11px;color:#fff">
             ${item.quantidade} × R$ ${item.preco_unitario.toFixed(2)} = ${formatarMoeda(item.total)}
           </div>
         </div>
@@ -480,7 +480,7 @@ function renderItensTemp() {
         </div>
       </div>
     </div>
-  `).join('') : '<p style="color:var(--ink-faint);font-size:12px">Nenhum item adicionado ainda</p>';
+  `).join('') : '<p style="color:#fff;font-size:12px">Nenhum item adicionado ainda</p>';
 
   document.getElementById('lista-itens-novo').innerHTML = html;
 }
@@ -578,7 +578,7 @@ function renderListar() {
         <img src="${nf.foto}" alt="Foto da nota"
           style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1.5px solid var(--line);margin-top:8px;display:block"/>
       </a>` : ''}
-      <div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">
+      <div style="margin-top:8px;font-size:12px;color:#fff">
         <strong>${nf.itens.length} item(ns):</strong><br>
         ${nf.itens.map(i => `• ${i.descricao} (${i.quantidade} × R$ ${i.preco_unitario.toFixed(2)})`).join('<br>')}
       </div>
@@ -587,7 +587,7 @@ function renderListar() {
         <button onclick="deletarNF(${nf.id})" style="background:none;border:none;color:#d98a7c;cursor:pointer;font-weight:700">🗑️ DELETAR</button>
       </div>
     </div>
-  `).join('') : '<p style="color:var(--ink-faint)">Nenhuma nota fiscal</p>';
+  `).join('') : '<p style="color:#fff">Nenhuma nota fiscal</p>';
 
   document.getElementById('lista-nfs').innerHTML = html;
 }
@@ -610,7 +610,7 @@ function renderResumo() {
       <div class="stat-box">
         <div class="stat-label">${cat}</div>
         <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--accent)">${formatarMoeda(valor)}</div>
-        <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
+        <div style="font-size:11px;color:#fff;margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
       </div>
     `).join('');
 
