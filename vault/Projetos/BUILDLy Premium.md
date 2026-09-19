@@ -87,7 +87,17 @@ Custos migrado (`custos.html`). Era o único módulo que nunca falava com o back
 própria — o `sincronizarComGoogleSheets()` compartilhado em `buildly-completo.html` é quem lia
 seu `localStorage` de fora do iframe. Com Pauta/Check-in/Custos migrados essa função (e o
 polling de 2 em 2 minutos) ficou sem função e foi removida; `custos.html` ganhou seu próprio
-par carregar/enviar, no mesmo padrão. Restam RDO, Medições, Documentos, Manutenção e Reunião.
+par carregar/enviar, no mesmo padrão.
+
+Manutenção (mural), Documentos, Reunião e Medições migrados — os quatro módulos que antes
+eram só do navegador. O schema desenhado de antemão divergia mais do código real nesses
+quatro do que nos anteriores (nunca tinham backend, então nada os mantinha honestos):
+`documentos` e `reuniao_atas` ganharam colunas que faltavam; em Medições, o par
+`medicao_itens`/`medicoes` foi descartado — o modelo real aninha item e medição dentro do
+próprio cliente/empreiteiro, sempre salvo em bloco, então viraram colunas jsonb
+(`itens`/`medicoes`) em `medicao_contratos` em vez de tabelas relacionais separadas que
+ninguém consulta isoladamente. Resta só o RDO — o módulo mais complexo, com mapa de
+integração já levantado (localStorage, regras de negócio, merge) para a próxima etapa.
 
 ### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
 

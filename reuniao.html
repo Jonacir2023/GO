@@ -1526,6 +1526,64 @@ function salvarAta(mostrarToast) {
   localStorage.setItem('reuniao_atas', JSON.stringify(atas));
   if (mostrarToast) toast('✓ Ata salva');
   historicoRender();
+  enviarAtaParaSupabase(copia);
+}
+
+async function enviarAtaParaSupabase(a) {
+  try {
+    const { error } = await B3Obras.cliente().from('reuniao_atas').upsert({
+      id: String(a.id),
+      titulo: a.titulo || null,
+      data: a.data || null,
+      hora_ini: a.horaIni || null,
+      hora_fim: a.horaFim || null,
+      local: a.local || null,
+      participantes: a.participantes || [],
+      ausencias: a.ausencias || null,
+      pauta: a.pauta || [],
+      topicos: a.topicos || [],
+      plano_acao: a.planoAcao || [],
+      proxima_data: a.proximaData || null,
+      proxima_pauta: a.proximaPauta || null
+    });
+    if (error) throw error;
+    a._sincronizado = true;
+  } catch (e) {
+    console.warn('Reunião: não consegui salvar a ata no Supabase agora — fica pendente:', e.message);
+  }
+}
+
+// Busca atas do Supabase: acrescenta o que só existe lá e remove localmente
+// quem já esteve sincronizado mas foi apagado no servidor.
+async function carregarAtasDoServidor() {
+  try {
+    const { data, error } = await B3Obras.cliente().from('reuniao_atas').select('*');
+    if (error) throw error;
+    const doServidor = data || [];
+    const idsServidor = new Set(doServidor.map(a => String(a.id)));
+    const porId = new Map(atas.map(a => [String(a.id), a]));
+    let mudou = false;
+    doServidor.forEach(a => {
+      const chave = String(a.id);
+      if (porId.has(chave)) { porId.get(chave)._sincronizado = true; return; }
+      atas.push({
+        id: a.id, titulo: a.titulo || '', data: a.data || todayISO(),
+        horaIni: a.hora_ini || '', horaFim: a.hora_fim || '', local: a.local || '',
+        participantes: a.participantes || [], ausencias: a.ausencias || '',
+        pauta: a.pauta || [], topicos: a.topicos || [], planoAcao: a.plano_acao || [],
+        proximaData: a.proxima_data || '', proximaPauta: a.proxima_pauta || '',
+        criadoEm: a.criado_em ? Date.parse(a.criado_em) : Date.now(), _sincronizado: true
+      });
+      mudou = true;
+    });
+    const antes = atas.length;
+    atas = atas.filter(a => !(a._sincronizado && !idsServidor.has(String(a.id))));
+    if (atas.length !== antes) mudou = true;
+    if (mudou) { localStorage.setItem('reuniao_atas', JSON.stringify(atas)); historicoRender(); }
+    for (const a of atas.filter(x => !x._sincronizado)) await enviarAtaParaSupabase(a);
+  } catch (e) {
+    console.warn('Reunião: não foi possível buscar atas do Supabase:', e.message);
+  }
 }
 
 function abrirAtaHistorico(id) {
@@ -1544,6 +1602,8 @@ function excluirAtaHistorico(id) {
   localStorage.setItem('reuniao_atas', JSON.stringify(atas));
   historicoRender();
   toast('Ata excluída');
+  B3Obras.cliente().from('reuniao_atas').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Reunião: não foi possível remover a ata no Supabase:', error.message); });
 }
 
 function historicoRender() {
@@ -2041,6 +2101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!ata.data) ata.data = todayISO();
   preencherFormAta();
   historicoRender();
+  carregarAtasDoServidor();
 });
 </script>
 </body>

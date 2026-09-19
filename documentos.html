@@ -1484,6 +1484,86 @@ let notasManuais = [];
 try { notasManuais = JSON.parse(localStorage.getItem('doc_notas_manuais') || '[]'); } catch (e) { notasManuais = []; }
 function salvarNotasManuais() { localStorage.setItem('doc_notas_manuais', JSON.stringify(notasManuais)); }
 
+// Busca documentos e notas manuais do Supabase: acrescenta o que só existe
+// lá e remove localmente quem já esteve sincronizado mas foi apagado no
+// servidor.
+async function carregarDocsDoServidor() {
+  try {
+    const cli = B3Obras.cliente();
+    const [{ data: docsServ, error: eDocs }, { data: notasServ, error: eNotas }] = await Promise.all([
+      cli.from('documentos').select('*'),
+      cli.from('documento_notas_manuais').select('*')
+    ]);
+    if (eDocs) throw eDocs;
+    if (eNotas) throw eNotas;
+
+    const idsDocsServidor = new Set((docsServ || []).map(d => String(d.id)));
+    const porIdDoc = new Map(docs.map(d => [String(d.id), d]));
+    let mudouDocs = false;
+    (docsServ || []).forEach(d => {
+      const chave = String(d.id);
+      if (porIdDoc.has(chave)) { porIdDoc.get(chave)._sincronizado = true; return; }
+      docs.push({
+        id: d.id, categoria: d.categoria, titulo: d.titulo, tipo: d.tipo || 'link',
+        link: d.link || '', arquivoDataUrl: d.arquivo_url || null, arquivoNome: d.arquivo_nome || null,
+        valorOrcamento: d.valor_orcamento || undefined, dataCronograma: d.data_cronograma || undefined,
+        notas: d.notas || '', atualizadoEm: d.atualizado_em ? d.atualizado_em.slice(0, 10) : todayISO(),
+        _sincronizado: true
+      });
+      mudouDocs = true;
+    });
+    const antesDocs = docs.length;
+    docs = docs.filter(d => !(d._sincronizado && !idsDocsServidor.has(String(d.id))));
+    if (docs.length !== antesDocs) mudouDocs = true;
+    if (mudouDocs) { salvarDocs(); renderDocs(); }
+    for (const d of docs.filter(x => !x._sincronizado)) await enviarDocParaSupabase(d);
+
+    const idsNotasServidor = new Set((notasServ || []).map(n => String(n.id)));
+    const porIdNota = new Map(notasManuais.map(n => [String(n.id), n]));
+    let mudouNotas = false;
+    (notasServ || []).forEach(n => {
+      const chave = String(n.id);
+      if (porIdNota.has(chave)) { porIdNota.get(chave)._sincronizado = true; return; }
+      notasManuais.push({ id: n.id, texto: n.texto, criadoEm: n.criado_em ? Date.parse(n.criado_em) : Date.now(), _sincronizado: true });
+      mudouNotas = true;
+    });
+    const antesNotas = notasManuais.length;
+    notasManuais = notasManuais.filter(n => !(n._sincronizado && !idsNotasServidor.has(String(n.id))));
+    if (notasManuais.length !== antesNotas) mudouNotas = true;
+    if (mudouNotas) { salvarNotasManuais(); renderNotasManuais(); }
+    for (const n of notasManuais.filter(x => !x._sincronizado)) await enviarNotaManualParaSupabase(n);
+  } catch (e) {
+    console.warn('Documentos: não foi possível buscar do Supabase:', e.message);
+  }
+}
+
+async function enviarDocParaSupabase(d) {
+  try {
+    const { error } = await B3Obras.cliente().from('documentos').upsert({
+      id: String(d.id), categoria: d.categoria, titulo: d.titulo, tipo: d.tipo,
+      link: d.link || null, arquivo_url: d.arquivoDataUrl || null, arquivo_nome: d.arquivoNome || null,
+      valor_orcamento: d.valorOrcamento || null, data_cronograma: d.dataCronograma || null,
+      notas: d.notas || null
+    });
+    if (error) throw error;
+    d._sincronizado = true;
+    salvarDocs();
+  } catch (e) {
+    console.warn('Documentos: não consegui salvar no Supabase agora — fica pendente:', e.message);
+  }
+}
+
+async function enviarNotaManualParaSupabase(n) {
+  try {
+    const { error } = await B3Obras.cliente().from('documento_notas_manuais').upsert({ id: String(n.id), texto: n.texto });
+    if (error) throw error;
+    n._sincronizado = true;
+    salvarNotasManuais();
+  } catch (e) {
+    console.warn('Documentos: não consegui salvar a nota manual no Supabase agora:', e.message);
+  }
+}
+
 // ============================================================
 // DOCUMENTOS — CADASTRO
 // ============================================================
@@ -1588,15 +1668,20 @@ function salvarDoc() {
     notas: document.getElementById('docNotas').value.trim(),
     atualizadoEm: todayISO()
   };
+  let salvo;
   if (docEditId) {
-    Object.assign(docs.find(x => x.id === docEditId), dados);
+    salvo = docs.find(x => x.id === docEditId);
+    Object.assign(salvo, dados);
+    delete salvo._sincronizado;
   } else {
-    docs.push({ id: uid('doc_'), ...dados });
+    salvo = { id: uid('doc_'), ...dados };
+    docs.push(salvo);
   }
   salvarDocs();
   fecharModal('modalDoc');
   renderDocs();
   toast('✓ Salvo');
+  enviarDocParaSupabase(salvo);
 }
 
 function excluirDoc(id) {
@@ -1605,6 +1690,8 @@ function excluirDoc(id) {
   salvarDocs();
   renderDocs();
   toast('Excluído');
+  B3Obras.cliente().from('documentos').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Documentos: não foi possível remover no Supabase:', error.message); });
 }
 
 // ============================================================
@@ -1694,17 +1781,21 @@ function adicionarNotaManual() {
   const el = document.getElementById('notaManual');
   const texto = el.value.trim();
   if (!texto) { toast('❌ Escreva algo primeiro'); return; }
-  notasManuais.push({ id: uid('nota_'), texto, criadoEm: Date.now() });
+  const item = { id: uid('nota_'), texto, criadoEm: Date.now() };
+  notasManuais.push(item);
   salvarNotasManuais();
   el.value = '';
   renderNotasManuais();
   toast('✓ Anotação adicionada');
+  enviarNotaManualParaSupabase(item);
 }
 
 function excluirNotaManual(id) {
   notasManuais = notasManuais.filter(n => n.id !== id);
   salvarNotasManuais();
   renderNotasManuais();
+  B3Obras.cliente().from('documento_notas_manuais').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Documentos: não foi possível remover a nota manual no Supabase:', error.message); });
 }
 
 // ============================================================
@@ -1734,6 +1825,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.B3Obras) B3Obras.configCarregar().then(atualizarHeader).catch(function(){});
   document.getElementById('hdrDate').textContent = formatDateBR(todayISO());
   renderDocs();
+  renderNotasManuais();
+  carregarDocsDoServidor();
 });
 </script>
 </body>
