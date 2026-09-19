@@ -56,19 +56,30 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 #page-home{margin-top:0;padding:0;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
 #page-home:not(.active){display:none !important}
 #page-pauta,#page-checkin{padding-top:130px !important;position:relative}
+/* Pauta e Check-in aninham .page dentro de .page (a aba e cada sub-tela
+   dela usam a mesma classe). Sem isto, o padding lateral de 16px conta
+   duas vezes e os campos ficam ~32px mais estreitos que na aba RDO, que
+   não tem esse aninhamento. */
+#page-pauta .page,#page-checkin .page{padding-left:0;padding-right:0}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 
 .frow{margin-bottom:10px}
 .frow label{display:block;font-size:12px;font-weight:600;color:#fff;margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
-.frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none}
+.frow input,.frow select,.frow textarea{width:100%;min-width:0;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:70px}
 .frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .frow-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* iOS dá largura mínima maior a um <input type="date"> vazio (o
+   placeholder "mm/dd/yyyy" pesa mais que uma data já preenchida), e a
+   coluna 1fr do grid não encolhe abaixo disso por padrão — o campo
+   vazio (ex.: Data de Término) estoura a coluna e é cortado na borda
+   da tela. */
+.frow-2>.frow,.frow-3>.frow{min-width:0}
 
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
+.btn{-webkit-appearance:none;appearance:none;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase;box-sizing:border-box}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:#c68f6d}
 .btn-secondary{background:var(--bg-dark);color:#ffffff}
