@@ -72,6 +72,12 @@ Pendente: migrar Pauta, Check-in, RDO, Custos, Medições, Documentos, Manutenç
 [[Notas/Arquitetura do App]] só serão atualizadas quando isso terminar, pra não descrever um
 backend que só existe pela metade.
 
+**Atualização, mesmo dia:** Pauta migrada (nativa + `pauta.html` + `envio-pauta.html`).
+Precisou de duas correções de schema no caminho: `pauta_assuntos.id`/`checkin_assuntos.id`
+de `uuid` para `text` (o front-end gera `Date.now().toString()`, não um UUID de verdade), e
+`pauta_membros`/`pauta_setores` ganharam índice único em `nome` para dar de upsert. Restam
+Check-in, RDO, Custos, Medições, Documentos, Manutenção e Reunião.
+
 ### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
 
 Achado de 18/09 (badges/kanban do `@media print` com fundo escuro) corrigido. Só

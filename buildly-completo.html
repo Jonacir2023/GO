@@ -1322,45 +1322,63 @@ let pautaPrioridade = 'media';
 let pautaStatus = 'afazer';
 
 function pautaInit() {
-  console.log('📋 pautaInit() — Inicializando Pauta');
-  console.log(`   Assuntos carregados: ${pautaAssuntos.length}`);
-
   document.getElementById('pauta-hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('pauta-f-data-lanc').value = new Date().toISOString().slice(0,10);
   pautaPopularSelects();
+  pautaCarregarMembrosSetores();
   pautaCarregarDoServidor();
 }
 
-// Busca a lista de pautas direto da planilha: acrescenta o que só existe lá
-// (id novo) e atualiza o status do que já existe localmente (ex: alguém
-// marcou "Concluído" em outro aparelho). Sem isto, um navegador/aparelho
-// novo mostrava a aba "Listar" vazia mesmo com assuntos em andamento na
-// planilha — o app só lia do localStorage, nunca da planilha em si.
+// Grava (ou reenvia) um assunto no Supabase da obra ativa. Chamado ao criar
+// e, para quem ainda não confirmou (_sincronizado ausente), de novo a cada
+// carregarDoServidor() — cobre o caso de ter sido criado sem rede.
+async function pautaEnviarParaSupabase(item) {
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_assuntos').upsert({
+      id: item.id,
+      assunto: item.assunto,
+      descricao: item.desc,
+      criador: item.criador,
+      responsavel: item.resp,
+      setor: item.setor,
+      prioridade: item.prioridade,
+      status: item.status,
+      data_lancamento: item.dataLanc || null,
+      data_termino: item.dataTerm || null
+    });
+    if (error) throw error;
+    item._sincronizado = true;
+    pautaS.set('assuntos', pautaAssuntos);
+  } catch (e) {
+    console.warn('Pauta: não consegui salvar no Supabase agora — fica pendente:', e.message);
+  }
+}
+
+// Busca a lista de pautas direto do Supabase: acrescenta o que só existe lá
+// e atualiza o status do que já existe localmente (ex: alguém marcou
+// "Concluído" em outro aparelho). Sem isto, um navegador/aparelho novo
+// mostrava a aba "Listar" vazia mesmo com assuntos em andamento no servidor.
 async function pautaCarregarDoServidor() {
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + '?path=pauta&action=listar');
-    const data = await resp.json();
-    if (!data || (!data.dados && !data.pautas)) return;
-    const doServidor = data.dados || data.pautas || [];
-    const idsServidor = new Set(doServidor.map(p => String(p.id)).filter(Boolean));
+    const { data, error } = await B3Obras.cliente().from('pauta_assuntos').select('*');
+    if (error) throw error;
+    const doServidor = data || [];
+    const idsServidor = new Set(doServidor.map(p => String(p.id)));
     const porId = new Map(pautaAssuntos.map(a => [String(a.id), a]));
     let adicionados = 0, atualizados = 0, removidos = 0;
     doServidor.forEach(p => {
-      if (!p.id) return;
       const chave = String(p.id);
       const existente = porId.get(chave);
       if (existente) {
         if (p.status && existente.status !== p.status) { existente.status = p.status; atualizados++; }
+        existente._sincronizado = true;
       } else {
         const novo = {
-          id: p.id, assunto: p.assunto, desc: p.desc || '',
-          criador: p.criador || '', resp: p.resp || '', setor: p.setor || '',
+          id: p.id, assunto: p.assunto, desc: p.descricao || '',
+          criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
           prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-          dataLanc: p.dataLanc || '', dataTerm: p.dataTerm || '',
-          criadoEm: Date.parse(p['Criado Em']) || Date.now(),
-          // Já veio da planilha — marca como sincronizado para o ciclo
-          // automático de 2 em 2 minutos não reenviar (e reduplicar) este
-          // item na próxima rodada.
+          dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+          criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now(),
           _sincronizado: true
         };
         pautaAssuntos.push(novo);
@@ -1369,11 +1387,9 @@ async function pautaCarregarDoServidor() {
       }
     });
 
-    // Remove localmente quem já esteve sincronizado mas sumiu da planilha —
-    // ou seja, foi apagado direto na planilha. Itens ainda não
-    // sincronizados (sem _sincronizado) nunca entram aqui: eles
-    // legitimamente ainda não existem no servidor, então sumir da lista do
-    // servidor não significa que foram apagados de propósito.
+    // Remove localmente quem já esteve sincronizado mas sumiu do servidor —
+    // ou seja, foi apagado direto lá. Itens ainda não sincronizados nunca
+    // entram aqui: eles legitimamente ainda não existem no servidor.
     pautaAssuntos = pautaAssuntos.filter(a => {
       if (a._sincronizado && !idsServidor.has(String(a.id))) { removidos++; return false; }
       return true;
@@ -1382,10 +1398,38 @@ async function pautaCarregarDoServidor() {
     if (adicionados > 0 || atualizados > 0 || removidos > 0) {
       pautaS.set('assuntos', pautaAssuntos);
       pautaRenderListar();
-      console.log(`✅ Pauta: ${adicionados} novo(s), ${atualizados} atualizado(s), ${removidos} removido(s) da planilha`);
+    }
+
+    // Quem foi criado sem rede (offline) ainda não tem _sincronizado — tenta
+    // agora que o servidor respondeu.
+    for (const p of pautaAssuntos.filter(a => !a._sincronizado)) {
+      await pautaEnviarParaSupabase(p);
     }
   } catch (e) {
-    console.warn('Pauta: não foi possível buscar da planilha:', e.message);
+    console.warn('Pauta: não foi possível buscar do Supabase:', e.message);
+  }
+}
+
+// Cadastro de membros/setores (aba Admin) — compartilhado por obra no
+// Supabase, não mais preso a um navegador.
+async function pautaCarregarMembrosSetores() {
+  try {
+    const cli = B3Obras.cliente();
+    const [rm, rs] = await Promise.all([
+      cli.from('pauta_membros').select('nome').order('nome'),
+      cli.from('pauta_setores').select('nome').order('nome')
+    ]);
+    if (rm.error) throw rm.error;
+    if (rs.error) throw rs.error;
+    pautaMembros = (rm.data || []).map(r => r.nome);
+    pautaSetores = (rs.data || []).map(r => r.nome);
+    pautaS.set('membros', pautaMembros);
+    pautaS.set('setores', pautaSetores);
+    pautaPopularSelects();
+    pautaRenderMembrosAdm();
+    pautaRenderSetoresAdm();
+  } catch (e) {
+    console.warn('Pauta: não foi possível buscar membros/setores do Supabase:', e.message);
   }
 }
 
@@ -1428,8 +1472,6 @@ function pautaPopularSelects() {
 }
 
 function pautaEnviarAssunto() {
-  console.log('📝 pautaEnviarAssunto() chamado');
-
   const assunto = document.getElementById('pauta-f-assunto').value.trim();
   const descricao = document.getElementById('pauta-f-descricao').value.trim();
   const criador = document.getElementById('pauta-f-criador').value;
@@ -1437,9 +1479,6 @@ function pautaEnviarAssunto() {
   const setor = document.getElementById('pauta-f-setor').value;
   const dataLanc = document.getElementById('pauta-f-data-lanc').value;
   const dataTerm = document.getElementById('pauta-f-data-term').value;
-
-  console.log('   Assunto:', assunto);
-  console.log('   Setor:', setor);
 
   if (!assunto) { pautaNotify('Informe o assunto', 'var(--red)'); return; }
   if (!setor) { pautaNotify('Selecione o setor', 'var(--red)'); return; }
@@ -1452,21 +1491,9 @@ function pautaEnviarAssunto() {
     criadoEm: Date.now()
   };
 
-  console.log('📌 Item criado:', item);
-
   pautaAssuntos.push(item);
-  console.log(`✅ Item adicionado ao array (total: ${pautaAssuntos.length})`);
-
   pautaS.set('assuntos', pautaAssuntos);
-  console.log('💾 Salvo em localStorage - pauta_assuntos');
-
-  // Verificação
-  const verificacao = localStorage.getItem('pauta_assuntos');
-  console.log('🔍 Verificação: dados foram salvos?', verificacao ? 'SIM' : 'NÃO');
-  if (verificacao) {
-    const parsed = JSON.parse(verificacao);
-    console.log(`   Total de itens no localStorage: ${parsed.length}`);
-  }
+  pautaEnviarParaSupabase(item);
 
   document.getElementById('pauta-f-assunto').value = '';
   document.getElementById('pauta-f-descricao').value = '';
@@ -1528,12 +1555,10 @@ function pautaRemoverAssunto(id) {
   pautaRenderListar();
   pautaNotify('Removido', 'var(--red)');
 
-  // Apaga de verdade na planilha — sem isto, a linha continuava lá e a
-  // próxima busca da planilha trazia o assunto de volta como se fosse novo.
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ path: 'pauta', action: 'remover', id })
-  }).catch(e => console.warn('Pauta: não foi possível remover na planilha:', e.message));
+  // Apaga de verdade no Supabase — sem isto, a linha continuava lá e a
+  // próxima busca do servidor trazia o assunto de volta como se fosse novo.
+  B3Obras.cliente().from('pauta_assuntos').delete().eq('id', id)
+    .then(({ error }) => { if (error) console.warn('Pauta: não foi possível remover no Supabase:', error.message); });
 }
 
 function pautaLimparAssuntos() {
@@ -1562,7 +1587,7 @@ function pautaAbaAdmin(aba, el) {
   el.classList.add('active');
 }
 
-function pautaAddMembro() {
+async function pautaAddMembro() {
   const v = document.getElementById('pauta-inp-membro').value.trim();
   if (!v) { pautaNotify('Informe o nome', 'var(--red)'); return; }
   if (pautaMembros.includes(v)) { pautaNotify('Já cadastrado', 'var(--yellow)'); return; }
@@ -1571,15 +1596,27 @@ function pautaAddMembro() {
   document.getElementById('pauta-inp-membro').value = '';
   pautaRenderMembrosAdm();
   pautaPopularSelects();
-  pautaNotify('Membro adicionado!');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_membros').upsert({ nome: v }, { onConflict: 'nome' });
+    if (error) throw error;
+    pautaNotify('Membro adicionado!');
+  } catch (e) {
+    pautaNotify('Salvo aqui, mas não consegui gravar no servidor.', 'var(--red)');
+  }
 }
 
-function pautaRemoverMembro(v) {
+async function pautaRemoverMembro(v) {
   pautaMembros = pautaMembros.filter(m => m !== v);
   pautaS.set('membros', pautaMembros);
   pautaRenderMembrosAdm();
   pautaPopularSelects();
   pautaNotify('Removido', 'var(--red)');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_membros').delete().eq('nome', v);
+    if (error) throw error;
+  } catch (e) {
+    console.warn('Pauta: não removi o membro no servidor:', e.message);
+  }
 }
 
 function pautaRenderMembrosAdm() {
@@ -1596,7 +1633,7 @@ function pautaRenderMembrosAdm() {
   `).join('');
 }
 
-function pautaAddSetor() {
+async function pautaAddSetor() {
   const v = document.getElementById('pauta-inp-setor').value.trim();
   if (!v) { pautaNotify('Informe o setor', 'var(--red)'); return; }
   if (pautaSetores.includes(v)) { pautaNotify('Já cadastrado', 'var(--yellow)'); return; }
@@ -1605,15 +1642,27 @@ function pautaAddSetor() {
   document.getElementById('pauta-inp-setor').value = '';
   pautaRenderSetoresAdm();
   pautaPopularSelects();
-  pautaNotify('Setor adicionado!');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_setores').upsert({ nome: v }, { onConflict: 'nome' });
+    if (error) throw error;
+    pautaNotify('Setor adicionado!');
+  } catch (e) {
+    pautaNotify('Salvo aqui, mas não consegui gravar no servidor.', 'var(--red)');
+  }
 }
 
-function pautaRemoverSetor(v) {
+async function pautaRemoverSetor(v) {
   pautaSetores = pautaSetores.filter(s => s !== v);
   pautaS.set('setores', pautaSetores);
   pautaRenderSetoresAdm();
   pautaPopularSelects();
   pautaNotify('Removido', 'var(--red)');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_setores').delete().eq('nome', v);
+    if (error) throw error;
+  } catch (e) {
+    console.warn('Pauta: não removi o setor no servidor:', e.message);
+  }
 }
 
 function pautaRenderSetoresAdm() {
@@ -1655,11 +1704,29 @@ function pautaRestaurarBackup(e) {
       pautaPopularSelects();
       pautaRenderMembrosAdm();
       pautaRenderSetoresAdm();
+      pautaEmpurrarMembrosSetores();
       pautaNotify('Cadastros restaurados!');
       e.target.value = '';
     } catch(err) { pautaNotify('Arquivo corrompido', 'var(--red)'); }
   };
   r.readAsText(file);
+}
+
+// Reenvia ao Supabase o cadastro restaurado de um arquivo de backup.
+async function pautaEmpurrarMembrosSetores() {
+  try {
+    const cli = B3Obras.cliente();
+    if (pautaMembros.length) {
+      const { error } = await cli.from('pauta_membros').upsert(pautaMembros.map(nome => ({ nome })), { onConflict: 'nome' });
+      if (error) throw error;
+    }
+    if (pautaSetores.length) {
+      const { error } = await cli.from('pauta_setores').upsert(pautaSetores.map(nome => ({ nome })), { onConflict: 'nome' });
+      if (error) throw error;
+    }
+  } catch (e) {
+    console.warn('Pauta: não consegui reenviar o cadastro restaurado ao servidor:', e.message);
+  }
 }
 
 document.getElementById('pauta-modal-admin').addEventListener('click', function(e) {
@@ -2077,33 +2144,9 @@ function checkinSincronizarComPauta() {
 
 async function sincronizarComGoogleSheets() {
   try {
-    // Sincronizar PAUTA para Google Sheets
-    const assuntosPauta = pautaAssuntos || [];
-    for (const assunto of assuntosPauta) {
-      if (!assunto._sincronizado) {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            path: 'pauta',
-            action: 'criar',
-            id: assunto.id,
-            assunto: assunto.assunto,
-            descricao: assunto.desc,
-            criador: assunto.criador,
-            responsavel: assunto.resp,
-            setor: assunto.setor,
-            prioridade: assunto.prioridade,
-            status: assunto.status,
-            dataLanc: assunto.dataLanc,
-            dataTerm: assunto.dataTerm
-          })
-        });
-        assunto._sincronizado = true;
-      }
-    }
-    // Persiste a marca. Sem isto ela so vivia na memoria: qualquer recarga da
-    // pagina trazia os assuntos de volta sem a marca e o ciclo reenviava tudo.
-    pautaS.set('assuntos', pautaAssuntos);
+    // PAUTA já migrou para o Supabase: pautaEnviarParaSupabase() grava na
+    // hora, e pautaCarregarDoServidor() reenvia quem ficou pendente
+    // (ex.: criado offline). Nada a fazer aqui por ela.
 
     // Sincronizar CHECK-IN para Google Sheets
     const assuntosCheckin = checkinAssuntos || [];
@@ -2313,7 +2356,8 @@ async function checkinCarregarDaPlanilha() {
 function checkinEnviarLinkWhatsapp() {
   const nome = document.getElementById('checkin-whats-lider').value.trim();
   const base = location.href.replace(/[^/]*$/, '') + 'envio-pauta.html';
-  const link = nome ? base + '?lider=' + encodeURIComponent(nome) : base;
+  const obraParam = 'obra=' + encodeURIComponent(B3Obras.atualId());
+  const link = base + '?' + obraParam + (nome ? '&lider=' + encodeURIComponent(nome) : '');
   const texto = (nome ? `Oi ${nome}! ` : 'Oi! ') +
     'Envie por aqui o assunto que você quer levar para a próxima reunião de Check-in: ' + link;
   window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
