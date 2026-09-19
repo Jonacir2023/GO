@@ -171,21 +171,32 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   .hdr{position:relative;box-shadow:none;border-bottom:2px solid #dda583;padding:10px 16px 6px;background:#3a3f49;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .hdr-settings,.tabs,.sec:not(#print-sec),.page:not(#print-kanban),.notif,.modal-overlay,.config-modal{display:none!important}
   #print-kanban{display:block!important;padding:12px}
-  .kol{break-inside:avoid;margin-bottom:12px;background:#454c59!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .kol{break-inside:avoid;margin-bottom:12px;background:#e9eef4!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .kol-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .kol-afazer .kol-hdr{background:#38414f!important}
-  .kol-fazendo .kol-hdr{background:#453f30!important}
-  .kol-concluido .kol-hdr{background:#384a3d!important}
-  .kol-cancelado .kol-hdr{background:#454c59!important}
-  .card{break-inside:avoid;border:1px solid #9aa4b2!important;margin-bottom:6px}
+  .kol-afazer .kol-hdr{background:#dbeafe!important}
+  .kol-fazendo .kol-hdr{background:#fef3c7!important}
+  .kol-concluido .kol-hdr{background:#dcfce7!important}
+  .kol-cancelado .kol-hdr{background:#e2e8f0!important}
+  .card{break-inside:avoid;background:#fff!important;border:1px solid #cbd5e1!important;margin-bottom:6px}
+  /* .card-title/.card-desc/.card-resp/.card-dates/.card-aging e .kol-title são
+     brancos na tela (fundo escuro) — sem isto ficam texto branco sobre o
+     fundo claro do kanban impresso. */
+  .card-title{color:#1e293b!important}
+  .card-desc,.card-resp,.card-dates{color:#475569!important}
+  .card-aging{color:#475569!important}
+  .card-aging.alert{color:#b91c1c!important}
+  .kol-afazer .kol-title{color:#2563eb!important}
+  .kol-fazendo .kol-title{color:#b45309!important}
+  .kol-concluido .kol-title{color:#15803d!important}
+  .kol-cancelado .kol-title{color:#64748b!important}
   .badge{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .badge-red{background:#4a3d3a!important;color:#d98a7c!important}
-  .badge-yellow{background:#453f30!important;color:#d9b26a!important}
-  .badge-green{background:#384a3d!important;color:#7cb083!important}
-  .badge-blue{background:#38414f!important;color:#8ea3c9!important}
-  .badge-orange{background:#4a3d33!important;color:#dda583!important}
-  .badge-gray{background:#454c59!important;color:#9aa4b2!important}
-  .badge-canceled{background:#454c59!important;color:#8a92a0!important}
+  .badge-red{background:#fee2e2!important;color:#b91c1c!important}
+  .badge-yellow{background:#fef3c7!important;color:#b45309!important}
+  .badge-green{background:#dcfce7!important;color:#15803d!important}
+  .badge-blue{background:#dbeafe!important;color:#2563eb!important}
+  .badge-orange{background:#e0e7ff!important;color:#1e40af!important}
+  .badge-gray{background:#e2e8f0!important;color:#475569!important}
+  .badge-canceled{background:#e2e8f0!important;color:#64748b!important}
   .card-btn{display:none!important}
   .drop-zone{display:none!important}
   .print-header{display:block!important}
@@ -1095,12 +1106,12 @@ function prepararImpressao(tipo){
   pk.innerHTML=
     '<div class="print-header" style="margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #dda583">'+
       '<div style="font-family:var(--serif);font-size:22px;font-weight:800;color:#3a3f49">CHEKIN — '+obra+'</div>'+
-      '<div style="font-size:12px;color:#fff;margin-top:4px">'+
+      '<div style="font-size:12px;color:#475569;margin-top:4px">'+
         'Data: '+data+' '+hora+' &nbsp;|&nbsp; '+
         'Total: '+assuntos.length+' assuntos &nbsp;|&nbsp; '+
         'A fazer: '+af+' &nbsp;|&nbsp; Fazendo: '+fz+' &nbsp;|&nbsp; Concluidos: '+co+
         (ca>0?' &nbsp;|&nbsp; Cancelados: '+ca:'')+
-        (at>0?' &nbsp;|&nbsp; <span style="color:#d98a7c;font-weight:700">Atrasados: '+at+'</span>':'')+
+        (at>0?' &nbsp;|&nbsp; <span style="color:#b91c1c;font-weight:700">Atrasados: '+at+'</span>':'')+
       '</div>'+
     '</div>'+
     '<div class="kanban-wrap">'+khtml+'</div>';
