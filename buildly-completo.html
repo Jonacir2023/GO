@@ -70,8 +70,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .frow input,.frow select,.frow textarea{width:100%;min-width:0;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:70px}
-.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.frow-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.frow-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.frow-3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px}
 /* iOS dá largura mínima maior a um <input type="date"> vazio (o
    placeholder "mm/dd/yyyy" pesa mais que uma data já preenchida), e a
    coluna 1fr do grid não encolhe abaixo disso por padrão — o campo
