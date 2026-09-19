@@ -48,6 +48,32 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ## Histórico
 
+### 19/09/2026 — Largura no iPhone (3 correções) + link público de envio de assunto
+
+Três correções de layout mobile, cada uma achada por screenshot do usuário no iPhone real e
+confirmada por medição via Playwright (390px) antes/depois:
+- Pauta e Check-in aninhavam `.page` dentro de `.page` (a aba inteira e cada sub-tela dela usam
+  a mesma classe) — o padding lateral de 16px contava duas vezes, deixando os campos ~32px mais
+  estreitos que os da aba RDO (que roda isolada em iframe, sem esse aninhamento).
+- `<input type="date">` vazio tem largura mínima maior no iOS que um já preenchido — a coluna
+  `1fr` de `.frow-2`/`.frow-3` não encolhia abaixo disso, e o campo vazio (ex.: Data de Término)
+  estourava a coluna. Corrigido com `min-width:0` nos itens do grid e nos campos.
+- `.btn` sem `-webkit-appearance:none`/`box-sizing` explícito ficava sujeito ao controle nativo
+  do botão no iOS, que pode não respeitar `width:100%` do `.btn-full` com a mesma consistência do
+  Chromium — o botão ATUALIZAR do Check-in aparecia mais estreito que a fileira de campos ao
+  lado, embora ambos sejam irmãos diretos do mesmo `.sec`.
+
+Depois, nova página: `envio-pauta.html` — formulário público, sem o resto do app, para um líder
+preencher um assunto (mesmos campos do "Novo Assunto" da Pauta) e enviar direto para a planilha,
+via link (`?lider=Nome` pré-preenche o campo; `&token=` se o backend tiver código de acesso
+ativado). Grava ao mesmo tempo em `pauta/criar` e `checkin/salvar` — não depende da sincronização
+local Pauta→Check-in (que só roda no mesmo navegador) nem de alguém abrir o app antes da próxima
+reunião para o assunto aparecer no Check-in. Sem `localStorage` — o líder abre num aparelho que
+nunca teve o app instalado.
+
+Testado: as 7 suítes, sintaxe e isolamento; verificação visual (Playwright, 390px) da nova
+página, incluindo o preenchimento do nome via `?lider=`.
+
 ### 18/09/2026 — Modelo C: tema escuro em todo o app
 
 Redesign visual completo, pedido pelo usuário. Processo: piloto de paleta azul/cinza corporativo

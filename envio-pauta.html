@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Novo Assunto — BUILDLy Premium</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#4a5162;--bg-card:#5a6272;--bg-dark:#3a3f49;--bg-mid:#454c59;
+  --ink:#ffffff;--accent:#dda583;--accent2:#89ab9d;--line:#666f80;
+  --green:#7cb083;--red:#d98a7c;--yellow:#d9b26a;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+  --serif:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+  --radius:10px
+}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh}
+body{max-width:480px;margin:0 auto;padding:20px 16px 40px}
+.hdr{margin-bottom:18px}
+.hdr-logo{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:1px;color:#fff}
+.hdr-logo span{color:var(--accent)}
+.hdr-sub{font-size:13px;color:#fff;margin-top:4px;line-height:1.4}
+
+.sec{background:var(--bg-card);border-radius:var(--radius);padding:16px;margin-bottom:14px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+.frow{margin-bottom:12px}
+.frow label{display:block;font-size:12px;font-weight:600;color:#fff;margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow input,.frow select,.frow textarea{width:100%;min-width:0;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);outline:none;-webkit-appearance:none;appearance:none}
+.frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
+.frow textarea{resize:vertical;min-height:70px}
+.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.frow-2>.frow{min-width:0}
+
+.pri-group{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}
+.pri-btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:#454c59;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:#fff}
+.pri-btn.sel-alta{background:#4a3d3a;border-color:var(--red);color:var(--red)}
+.pri-btn.sel-media{background:#453f30;border-color:var(--yellow);color:var(--yellow)}
+.pri-btn.sel-baixa{background:#384a3d;border-color:var(--green);color:var(--green)}
+
+.btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase;background:var(--accent);color:#fff}
+.btn:active{background:#c68f6d}
+.btn:disabled{background:#666f80;cursor:default}
+
+.confirm-box{display:none;background:#384a3d;border:1.5px solid var(--green);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px}
+.confirm-box.show{display:block}
+.confirm-box-icon{font-size:28px;margin-bottom:4px}
+.confirm-box-txt{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--green)}
+.confirm-box-sub{font-size:12px;color:#fff;margin-top:4px}
+
+.erro-box{display:none;background:#4a3d3a;border:1.5px solid var(--red);border-radius:10px;padding:12px;font-size:13px;color:var(--red);margin-bottom:14px}
+.erro-box.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">BUILD<span>Ly</span></div>
+  <div class="hdr-sub">📋 Envie um assunto para a próxima reunião de Check-in. Os dados são os mesmos da Pauta.</div>
+</div>
+
+<div class="confirm-box" id="confirmBox">
+  <div class="confirm-box-icon">✅</div>
+  <div class="confirm-box-txt">Assunto enviado!</div>
+  <div class="confirm-box-sub">Vai entrar na Pauta e no Check-in para a próxima reunião.</div>
+</div>
+<div class="erro-box" id="erroBox"></div>
+
+<form class="sec" id="formAssunto" onsubmit="return enviarAssunto(event)">
+  <div class="sec-title">📌 Novo Assunto</div>
+
+  <div class="frow">
+    <label>Assunto</label>
+    <input type="text" id="f-assunto" placeholder="Descreva o assunto" required/>
+  </div>
+
+  <div class="frow">
+    <label>Descrição</label>
+    <textarea id="f-descricao" placeholder="Detalhes adicionais..."></textarea>
+  </div>
+
+  <div class="frow-2">
+    <div class="frow">
+      <label>Seu nome (líder)</label>
+      <input type="text" id="f-lider" placeholder="Quem está enviando" required/>
+    </div>
+    <div class="frow">
+      <label>Responsável</label>
+      <input type="text" id="f-responsavel" placeholder="Opcional"/>
+    </div>
+  </div>
+
+  <div class="frow">
+    <label>Setor</label>
+    <select id="f-setor">
+      <option value="">Selecione o setor...</option>
+      <option>Administração</option>
+      <option>Administração Contratual</option>
+      <option>Engenharia</option>
+      <option>Gestão</option>
+      <option>Financeiro</option>
+      <option>Manutenção Mecânica Pesada</option>
+      <option>Marketing</option>
+      <option>Medição</option>
+      <option>Meio Ambiente</option>
+      <option>Operações</option>
+      <option>Planejamento</option>
+      <option>Produção Civil</option>
+      <option>Produção Elétrica</option>
+      <option>Produção Mecânica</option>
+      <option>Qualidade</option>
+      <option>Recursos Humanos</option>
+      <option>RH</option>
+      <option>Segurança</option>
+      <option>Suprimentos</option>
+      <option>TI</option>
+      <option>Transporte</option>
+    </select>
+  </div>
+
+  <div class="frow-2">
+    <div class="frow">
+      <label>Data de Lançamento</label>
+      <input type="date" id="f-data-lanc"/>
+    </div>
+    <div class="frow">
+      <label>Data de Término</label>
+      <input type="date" id="f-data-term"/>
+    </div>
+  </div>
+
+  <div class="frow">
+    <label>Prioridade</label>
+    <div class="pri-group">
+      <button type="button" class="pri-btn" onclick="setPrioridade('alta',this)">🔴 Alta</button>
+      <button type="button" class="pri-btn sel-media" onclick="setPrioridade('media',this)">🟡 Média</button>
+      <button type="button" class="pri-btn" onclick="setPrioridade('baixa',this)">🟢 Baixa</button>
+    </div>
+  </div>
+
+  <button type="submit" class="btn" id="btnEnviar">✔ Enviar Assunto</button>
+</form>
+
+<script>
+/* URL /exec do BUILDLy — a mesma usada pelo resto do app. Não é segredo:
+   fica pública nestes arquivos por convenção do projeto. Se o backend tiver
+   código de acesso ativado (APP_TOKEN), inclua ?token=SEUCODIGO no link
+   enviado a cada líder — sem ele, o backend responde token_invalido. */
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
+
+const parametros = new URLSearchParams(location.search);
+const tokenUrl = parametros.get('token') || '';
+
+let prioridade = 'media';
+function setPrioridade(p, el) {
+  prioridade = p;
+  document.querySelectorAll('.pri-btn').forEach(b => b.className = 'pri-btn');
+  el.className = 'pri-btn sel-' + p;
+}
+
+(function preencherPadroes() {
+  const lider = parametros.get('lider') || '';
+  if (lider) document.getElementById('f-lider').value = lider;
+  document.getElementById('f-data-lanc').value = new Date().toISOString().slice(0,10);
+})();
+
+async function enviarAssunto(ev) {
+  ev.preventDefault();
+  const btn = document.getElementById('btnEnviar');
+  const erroBox = document.getElementById('erroBox');
+  erroBox.classList.remove('show');
+
+  const dados = {
+    id: 'PAUTA-' + Date.now(),
+    assunto: document.getElementById('f-assunto').value.trim(),
+    descricao: document.getElementById('f-descricao').value.trim(),
+    criador: document.getElementById('f-lider').value.trim(),
+    responsavel: document.getElementById('f-responsavel').value.trim(),
+    setor: document.getElementById('f-setor').value,
+    prioridade: prioridade,
+    status: 'afazer',
+    dataLanc: document.getElementById('f-data-lanc').value,
+    dataTerm: document.getElementById('f-data-term').value
+  };
+  if (tokenUrl) dados.token = tokenUrl;
+
+  if (!dados.assunto || !dados.criador) return false;
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    // Grava na Pauta e no Check-in na mesma chamada: assim o assunto já
+    // aparece pronto para discussão na próxima reunião, sem depender do
+    // navegador de quem gerencia o app sincronizar antes.
+    const [rPauta, rCheckin] = await Promise.all([
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(Object.assign({path:'pauta', action:'criar'}, dados))
+      }),
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(Object.assign({path:'checkin', action:'salvar'}, dados))
+      })
+    ]);
+    const jPauta = await rPauta.json().catch(() => null);
+    const jCheckin = await rCheckin.json().catch(() => null);
+
+    if (jPauta && jPauta.codigo === 'token_invalido') {
+      throw new Error('Código de acesso ausente ou incorreto. Peça o link correto a quem gerencia o app.');
+    }
+    if ((jPauta && jPauta.status === 'erro') || (jCheckin && jCheckin.status === 'erro')) {
+      throw new Error((jPauta && jPauta.error) || (jCheckin && jCheckin.error) || 'Erro ao gravar na planilha.');
+    }
+
+    document.getElementById('confirmBox').classList.add('show');
+    const liderAtual = dados.criador;
+    document.getElementById('formAssunto').reset();
+    document.getElementById('f-lider').value = liderAtual;
+    document.getElementById('f-data-lanc').value = new Date().toISOString().slice(0,10);
+    setPrioridade('media', document.querySelector('.pri-btn:nth-child(2)'));
+    window.scrollTo({top:0, behavior:'smooth'});
+  } catch (e) {
+    erroBox.textContent = '❌ ' + e.message;
+    erroBox.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✔ Enviar Assunto';
+  }
+  return false;
+}
+</script>
+</body>
+</html>
