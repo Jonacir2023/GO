@@ -44,8 +44,8 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 .frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:60px}
-.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.frow-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.frow-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.frow-3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px}
 
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
 .btn-primary{background:var(--accent);color:#fff}
