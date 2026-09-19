@@ -50,6 +50,62 @@ criadas em cada projeto Supabase; depois disso, atualizar
 [[Notas/Contrato do Backend]] e [[Notas/Arquitetura do App]] (hoje ainda descrevem o Sheets).
 Até lá o Apps Script permanece ativo para os módulos ainda não migrados.
 
+## RDO — decisão de arquitetura diferente dos outros módulos
+
+Os outros 8 módulos ganharam tabelas relacionais (uma linha por assunto, por nota fiscal,
+por documento). O RDO **não** — e a decisão foi deliberada, não preguiça.
+
+Antes de tocar em código, uma sessão de pesquisa (agente `Explore`) mapeou os ~9600 linhas
+de `rdo.html`: 8 pontos de chamada ao Apps Script, o modelo de dados completo (`state` =
+cadastro, `history` = dicionário de diários por `data#apontador`), e as 8 regras de negócio
+já implementadas (baixa lógica, lixeira, um-RDO-por-apontador, sincronização sem
+sobrescrever, autosave, backup, fotos, responsável obrigatório). Achado central: **nada
+disso depende do Apps Script especificamente** — depende só de "consigo mandar um retrato
+JSON completo e buscar o mais recente de volta". O RDO já resolve conflito e mescla
+sozinho, no cliente (`mesclarDaNuvem`, `aplicarRegraRdo`, `mesclarStatusCadastro` — tudo em
+`rdo.html`, testado pelas 4 suítes `test_rdo_*`).
+
+Reescrever isso como CRUD por linha (uma tabela `colaboradores`, outra `diarios`, etc., como
+os outros módulos) significaria jogar fora uma lógica testada e correta só para caber num
+molde relacional que o próprio módulo não precisa. Decisão: **uma tabela `rdo_snapshot`,
+uma linha só (`id=1`) por obra**, com `state jsonb`, `history jsonb`, `chaves_dia jsonb`,
+`atualizado_em`, `atualizado_por` — espelha exatamente o payload que `backupNuvem()` já
+montava para o Apps Script. As tabelas antigas (`colaboradores`, `equipamentos_cadastro`,
+`diarios`, `diario_backups`), desenhadas antes de ler o código real, foram descartadas —
+não correspondiam ao modelo de verdade (colaboradores vivem agrupados em categorias com
+baixa lógica própria; o diário tem dezenas de subcampos aninhados).
+
+Único ponto que mudou de verdade: **fotos**. Antes, cada foto ia para o Google Drive via
+Apps Script e o diário guardava só `{fileId, url}`; agora, comprimidas (1280px, JPEG 0.72,
+mesmo código de sempre) e guardadas como `data:` URI **dentro do próprio diário**
+(`fotos: [{dataUrl}]`) — mesmo padrão que assinaturas e logo já usavam. Justificativa dupla:
+não existe "Google Drive" no Supabase (a alternativa real, Supabase Storage, é escopo novo
+— bucket, políticas, upload), e ficar tudo num retrato só (sem link externo para outra
+tabela/serviço) é exatamente o espírito da decisão acima. Efeito colateral positivo: a
+etapa `prepararFotosParaCaptura()` — que baixava cada foto de volta em base64 pra poder
+desenhar no PDF, por causa de CORS do Drive — virou trivial (a foto já É base64). Efeito
+colateral a monitorar: um diário com as 20 fotos no limite pode passar de alguns MB de
+JSON — aceitável para Postgres, mas é tráfego de rede maior a cada autosave/sincronização
+do que antes.
+
+Retirado (não portado): `salvarDiarioGoogle`/`buildPayloadGoogle` — mandavam uma cópia
+"achatada" do diário como linha de planilha legível. Como o retrato no Supabase JÁ é o
+diário completo, essa segunda cópia perdeu função.
+
+## Achado à parte, não coberto pelas 8 tarefas: o robô de IA vai ficar desatualizado
+
+`buildly-completo.html` tem um recurso de pergunta-e-resposta ("🤖") que manda a pergunta
+para o Apps Script (`path=ia&action=perguntar`), que por sua vez lê a planilha (Diário,
+Pauta, Check-in, Notas Fiscais) para montar o contexto da resposta — mecanismo server-side
+que não foi tocado nesta migração (é um recurso de IA, não um CRUD de módulo, e está fora
+do que as 8 tarefas cobriram). Como nenhum módulo grava mais na planilha, esse contexto vai
+ficar congelado no que existia antes desta migração — o robô vai responder com dados cada
+vez mais velhos, sem erro nenhum aparente. Não corrigido aqui porque a lógica de resposta
+mora inteira no Apps Script (bloqueado nesta sessão pelo proxy de rede, ver regra 25) e
+provavelmente usa uma chave de API própria — refazer isso é decisão do usuário: manter o
+Apps Script vivo só para esse recurso (lendo do Supabase por baixo, reescrevendo a leitura),
+migrar para uma Edge Function do Supabase, ou aposentar o recurso.
+
 ## Limite de teste descoberto
 
 Este ambiente (sessão web do Claude Code) sai para a internet por um proxy com lista de

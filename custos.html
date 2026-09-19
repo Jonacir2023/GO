@@ -333,8 +333,6 @@ tr:hover{background:#454c59}
 })();
 </script>
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
-
 const S = {
   get(k) { try { return JSON.parse(localStorage.getItem('custo_' + k)); } catch { return null; } },
   set(k, v) { localStorage.setItem('custo_' + k, JSON.stringify(v)); }

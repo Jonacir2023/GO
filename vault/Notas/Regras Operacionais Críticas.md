@@ -135,6 +135,15 @@ preferências de estilo.
     si, com `execute_sql` do MCP do Supabase (canal separado do navegador, não passa por esse
     proxy). Ver [[Decisões/2026-09-19 Migração para Supabase multi-obra]].
 
+26. **Migrar um módulo não termina em código próprio — verifique quem mais lê a chave que
+    ele escrevia.** Ao migrar a aba Obras para o Supabase, `b3_obra` parou de ser escrito —
+    mas `rdo.html` também lia e escrevia essa chave por conta própria
+    (`sincronizarObraCompartilhada()`, `salvarConfigObra()`, `uploadLogo()`), sem que nada
+    nos arquivos migrados apontasse para lá. Só apareceu ao migrar o RDO, várias tarefas
+    depois. `grep -rn` pela chave antiga em **todo o repositório**, não só nos arquivos que
+    a tarefa atual toca, antes de considerar uma migração de armazenamento compartilhado
+    concluída.
+
 ---
 
 ## Relacionado

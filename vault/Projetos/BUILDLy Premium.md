@@ -11,8 +11,11 @@ tags: [projeto, buildly, cesbe]
 zerados de propósito).
 **Responsável:** Jonacir Cazelli · **Empresa:** Cesbe S.A.
 
-Plataforma de gestão de obra. Páginas HTML/JS estáticas, sem build, publicadas no GitHub Pages,
-com Google Sheets + Apps Script como backend.
+Plataforma de gestão de obra. Páginas HTML/JS estáticas, sem build, publicadas no GitHub Pages.
+Backend em migração do Google Sheets + Apps Script para **um projeto Supabase por obra** —
+ver [[Decisões/2026-09-19 Migração para Supabase multi-obra]]. O Apps Script (planilha
+"Buildly3") continua existindo só pelo recurso de pergunta-e-resposta por IA (🤖), que ainda
+não foi migrado e vai responder com dados cada vez mais antigos.
 
 ---
 
@@ -24,8 +27,8 @@ com Google Sheets + Apps Script como backend.
 | Este repositório (Buildly3) | **publicado** em https://jonacir2023.github.io/GO/buildly-completo.html — Pages ligado. Falta só a equipe passar a abrir este endereço. |
 | Repositório | `Jonacir2023/GO`, branch `main` |
 | Pasta local (Mac) | `~/Buildly3` |
-| Planilha | "Buildly3" — `19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw` |
-| Backend | Apps Script como web app (`/exec`) — ver [[Notas/Contrato do Backend]] |
+| Backend (dados dos módulos) | Um projeto Supabase por obra — Obra 1 `ivssgstckfcuiyetxdze`, Obra 2 `lwjbuzubnxnzkofcrhah`. Registro em `supabase-config.js`. |
+| Planilha "Buildly3" (`19SDuzU_...`) + Apps Script | Só o recurso de IA (🤖) ainda depende disso — ver [[Notas/Contrato do Backend]] (desatualizada, aponta pro Sheets como se fosse tudo) |
 
 Módulos: Pauta, Check-in, RDO, Custos, Reunião, Resumo do Tempo, Medições, Documentos,
 Manutenção. Ver [[Notas/Arquitetura do App]].
@@ -96,8 +99,25 @@ quatro do que nos anteriores (nunca tinham backend, então nada os mantinha hone
 `medicao_itens`/`medicoes` foi descartado — o modelo real aninha item e medição dentro do
 próprio cliente/empreiteiro, sempre salvo em bloco, então viraram colunas jsonb
 (`itens`/`medicoes`) em `medicao_contratos` em vez de tabelas relacionais separadas que
-ninguém consulta isoladamente. Resta só o RDO — o módulo mais complexo, com mapa de
-integração já levantado (localStorage, regras de negócio, merge) para a próxima etapa.
+ninguém consulta isoladamente.
+
+RDO migrado — o módulo mais complexo, tratado com uma pesquisa dedicada antes de mexer em
+código (agente `Explore`, mapa completo em [[Decisões/2026-09-19 Migração para Supabase
+multi-obra]]). Arquitetura deliberadamente diferente dos outros 8 módulos: uma tabela só
+(`rdo_snapshot`), uma linha por obra, com `state`/`history` inteiros como jsonb — o RDO já
+resolve conflito e mescla sozinho no cliente, testado pelas 4 suítes `test_rdo_*`, e
+normalizar isso em tabelas por registro jogaria fora lógica correta sem necessidade. Fotos
+deixam de subir ao Google Drive e passam a `data:` URI dentro do próprio diário. No
+processo, corrigida uma dependência cruzada que a migração da aba Obras tinha deixado passar
+(RDO lia/escrevia `b3_obra` por conta própria) — motivo da regra 26 no vault.
+
+**As 8 tarefas da migração estão completas.** Falta só a Tarefa #8 (teste de ponta a ponta
+contra os dois bancos reais, pelo usuário — esta sessão não alcança `supabase.co`, ver regra
+25) e atualizar [[Notas/Contrato do Backend]] e [[Notas/Arquitetura do App]], que ainda
+descrevem o Google Sheets. Pendência nova, fora do escopo original: o recurso de
+pergunta-e-resposta por IA (🤖) lê a planilha via Apps Script, que não recebe mais dado
+nenhum — vai responder cada vez mais desatualizado, sem erro visível. Decisão de como
+resolver isso é do usuário (detalhes na nota de decisão).
 
 ### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
 
