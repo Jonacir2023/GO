@@ -48,6 +48,34 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ## Histórico
 
+### 19/09/2026 (2) — Gerador de módulo (scaffold)
+
+Pedido do usuário: um script que gere um módulo novo (levantamento/relatório) neste app,
+"separado para usarmos no próximo app" — ou seja, reaproveitável fora do BUILDLy.
+
+`scripts/gerador_modulo/novo_modulo.py` carimba as peças que todo módulo daqui precisa: HTML
+isolado (espaço próprio de `localStorage`, shim do código de acesso, formulário + lista +
+sincronização com o backend), endpoint de backend (upsert por ID, inserido direto em
+`BuildlyBackend.gs` quando os marcadores de rota batem, com fallback de snippet manual), e
+teste automatizado (criar → alternar status → remover, sem erro de JS).
+
+Desenho: a lógica do script (`novo_modulo.py`) não conhece nada do BUILDLy além de "renderizar
+um template e escrever arquivo" — toda a parte específica (paleta, contrato de backend, bloco
+de isolamento) mora em `templates/*.tpl`. Reaproveitar num projeto futuro é copiar a pasta
+inteira e trocar o conteúdo dos templates, sem mexer no script. Documentado em
+`scripts/gerador_modulo/LEIA-ME.md`.
+
+Bug achado e corrigido durante o teste: a função gerada `atualizarStatus<Modulo>` usava
+`upsertPorCabecalho` (a mesma do `criar<Modulo>`) — como esse upsert escreve a linha inteira e
+preenche com `''` qualquer coluna que não veio no payload, uma atualização de status sozinha
+apagaria Título/Descrição/Responsável. Corrigido para escrever só as duas células (Status,
+Atualizado Em) por nome de cabeçalho, do jeito que `atualizarStatusPauta` já existente faz.
+
+Testado de ponta a ponta em cópia isolada do repositório (nunca na cópia real): gerados dois
+módulos (`vistoria`, `relatorio-obra` — id simples e composto), os três verificadores
+(sintaxe/isolamento/suítes) e o teste do próprio módulo gerado passando; rodado uma segunda vez
+para confirmar que não duplica nada (idempotente).
+
 ### 19/09/2026 — Largura no iPhone (3 correções) + link público de envio de assunto
 
 Três correções de layout mobile, cada uma achada por screenshot do usuário no iPhone real e
