@@ -48,6 +48,18 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ## Histórico
 
+### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
+
+Achado de 18/09 (badges/kanban do `@media print` com fundo escuro) corrigido. Só
+`Check-in.html` tinha `@media print` de verdade — a nota de 18/09 estava errada ao citar
+`pauta.html`/`custos.html`, que não têm nenhum. Três causas na mesma função
+`prepararImpressao()`: cores do Modelo C nos badges/kanban em vez dos pasteis claros de
+impressão; subtítulo e aviso de atrasado com cor de tela (branco/pêssego) sobre papel branco;
+e `.card-title`/`.card-desc`/`.card-resp`/`.card-dates`/`.card-aging`/`.kol-title` (brancos de
+propósito na tela, fundo escuro) sem override de impressão — `.card` também só tinha a borda
+sobrescrita, não o fundo. Testado com Playwright (`emulate_media('print')`) chamando a função
+com dados cobrindo os 4 status e um atrasado.
+
 ### 19/09/2026 (2) — Gerador de módulo (scaffold)
 
 Pedido do usuário: um script que gere um módulo novo (levantamento/relatório) neste app,
