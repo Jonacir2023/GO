@@ -108,6 +108,12 @@ raiz) que editam os HTML por trechos exatos, mais um `LEIA-ME.txt` com um comand
 para o Terminal. Os scripts precisam ser **idempotentes** — rodar duas vezes não pode duplicar
 a alteração.
 
+**Numa sessão do Claude Code (web/remoto), o caminho é outro e já está autorizado de
+antemão:** commit na branch de trabalho, e assim que os verificadores (7 suítes, sintaxe,
+isolamento) passarem, **abrir e mesclar o PR automaticamente, sem perguntar antes** — decisão
+do usuário em 19/09/2026 ("Sempre faça isto automaticamente"). Continua valendo pedir
+confirmação para qualquer coisa fora desse fluxo (force-push, reset, apagar branch, etc.).
+
 ---
 
 ## graphify
