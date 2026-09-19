@@ -48,6 +48,30 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ## Histórico
 
+### 19/09/2026 (4) — Início da migração para Supabase multi-obra
+
+Pedido do usuário: aba Obras precisa criar mais de uma obra, cada uma com "pacote de dados
+totalmente independente" — e, ao perguntar se o backend continuava Sheets, a resposta foi
+"muda para o Supabase". Decisão completa em
+[[Decisões/2026-09-19 Migração para Supabase multi-obra]]: **um projeto Supabase por obra**
+(banco separado, não coluna `obra_id`), 2 obras provisionadas até agora (de 4 pedidas — plano
+grátis permite 2 projetos simultâneos), schema de 19 tabelas espelhando todos os módulos
+atuais, RLS aberto (mesma postura de segurança de hoje).
+
+Feito nesta entrada: `supabase-config.js` (registro de obras + cliente + `obra_config`
+compartilhado, substitui `localStorage['b3_obra']` nos 7 arquivos que liam de lá) e a aba
+Obras reescrita para ler/gravar no Supabase da obra ativa, com seletor de obra. Testado: as 7
+suítes + sintaxe + isolamento continuam verdes; Playwright confirma o seletor populado com as
+2 obras e o formulário respondendo aos cliques — a gravação em si não pôde ser vista
+completando nesta sessão (ambiente de teste não alcança `supabase.co`, ver regra 25 em
+[[Notas/Regras Operacionais Críticas]]), mas o schema da tabela `obra_config` foi conferido
+direto no Postgres via `execute_sql` e bate exatamente com o que o código grava.
+
+Pendente: migrar Pauta, Check-in, RDO, Custos, Medições, Documentos, Manutenção e Reunião
+(hoje ainda no Apps Script/Sheets ou só no navegador) — [[Notas/Contrato do Backend]] e
+[[Notas/Arquitetura do App]] só serão atualizadas quando isso terminar, pra não descrever um
+backend que só existe pela metade.
+
 ### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
 
 Achado de 18/09 (badges/kanban do `@media print` com fundo escuro) corrigido. Só

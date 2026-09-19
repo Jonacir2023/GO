@@ -1461,9 +1461,6 @@ function voltarParaHome() {
     window.location.href = 'buildly-completo.html';
   }
 }
-function obraCompartilhada() {
-  try { return JSON.parse(localStorage.getItem('b3_obra')) || {}; } catch (e) { return {}; }
-}
 function atualizarHeader() {
   const o = obraCompartilhada();
   document.getElementById('hdrEmpresa').textContent = o.empresa || 'EMPRESA';
@@ -1734,6 +1731,7 @@ document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   atualizarHeader();
+  if (window.B3Obras) B3Obras.configCarregar().then(atualizarHeader).catch(function(){});
   document.getElementById('hdrDate').textContent = formatDateBR(todayISO());
   renderDocs();
 });
