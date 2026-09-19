@@ -75,8 +75,14 @@ backend que só existe pela metade.
 **Atualização, mesmo dia:** Pauta migrada (nativa + `pauta.html` + `envio-pauta.html`).
 Precisou de duas correções de schema no caminho: `pauta_assuntos.id`/`checkin_assuntos.id`
 de `uuid` para `text` (o front-end gera `Date.now().toString()`, não um UUID de verdade), e
-`pauta_membros`/`pauta_setores` ganharam índice único em `nome` para dar de upsert. Restam
-Check-in, RDO, Custos, Medições, Documentos, Manutenção e Reunião.
+`pauta_membros`/`pauta_setores` ganharam índice único em `nome` para dar de upsert.
+
+Check-in migrado também (nativo + `Check-in.html`). Confirmado lendo o Apps Script: status
+mudado no Check-in sempre gravou na aba Pauta, nunca na aba Check-in — preservado assim no
+Supabase (`checkinEnviarStatus`/`enviarStatusParaPauta` atualizam `pauta_assuntos`). Ata de
+reunião (`checkin_reunioes`) e cadastro de assunto (`checkin_assuntos`) passam a persistir de
+verdade pela primeira vez — antes só viviam no navegador. Restam RDO, Custos, Medições,
+Documentos, Manutenção e Reunião.
 
 ### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
 

@@ -521,8 +521,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   }
 })();
 
-const APPS_SCRIPT_URL_PAUTA = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
-
 const S={
   get(k){try{return JSON.parse(localStorage.getItem('chk_'+k))}catch{return null}},
   set(k,v){localStorage.setItem('chk_'+k,JSON.stringify(v))}
@@ -539,7 +537,7 @@ let config=S.get('config')||{obra:'',whSalvar:'',whTelegram:'',whCarregar:'',whP
 // verdade além do essencial.
 async function carregarDaPlanilhaGoogle(manual) {
   try {
-    if (manual) notify('Carregando da planilha...', 'var(--blue)');
+    if (manual) notify('Carregando do Supabase...', 'var(--blue)');
 
     let idsRemovidos = [];
     try { idsRemovidos = JSON.parse(localStorage.getItem('chk_removidos') || '[]'); } catch { idsRemovidos = []; }
@@ -550,19 +548,20 @@ async function carregarDaPlanilhaGoogle(manual) {
 
     const mesclar = (lista, origem) => {
       lista.forEach(p => {
-        if (!p.id || removidosSet.has(String(p.id))) return;
+        if (removidosSet.has(String(p.id))) return;
         const chave = String(p.id);
         const existente = porId.get(chave);
         if (existente) {
           if (p.status && existente.status !== p.status) { existente.status = p.status; atualizados++; }
+          existente._sincronizado = true;
         } else {
           const novo = {
-            id: p.id, assunto: p.assunto, desc: p.desc || '',
-            criador: p.criador || '', resp: p.resp || '', setor: p.setor || '',
+            id: p.id, assunto: p.assunto, desc: p.descricao || '',
+            criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
             prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-            dataLanc: p.dataLanc || '', dataTerm: p.dataTerm || '',
-            criadoEm: Date.parse(p['Criado Em'] || p.criadoEm) || Date.now(),
-            _origem: origem
+            dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+            criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now(),
+            _origem: origem, _sincronizado: true
           };
           assuntos.push(novo);
           porId.set(chave, novo);
@@ -571,18 +570,26 @@ async function carregarDaPlanilhaGoogle(manual) {
       });
     };
 
+    const cli = B3Obras.cliente();
     const [respPauta, respCheckin] = await Promise.all([
-      fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=listar').then(r => r.json()).catch(() => null),
-      fetch(APPS_SCRIPT_URL_PAUTA + '?path=checkin&action=historico').then(r => r.json()).catch(() => null)
+      cli.from('pauta_assuntos').select('*'),
+      cli.from('checkin_assuntos').select('*')
     ]);
-    if (respPauta) mesclar(respPauta.dados || respPauta.pautas || [], 'pauta');
-    if (respCheckin) mesclar(respCheckin.dados || respCheckin.checkins || [], 'checkin');
+    if (!respPauta.error) mesclar(respPauta.data || [], 'pauta');
+    if (!respCheckin.error) mesclar(respCheckin.data || [], 'checkin');
 
     if (adicionados > 0 || atualizados > 0) {
       S.set('assuntos', assuntos);
       renderCadastro();
       renderCheckin();
     }
+
+    // Quem foi criado/editado sem rede ainda não tem _sincronizado — tenta
+    // agora que o servidor respondeu.
+    for (const a of assuntos.filter(x => !x._sincronizado)) {
+      await enviarAssuntoParaSupabase(a);
+    }
+
     if (manual) {
       notify((adicionados || atualizados)
         ? `✅ ${adicionados} novo(s), ${atualizados} atualizado(s)`
@@ -590,51 +597,65 @@ async function carregarDaPlanilhaGoogle(manual) {
     }
   } catch (err) {
     if (manual) notify('❌ Erro ao carregar: ' + err.message, 'var(--red)');
-    else console.warn('Check-in: não foi possível buscar da planilha:', err.message);
+    else console.warn('Check-in: não foi possível buscar do Supabase:', err.message);
   }
 }
 
-// Sincronizar um assunto com Google Sheets
+// Grava (ou reenvia) o assunto no checkin_assuntos da obra ativa.
+async function enviarAssuntoParaSupabase(assunto) {
+  try {
+    const { error } = await B3Obras.cliente().from('checkin_assuntos').upsert({
+      id: String(assunto.id),
+      assunto: assunto.assunto,
+      descricao: assunto.desc,
+      criador: assunto.criador,
+      responsavel: assunto.resp,
+      setor: assunto.setor,
+      prioridade: assunto.prioridade,
+      status: assunto.status,
+      data_lancamento: assunto.dataLanc || null,
+      data_termino: assunto.dataTerm || null,
+      origem: assunto._origem || null,
+      concluido_em: assunto.concluidoEm ? new Date(assunto.concluidoEm).toISOString() : null
+    });
+    if (error) throw error;
+    assunto._sincronizado = true;
+    S.set('assuntos', assuntos);
+  } catch (err) {
+    console.warn('Check-in: não consegui salvar no Supabase agora — fica pendente:', err.message);
+  }
+}
+
+// Reflete o status decidido no Check-in de volta na Pauta (mesmo id).
+async function enviarStatusParaPauta(id, status) {
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_assuntos').update({ status }).eq('id', String(id));
+    return !error;
+  } catch (err) {
+    console.warn('Check-in: status não enviado à Pauta:', err.message);
+    return false;
+  }
+}
+
+// Um card mudou de coluna: grava o assunto (novo status incluso) e reflete
+// o status na Pauta, de onde este assunto pode ter vindo.
 async function sincronizarComGoogle(assunto) {
-  if (!APPS_SCRIPT_URL_PAUTA) return;
-
-  try {
-    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=atualizar-status', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: assunto.id,
-        novo_status: assunto.status === 'afazer' ? 'Aberta' :
-                      assunto.status === 'fazendo' ? 'Em Andamento' : 'Concluído'
-      })
-    });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error);
-  } catch (err) {
-    console.error('Erro sincronizar:', err);
-  }
+  await enviarAssuntoParaSupabase(assunto);
+  await enviarStatusParaPauta(assunto.id, assunto.status);
 }
 
-// Salvar CheckIn na planilha
+// Salvar a ata da reunião no Supabase (checkin_reunioes).
 async function salvarCheckInGoogle(reuniao) {
-  if (!APPS_SCRIPT_URL_PAUTA) return;
-
   try {
-    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=checkin&action=salvar', {
-      method: 'POST',
-      body: JSON.stringify({
-        data: reuniao.data,
-        hora: reuniao.hora,
-        obra: config.obra,
-        assuntos: reuniao.assuntos.map(a => ({id: a.id, assunto: a.assunto, status: a.status})),
-        resumo: 'CheckIn de ' + new Date(reuniao.data).toLocaleDateString('pt-BR')
-      })
+    const { error } = await B3Obras.cliente().from('checkin_reunioes').insert({
+      data: reuniao.data,
+      hora: reuniao.hora || null,
+      assuntos_snapshot: reuniao.assuntos
     });
-    const data = await resp.json();
-    if (data.ok) {
-      notify('✅ CheckIn salvo na planilha!');
-    }
+    if (error) throw error;
+    notify('✅ CheckIn salvo no Supabase!');
   } catch (err) {
-    console.error('Erro salvar CheckIn:', err);
+    console.warn('Check-in: não consegui gravar a ata da reunião no Supabase:', err.message);
   }
 }
 
@@ -911,6 +932,10 @@ function salvarAssunto(){
   fecharModal('modal-assunto');
   renderCadastro();renderKanbanCheckin();atualizarContadores();
   notify('Assunto salvo!');
+  const salvo = editId
+    ? assuntos.find(x => String(x.id) === String(editId))
+    : assuntos[assuntos.length - 1];
+  if (salvo) enviarAssuntoParaSupabase(salvo);
 }
 
 function removerAssunto(id){
@@ -925,12 +950,8 @@ function removerAssunto(id){
   if (!idsRemovidos.map(String).includes(String(id))) idsRemovidos.push(id);
   localStorage.setItem('chk_removidos', JSON.stringify(idsRemovidos));
 
-  if (APPS_SCRIPT_URL_PAUTA) {
-    fetch(APPS_SCRIPT_URL_PAUTA, {
-      method: 'POST',
-      body: JSON.stringify({ path: 'checkin', action: 'remover', id })
-    }).catch(e => console.warn('Check-in: não foi possível remover na planilha:', e.message));
-  }
+  B3Obras.cliente().from('checkin_assuntos').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Check-in: não foi possível remover no Supabase:', error.message); });
 
   renderCadastro();renderKanbanCheckin();atualizarContadores();
   notify('Removido','var(--red)');
