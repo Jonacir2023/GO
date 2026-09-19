@@ -2116,57 +2116,11 @@ function checkinSincronizarComPauta() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SINCRONIZAÇÃO COM GOOGLE SHEETS (BUILDLy Premium)
-// ═══════════════════════════════════════════════════════════════
-
-async function sincronizarComGoogleSheets() {
-  try {
-    // PAUTA e CHECK-IN já migraram para o Supabase: cada uma grava na hora
-    // (pautaEnviarParaSupabase/checkinEnviarAssuntoParaSupabase) e reenvia
-    // quem ficou pendente na próxima busca do servidor. Nada a fazer aqui
-    // por elas.
-
-    // Sincronizar CUSTOS para Google Sheets (via localStorage do iframe)
-    try {
-      const custosStr = localStorage.getItem('custo_notasfiscais');
-      if (custosStr) {
-        const custos = JSON.parse(custosStr);
-        for (const nf of custos) {
-          if (!nf._sincronizado) {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              body: JSON.stringify({
-                path: 'custos',
-                action: 'salvar',
-                numeroNF: nf.numeroNF,
-                serie: nf.serie,
-                data: nf.data,
-                fornecedor: nf.fornecedor,
-                categoria: nf.categoria,
-                responsavel: nf.responsavel,
-                observacoes: nf.observacoes,
-                totalNF: nf.totalNF,
-                itens: nf.itens || []
-              })
-            });
-            nf._sincronizado = true;
-          }
-        }
-        localStorage.setItem('custo_notasfiscais', JSON.stringify(custos));
-      }
-    } catch (e) {
-      console.log('Erro ao sincronizar Custos:', e.message);
-    }
-
-    console.log('✅ Sincronização com Google Sheets concluída');
-  } catch (err) {
-    console.error('❌ Erro ao sincronizar com Google Sheets:', err);
-  }
-}
-
-// Sincronizar a cada 2 minutos
-setInterval(sincronizarComGoogleSheets, 2 * 60 * 1000);
+// PAUTA, CHECK-IN e CUSTOS já migraram para o Supabase: cada uma grava na
+// hora (pautaEnviarParaSupabase/checkinEnviarAssuntoParaSupabase/
+// custosEnviarParaSupabase, este em custos.html) e reenvia quem ficou
+// pendente na próxima busca do servidor. O polling de 2 em 2 minutos que
+// existia só por causa da fragilidade do Apps Script não tem mais função.
 
 function checkinAtualizarContadores() {
   const af = checkinAssuntos.filter(a => a.status === 'afazer').length;

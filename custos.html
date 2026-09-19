@@ -537,6 +537,7 @@ function salvarNotaFiscal() {
     notify('❌ Sem espaço para salvar (foto muito pesada?). Tente sem foto ou apague notas antigas.', '#d98a7c');
     return;
   }
+  custosEnviarParaSupabase(nf);
 
   document.getElementById('nf-numero').value = '';
   document.getElementById('nf-serie').value = '';
@@ -550,6 +551,99 @@ function salvarNotaFiscal() {
   atualizarTotalNF();
 
   notify('✅ Nota Fiscal salva com sucesso!', '#7cb083');
+}
+
+// Grava a nota fiscal e seus itens no Supabase da obra ativa. Notas não têm
+// edição depois de criadas (só criar/deletar), então os itens são inseridos
+// uma única vez, junto com a NF.
+async function custosEnviarParaSupabase(nf) {
+  try {
+    const cli = B3Obras.cliente();
+    const { error: erroNf } = await cli.from('custos_notas_fiscais').upsert({
+      id: String(nf.id),
+      numero_nf: nf.numero,
+      serie: nf.serie || null,
+      data_emissao: nf.data || null,
+      fornecedor: nf.fornecedor,
+      categoria: nf.categoria,
+      responsavel: nf.responsavel,
+      observacoes: nf.observacoes || null,
+      total_nf: nf.total_nf,
+      foto_url: nf.foto || null
+    });
+    if (erroNf) throw erroNf;
+    if (nf.itens && nf.itens.length) {
+      const { error: erroItens } = await cli.from('custos_itens_nf').upsert(nf.itens.map(i => ({
+        id: String(i.id),
+        nf_id: String(nf.id),
+        descricao: i.descricao,
+        quantidade: i.quantidade,
+        preco_unitario: i.preco_unitario,
+        total: i.total
+      })));
+      if (erroItens) throw erroItens;
+    }
+    nf._sincronizado = true;
+    S.set('notasfiscais', notasFiscais);
+  } catch (err) {
+    console.warn('Custos: não consegui salvar no Supabase agora — fica pendente:', err.message);
+  }
+}
+
+// Busca as notas fiscais do Supabase: acrescenta o que só existe lá (outro
+// aparelho lançou) e remove localmente quem já esteve sincronizado mas foi
+// apagado no servidor.
+async function custosCarregarDoServidor() {
+  try {
+    const cli = B3Obras.cliente();
+    const [{ data: nfs, error: erroNfs }, { data: itens, error: erroItens }] = await Promise.all([
+      cli.from('custos_notas_fiscais').select('*'),
+      cli.from('custos_itens_nf').select('*')
+    ]);
+    if (erroNfs) throw erroNfs;
+    if (erroItens) throw erroItens;
+
+    const itensPorNf = new Map();
+    (itens || []).forEach(i => {
+      const lista = itensPorNf.get(i.nf_id) || [];
+      lista.push({ id: i.id, descricao: i.descricao, quantidade: Number(i.quantidade), preco_unitario: Number(i.preco_unitario), total: Number(i.total) });
+      itensPorNf.set(i.nf_id, lista);
+    });
+
+    const idsServidor = new Set((nfs || []).map(n => String(n.id)));
+    const porId = new Map(notasFiscais.map(n => [String(n.id), n]));
+    let adicionadas = 0, removidas = 0;
+    (nfs || []).forEach(n => {
+      const chave = String(n.id);
+      if (porId.has(chave)) { porId.get(chave)._sincronizado = true; return; }
+      notasFiscais.push({
+        id: n.id, numero: n.numero_nf, serie: n.serie || '', data: n.data_emissao || '',
+        fornecedor: n.fornecedor, categoria: n.categoria, responsavel: n.responsavel,
+        observacoes: n.observacoes || '', itens: itensPorNf.get(n.id) || [],
+        total_nf: Number(n.total_nf) || 0, foto: n.foto_url || null,
+        criado_em: n.criado_em, _sincronizado: true
+      });
+      porId.set(chave, notasFiscais[notasFiscais.length - 1]);
+      adicionadas++;
+    });
+
+    notasFiscais = notasFiscais.filter(n => {
+      if (n._sincronizado && !idsServidor.has(String(n.id))) { removidas++; return false; }
+      return true;
+    });
+
+    if (adicionadas > 0 || removidas > 0) {
+      S.set('notasfiscais', notasFiscais);
+      renderListar();
+      renderResumo();
+    }
+
+    for (const n of notasFiscais.filter(x => !x._sincronizado)) {
+      await custosEnviarParaSupabase(n);
+    }
+  } catch (err) {
+    console.warn('Custos: não foi possível buscar do Supabase:', err.message);
+  }
 }
 
 function renderListar() {
@@ -637,6 +731,9 @@ function deletarNF(id) {
     S.set('notasfiscais', notasFiscais);
     renderListar();
     renderResumo();
+    // custos_itens_nf apaga junto por causa do ON DELETE CASCADE.
+    B3Obras.cliente().from('custos_notas_fiscais').delete().eq('id', String(id))
+      .then(({ error }) => { if (error) console.warn('Custos: não foi possível remover no Supabase:', error.message); });
   }
 }
 
@@ -687,6 +784,7 @@ window.addEventListener('load', () => {
   document.getElementById('nf-data').valueAsDate = agora;
   atualizarSelectsCategorias();
   atualizarSelectsResponsaveis();
+  custosCarregarDoServidor();
 });
 </script>
 </body>

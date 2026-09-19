@@ -81,8 +81,13 @@ Check-in migrado também (nativo + `Check-in.html`). Confirmado lendo o Apps Scr
 mudado no Check-in sempre gravou na aba Pauta, nunca na aba Check-in — preservado assim no
 Supabase (`checkinEnviarStatus`/`enviarStatusParaPauta` atualizam `pauta_assuntos`). Ata de
 reunião (`checkin_reunioes`) e cadastro de assunto (`checkin_assuntos`) passam a persistir de
-verdade pela primeira vez — antes só viviam no navegador. Restam RDO, Custos, Medições,
-Documentos, Manutenção e Reunião.
+verdade pela primeira vez — antes só viviam no navegador.
+
+Custos migrado (`custos.html`). Era o único módulo que nunca falava com o backend por conta
+própria — o `sincronizarComGoogleSheets()` compartilhado em `buildly-completo.html` é quem lia
+seu `localStorage` de fora do iframe. Com Pauta/Check-in/Custos migrados essa função (e o
+polling de 2 em 2 minutos) ficou sem função e foi removida; `custos.html` ganhou seu próprio
+par carregar/enviar, no mesmo padrão. Restam RDO, Medições, Documentos, Manutenção e Reunião.
 
 ### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
 
