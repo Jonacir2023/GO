@@ -1249,6 +1249,46 @@ function montarContextoLocal() {
   return Object.keys(ctx).length ? ctx : null;
 }
 
+// Busca no Supabase da obra ativa o que a IA usava direto da planilha antes
+// da migração (RDO, Notas Fiscais) e mais o que já está em memória (Pauta,
+// Check-in) — ver montarContextoParaIA() em BuildlyBackend.gs, que agora
+// prefere estes campos e só volta a ler a planilha se não vierem. Recorte de
+// 3 meses no RDO e nas Notas Fiscais espelha MESES_CONTEXTO_IA do Apps
+// Script, pelo mesmo motivo: sem corte, o contexto cresceria a cada dia até
+// estourar o limite do modelo. Fotos e assinaturas (base64) ficam de fora —
+// só interessam texto e números para a IA responder.
+async function montarContextoNuvem() {
+  const ctx = {};
+  const corte = new Date();
+  corte.setMonth(corte.getMonth() - 3);
+  const desde = corte.toISOString().slice(0, 10);
+
+  try {
+    const { data: rdo } = await B3Obras.cliente().from('rdo_snapshot').select('history').eq('id', 1).maybeSingle();
+    if (rdo && rdo.history) {
+      ctx.rdos_diario = Object.values(rdo.history)
+        .filter(d => d && d.data && d.data >= desde)
+        .map(({ fotos, assinaturas, horimetros, ...resto }) => resto)
+        .sort((a, b) => String(a.data).localeCompare(String(b.data)));
+    }
+  } catch (e) { /* RDO fica de fora se a consulta falhar */ }
+
+  try {
+    const cli = B3Obras.cliente();
+    const { data: nfs } = await cli.from('custos_notas_fiscais').select('*').gte('data_emissao', desde);
+    if (nfs && nfs.length) {
+      ctx.notas_fiscais = nfs;
+      const { data: itens } = await cli.from('custos_itens_nf').select('*').in('nf_id', nfs.map(nf => nf.id));
+      if (itens) ctx.itens_nf = itens;
+    }
+  } catch (e) { /* Custos ficam de fora se a consulta falhar */ }
+
+  if (typeof pautaAssuntos !== 'undefined' && pautaAssuntos.length) ctx.pautas = pautaAssuntos;
+  if (typeof checkinAssuntos !== 'undefined' && checkinAssuntos.length) ctx.checkins = checkinAssuntos;
+
+  return ctx;
+}
+
 async function enviarPergunta() {
   const input = document.getElementById('perguntarInput');
   const pergunta = input.value.trim();
@@ -1262,15 +1302,21 @@ async function enviarPergunta() {
   btn.disabled = true;
 
   try {
-    // O Apps Script monta sozinho o contexto da planilha (Diário, Pauta,
-    // Check-in, Notas Fiscais). Medições, Documentos e Mural só existem neste
-    // navegador, então viajam junto com a pergunta — ver montarContextoLocal().
-    // Se o Apps Script ainda for a versão antiga, ele simplesmente ignora este
-    // campo e o robô continua respondendo como antes.
+    // Desde a migração para Supabase, o Apps Script não grava mais nada na
+    // planilha — o contexto que ele lia de lá (Diário, Pauta, Check-in,
+    // Notas Fiscais) ficaria congelado sem isto. Medições, Documentos e
+    // Mural (só existem neste navegador) vêm de montarContextoLocal(); RDO,
+    // Custos, Pauta e Check-in vêm do Supabase da obra ativa, buscados em
+    // montarContextoNuvem(). Se uma das buscas falhar, o robô segue com o
+    // que conseguiu montar.
+    const contextoLocal = montarContextoLocal() || {};
+    try { Object.assign(contextoLocal, await montarContextoNuvem()); }
+    catch (e) { /* segue só com o contexto local */ }
+
     const resp = await fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ pergunta, contextoLocal: montarContextoLocal() })
+      body: JSON.stringify({ pergunta, contextoLocal })
     });
     const json = await resp.json().catch(() => null);
     respostaBox.textContent = (json && json.resposta) || '❌ Não foi possível obter resposta.';

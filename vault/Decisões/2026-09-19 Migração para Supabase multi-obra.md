@@ -92,19 +92,39 @@ Retirado (não portado): `salvarDiarioGoogle`/`buildPayloadGoogle` — mandavam 
 "achatada" do diário como linha de planilha legível. Como o retrato no Supabase JÁ é o
 diário completo, essa segunda cópia perdeu função.
 
-## Achado à parte, não coberto pelas 8 tarefas: o robô de IA vai ficar desatualizado
+## Robô de IA — corrigido em 20/09, sem tocar no transporte Apps Script
 
-`buildly-completo.html` tem um recurso de pergunta-e-resposta ("🤖") que manda a pergunta
-para o Apps Script (`path=ia&action=perguntar`), que por sua vez lê a planilha (Diário,
-Pauta, Check-in, Notas Fiscais) para montar o contexto da resposta — mecanismo server-side
-que não foi tocado nesta migração (é um recurso de IA, não um CRUD de módulo, e está fora
-do que as 8 tarefas cobriram). Como nenhum módulo grava mais na planilha, esse contexto vai
-ficar congelado no que existia antes desta migração — o robô vai responder com dados cada
-vez mais velhos, sem erro nenhum aparente. Não corrigido aqui porque a lógica de resposta
-mora inteira no Apps Script (bloqueado nesta sessão pelo proxy de rede, ver regra 25) e
-provavelmente usa uma chave de API própria — refazer isso é decisão do usuário: manter o
-Apps Script vivo só para esse recurso (lendo do Supabase por baixo, reescrevendo a leitura),
-migrar para uma Edge Function do Supabase, ou aposentar o recurso.
+Achado nesta migração (não coberto pelas 8 tarefas originais): o recurso de pergunta-e-
+resposta ("🤖") mandava a pergunta para o Apps Script (`path=ia&action=perguntar`), que lia
+a planilha (Diário, Pauta, Check-in, Notas Fiscais) para montar o contexto — mecanismo que
+ficaria congelado no que existia antes da migração, já que nenhum módulo grava mais na
+planilha.
+
+Das três opções documentadas (manter Apps Script lendo do Supabase, migrar para Edge
+Function, aposentar), a primeira já tinha caminho pronto: `montarContextoParaIA` sempre
+aceitou um `contextoLocal` vindo do app para os dados que só existem no navegador
+(Medições, Documentos, Mural — nunca tiveram aba na planilha). Bastou estender esse mesmo
+mecanismo para os quatro que a planilha cobria antes:
+
+- `buildly-completo.html` ganhou `montarContextoNuvem()`: busca `rdo_snapshot.history`
+  (RDO, recorte de 3 meses, fotos/assinaturas removidas — só interessa texto e número para
+  a IA) e `custos_notas_fiscais`/`custos_itens_nf` (mesmo recorte) no Supabase da obra
+  ativa; Pauta e Check-in vêm de graça das variáveis já carregadas em memória
+  (`pautaAssuntos`, `checkinAssuntos`). Tudo isso é mesclado ao `contextoLocal` existente
+  em `enviarPergunta()` antes do `fetch`.
+- `apps-script/BuildlyBackend.gs` (`montarContextoParaIA`): agora usa
+  `contextoLocal.rdos_diario`/`pautas`/`checkins`/`notas_fiscais`/`itens_nf` quando vêm, e
+  só cai para `lerAbaParaIA` (planilha) se não vierem — mantém compatibilidade com uma
+  versão antiga do app em cache, sem quebrar o robô de uma hora para outra.
+
+**Nenhuma chamada nova ao Supabase saiu do Apps Script** — ele continua só falando com a
+API da Anthropic, o que evita ensinar `UrlFetchApp` a autenticar em dois bancos diferentes
+por obra. Efeito colateral: como esta cópia do `.gs` não é implantada por git (regra 17), a
+correção só vale depois que o usuário colar o arquivo atualizado no editor do Apps Script.
+
+Não testável ponta a ponta nesta sessão pelo mesmo motivo da regra 25 (proxy bloqueia
+`*.supabase.co`); a leitura do schema usada para acertar os nomes de coluna/tabela veio do
+`execute_sql`/`list_tables` do Supabase (canal MCP, não navegador).
 
 ## Limite de teste descoberto
 
