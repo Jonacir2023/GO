@@ -1,199 +1,116 @@
 ---
 criado: 2026-08-21
-tags: [nota, backend, apps-script, api]
+atualizado: 2026-09-19
+tags: [nota, backend, supabase, api]
 ---
 
-# Contrato do Backend (Google Apps Script)
+# Contrato do Backend
 
-Um único web app (`/exec`) atende todos os módulos. Planilha
-`19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw` ("Buildly3").
+Migrado do Google Sheets/Apps Script único para **um projeto Supabase por obra** — ver
+[[Decisões/2026-09-19 Migração para Supabase multi-obra]] para o porquê e o histórico. Cada
+obra é um banco Postgres totalmente separado (mesmo schema, dados isolados).
 
-Código-fonte: `apps-script/BuildlyBackend.gs` na raiz do repositório (entra junto com o PR #1 —
-ver [[Decisões/2026-08-21 Backend recuperado da Lixeira]]).
-
-> **Este arquivo `.gs` não é implantado por git.** O que roda em produção é o que está colado
-> dentro do projeto Apps Script no Google. O arquivo no repositório é cópia de referência e
-> pode divergir do que está no ar — sempre confirme antes de assumir comportamento.
-
----
-
-## Código de acesso
-
-Toda chamada precisa levar `token=<código>` (query string ou corpo JSON). O backend compara com
-a propriedade `APP_TOKEN` do script; sem bater, devolve `{ok:false, codigo:'token_invalido'}` e
-não executa nada.
-
-**A checagem é opcional de propósito:** enquanto `APP_TOKEN` não existir nas Propriedades do
-script, tudo passa como antes. Isso existe para permitir implantar sem janela de app quebrado —
-não é descuido. Ver [[Decisões/2026-08-21 Código de acesso ao backend]].
-
-No front-end o token é injetado por um shim sobre `fetch()`, então não é preciso lembrar dele ao
-escrever chamada nova nos arquivos que já o têm (`pauta`, `Check-in`, `rdo`,
-`buildly-completo`). **`custos.html` ainda não tem o shim** — ao ligar `custos/salvar`, leve-o
-junto.
+O Apps Script (`apps-script/BuildlyBackend.gs`, planilha "Buildly3") continua existindo, mas
+só serve o recurso de pergunta-e-resposta por IA — ver a seção própria mais abaixo.
 
 ---
 
-## Roteamento
+## Como o front-end fala com o Supabase
 
-`path` e `action` podem vir na query string **ou** dentro do corpo JSON do POST — o
-`buildly-completo.html` manda no corpo e o `rdo.html` manda na query. As duas formas são
-aceitas de propósito; sem isso, metade das chamadas caía em "Endpoint não encontrado" e o dado
-se perdia em silêncio.
+`supabase-config.js` (raiz do repositório, incluído via `<script>` em todo HTML) expõe
+`window.B3Obras`:
 
-### GET
+- `B3Obras.listar()` — registro fixo das obras (`id`, `nome`, `url`, `anonKey`).
+- `B3Obras.atualId()` / `B3Obras.trocar(id)` — obra ativa, em
+  `localStorage['buildly3::obra_atual_id']`.
+- `B3Obras.cliente(idOpcional)` — devolve um cliente `supabase-js` (cacheado) para a obra
+  ativa ou a informada. Todo `fetch(APPS_SCRIPT_URL, ...)` de antes virou
+  `B3Obras.cliente().from('<tabela>').select()/upsert()/delete()`.
+- `B3Obras.config()` / `configCarregar()` / `configSalvar(patch)` — leitura síncrona
+  (cache), busca e gravação de `obra_config`. Também disponível como
+  `obraCompartilhada()` global (nome mantido por compatibilidade — todo módulo já chamava
+  isso desde a era `localStorage['b3_obra']`).
 
-| path | action | Parâmetros | Devolve |
-|---|---|---|---|
-| `pauta` | `listar` | — | `{ok, status:'ok', pautas:[…], dados:[…]}` (mesma lista nas duas chaves) |
-| `checkin` | `historico` | — | `{ok, status:'ok', checkins:[…], dados:[…]}` |
-| `diario` | `carregar` | `data=YYYY-MM-DD` | `{ok, diario}` |
-| `diario` | `lista-mes` | `mes=YYYY-MM` | `{ok, mes, diarios:[…]}` |
-| `diario` | `salvar` | `dados=<json>` | igual ao POST (variante por GET) |
-| `pauta`/`checkin`/`diario` | `limpar-duplicatas` | — | `{ok, removidas, msg}` |
-| `backup` | `buscar-ultimo` | `obra=<nome>` | `{ok, conteudo, data, arquivo}` |
+Não existe token de acesso por chamada como no Apps Script: a chave publicável do Supabase
+já é pública por natureza (RLS decide o que pode ser lido/escrito, não o sigilo da chave) —
+ver regra 22 em [[Notas/Regras Operacionais Críticas]]. RLS está **aberto** (`for all
+using (true)`) em toda tabela, de propósito: mesma postura de segurança de antes (device
+sem login), não é uma regressão.
 
-Sem rota correspondente, o GET devolve `{ok:true, msg:'API Diário de Obras ativa'}` — serve
-como teste rápido de "o script está no ar?".
+---
 
-### POST
+## Padrão de sincronização, módulo por módulo
 
-| path | action | Observação |
+Dois padrões coexistem, cada um escolhido pelo que o módulo já fazia antes:
+
+**Gravação imediata + reenvio do pendente** (Pauta, Check-in, Custos, Manutenção,
+Documentos, Reunião, Medições): cada criar/editar/remover chama Supabase na hora
+(`upsert`/`delete`); se falhar (rede fora), o item fica marcado `_sincronizado` ausente e é
+reenviado na próxima busca do servidor (`carregarXDoServidor()`, chamado no início de cada
+módulo). Substitui o polling de 2 em 2 minutos que existia só pela fragilidade do Apps
+Script.
+
+**Retrato único, mesclado no cliente** (RDO): uma tabela (`rdo_snapshot`), uma linha por
+obra, com o `state`/`history` inteiros como jsonb. O RDO já resolvia conflito e mesclava
+sozinho antes de existir Supabase (`mesclarDaNuvem`, `aplicarRegraRdo`,
+`mesclarStatusCadastro`, tudo em `rdo.html`) — a migração só trocou o transporte
+(`fetch` → `B3Obras.cliente().from('rdo_snapshot')`), a lógica de mescla não mudou.
+
+## Tabelas
+
+| Tabela | Módulo | Observação |
 |---|---|---|
-| `pauta` | `criar` | Upsert por ID |
-| `pauta` | `atualizar-status` | |
-| `pauta` | `remover` | Apaga a linha de verdade |
-| `checkin` | `salvar` | Aceita assunto avulso ou reunião com lista (grava 1 linha por assunto) |
-| `checkin` | `remover` | |
-| `diario` | `salvar` | Upsert por Data + Apontador |
-| `custos` | `salvar` | Nota em "Notas Fiscais" + itens em "Itens NF" |
-| `ia` | `perguntar` | `{ok, resposta}` |
-| `foto` | *(sem action)* | `{fileId, url}` |
-| `backup` | *(sem action)* | `{ok, arquivo}` |
+| `obra_config` | Aba Obras (compartilhada) | Linha única, `id=1` |
+| `pauta_assuntos` | Pauta | `id` é o `Date.now().toString()` do front-end (texto, não UUID) |
+| `pauta_membros`, `pauta_setores` | Pauta (Admin) | Chave natural em `nome` (índice único, upsert por nome) |
+| `checkin_assuntos` | Check-in | Mesmo `id` texto de `pauta_assuntos` quando o assunto veio de lá |
+| `checkin_reunioes` | Check-in | `assuntos_snapshot` jsonb — ata da reunião, insert simples (sem upsert) |
+| `custos_notas_fiscais`, `custos_itens_nf` | Custos | NF não tem edição (só criar/deletar); itens entram uma vez só, junto com a NF |
+| `documentos`, `documento_notas_manuais` | Documentos | |
+| `manutencao_mural` | Manutenção | |
+| `reuniao_atas` | Reunião | `participantes`/`pauta`/`topicos`/`plano_acao` como jsonb |
+| `medicao_contratos` | Medições | `itens`/`medicoes` como jsonb **dentro** da linha do cliente/empreiteiro — o modelo real já aninha os três juntos, sempre salvos em bloco; não existem tabelas `medicao_itens`/`medicoes` separadas |
+| `rdo_snapshot` | RDO | Linha única (`id=1`) por obra — ver acima |
 
-`foto` e `backup` mandam só `path` dentro do corpo, sem `action` — não é descuido, é como o
-`rdo.html` chama.
-
----
-
-## Por que as respostas têm campos repetidos
-
-Vários retornos trazem `ok` **e** `status:'ok'`, ou a mesma lista em `pautas` e `dados`. É
-proposital: partes diferentes do front-end checam campos diferentes (o `rdo.html` olha `ok`, o
-`buildly-completo.html` olha `status`). Ao mexer, mantenha os dois — tirar um quebra um dos
-lados em silêncio. O status do registro em si vai em `statusRegistro`, justamente para não
-colidir com o `status:'ok'` do envelope.
+Convenção de `id`: sempre **texto**, gerado no front-end (`Date.now().toString()` ou
+`uid()`), nunca UUID gerado pelo servidor — mesma regra que já valia no Apps Script
+("upsert pelo ID que o app gerou localmente"), só que agora reforçada por tipo de coluna,
+não por convenção de código.
 
 ---
 
-## Abas e colunas
+## Robô de IA (`ia/perguntar`) — ainda no Apps Script, agora desatualizado
 
-Abas: `Pauta`, `CheckIn`, `Diário`, `Notas Fiscais`, `Itens NF`.
+Continua em `apps-script/BuildlyBackend.gs`, chamado de `buildly-completo.html`
+(`fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', ...)`). Lê a planilha (Diário, Pauta,
+Check-in, Notas Fiscais) para montar o contexto da resposta, mais o que só existe no
+navegador (Medições, Documentos, Mural) via `contextoLocal` (`montarContextoLocal()`).
 
-`getSheet()` acha a aba ignorando maiúscula, acento, hífen, espaço e plural — então `'Pauta'`
-encontra "Pautas" e `'CheckIn'` encontra "Check-ins". Não é preciso renomear aba na planilha
-para bater com o código.
-
-Nas abas de NF e Check-in, os campos são casados **pelo nome do cabeçalho** existente
-(`appendPorCabecalho` / `upsertPorCabecalho`), então a ordem das colunas na planilha pode ser
-qualquer uma. Já a aba `Diário` grava **por posição**, nas 25 colunas fixas de `COLUNAS_DIARIO`
-(A Data … Y RDO Nº).
-
-> Cuidado: o comentário acima de `COLUNAS_DIARIO` no código diz "24 colunas", mas o array tem
-> 25. O comentário é que está desatualizado — confira o array, não o comentário.
-
----
-
-## Upsert em toda escrita
-
-- **Pauta / Check-in:** por ID, usando o ID que o app gerou localmente (`Date.now()`), não um
-  gerado no servidor. Sem isso, apagar localmente nunca correspondia à linha real na planilha,
-  que reaparecia como item "novo" na sincronização seguinte.
-- **Diário:** por Data + Apontador, com data e apontador normalizados (a célula pode vir como
-  tipo `Date` ou como texto).
-- Motivo geral: o shell sincroniza de 2 em 2 minutos. Sem upsert, cada ciclo criaria uma linha
-  nova e os assuntos se multiplicariam sem parar.
-
-`limparDuplicatasPauta/Checkin/Diario()` existem para limpar linhas duplicadas de antes da
-correção — rodar uma vez, manualmente, se aparecerem.
-
----
-
-## Mapeamento de status
-
-O app usa código minúsculo; a planilha guarda o rótulo legível.
-
-| Código (app) | Rótulo (planilha) |
-|---|---|
-| `afazer` | Aberta |
-| `fazendo` | Em Andamento |
-| `concluido` | Concluído |
-| `cancelado` | Cancelado |
-
-`rotularStatus()` converte um no outro; `codigoStatus()` faz o caminho inverso e aceita as duas
-formas, porque há linhas antigas gravadas em minúsculo.
-
----
-
-## Google Drive
-
-| Uso | Caminho |
-|---|---|
-| Fotos do RDO | `Diario de Obras - Fotos / [Obra] / [Data]` |
-| Backups do RDO | `Diario de Obras - Backups / [Obra]` — mantém os **30 mais recentes**, o resto vai para a lixeira |
-
-Fotos são compartilhadas como `ANYONE_WITH_LINK` / `VIEW` e devolvem `fileId` + URL de
-visualização.
-
----
-
-## Robô de IA (`ia/perguntar`)
+**Como nenhum módulo grava mais na planilha, esse contexto está congelado no que existia
+antes desta migração** — o robô vai responder com dados cada vez mais velhos, sem erro
+nenhum aparente. Não corrigido junto com o resto porque a lógica de resposta mora inteira
+no Apps Script (chave `ANTHROPIC_API_KEY` nas Propriedades do script) e é uma feature de
+IA, não um CRUD de módulo — decisão de como resolver (manter o Apps Script vivo lendo do
+Supabase, migrar para uma Edge Function, ou aposentar) é do usuário. Detalhes em
+[[Decisões/2026-09-19 Migração para Supabase multi-obra]].
 
 - Modelo: `claude-haiku-4-5-20251001` (constante `MODELO_IA_PERGUNTAS`).
-- Chave: `ANTHROPIC_API_KEY` em Configurações do projeto → **Propriedades do script**. Nunca no
-  código. Sem ela, o endpoint responde com aviso amigável em vez de erro.
-- Contexto recortado em **3 meses** (`MESES_CONTEXTO_IA`) para Diário e Notas Fiscais — o
-  contexto inteiro viaja dentro do prompt a cada pergunta, e essas abas crescem todo dia. Pauta
-  e Check-in vão inteiras (uma pendência antiga continua valendo hoje).
-- `periodo_coberto` vai junto no JSON para o modelo dizer "está fora do período carregado" em
-  vez de afirmar que não aconteceu.
-- Medições, Documentos e Mural **não têm aba na planilha** — só existem no navegador. Por isso
-  viajam junto da pergunta, no campo `contextoLocal` (montado por `montarContextoLocal()` no
-  shell).
-
-### Autorização do escopo de rede
-
-O Apps Script só descobre que precisa de `script.external_request` quando algum código tenta
-usar `UrlFetchApp`. Declarar no `appsscript.json` não basta se a autorização já tiver sido
-concedida antes com um conjunto menor de escopos. Por isso existe `autorizarChamadaExterna()`:
-rodar essa função uma vez no editor força o pedido de permissão.
+- Contexto recortado em 3 meses para Diário e Notas Fiscais; Pauta e Check-in vão inteiras.
 
 ---
 
-## Endpoint que o front-end chama e o backend não tem
+## O que sobrou do Apps Script — só referência histórica
 
-`rdo.html` tenta `GET ?path=foto&action=base64&fileId=…` como primeira via para exibir foto sem
-depender de CORS do Google. **Esse endpoint não existe no backend.** Não é bug: o próprio
-`rdo.html` trata como opcional e cai nas vias seguintes (busca direta e outras). Se um dia a
-exibição de fotos ficar lenta ou falhar, implementar esse endpoint é a solução mais limpa.
-
-Lição geral: **não presuma que todo `fetch()` do front-end tem endpoint do outro lado, nem que
-todo endpoint é usado.** `custos/salvar` é o caso inverso — existe no backend e nenhum
-front-end chama.
-
----
-
-## Um front-end pode chamar dois endpoints na mesma gravação
-
-`envio-pauta.html` (link público enviado a um líder, sem o resto do app) grava o mesmo assunto
-em `pauta/criar` **e** `checkin/salvar` na mesma submissão, em paralelo. Não é redundância: o
-líder pode estar num aparelho que nunca abriu o app, então a sincronização local
-Pauta→Check-in (que só roda dentro do mesmo navegador, via `localStorage`) não tem como
-alcançá-lo. Gravar direto nos dois evita depender de alguém abrir o app antes da próxima
-reunião.
+`apps-script/BuildlyBackend.gs` continua no repositório (não é implantado por git — o que
+roda é o que está colado no editor do Google, ver regra 17) e continua servindo `ia/
+perguntar`. As rotas de `pauta`, `checkin`, `diario`, `custos`, `foto` e `backup` que
+existiam nele não são mais chamadas por nenhum front-end — ficam mortas no script, sem
+problema em continuar existindo lá (não fazem mal), mas não descreva mais o contrato delas
+aqui como se estivessem em uso.
 
 ## Relacionado
 
 - [[Projetos/BUILDLy Premium]]
+- [[Decisões/2026-09-19 Migração para Supabase multi-obra]]
 - [[Decisões/2026-08-21 Backend recuperado da Lixeira]]
 - [[Notas/Regras Operacionais Críticas]]

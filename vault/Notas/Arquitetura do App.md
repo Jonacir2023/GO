@@ -79,8 +79,10 @@ No desktop os iframes usam `height: calc(100vh - 76px)`; no mobile, `calc(100vh 
 ## Sincronização
 
 - **Pauta → Check-in:** automática via `localStorage`, no mesmo navegador.
-- **App → planilha:** a cada 2 minutos, via Apps Script. Ver [[Notas/Contrato do Backend]].
-- Como toda escrita no backend é upsert, a sincronização repetida não duplica linha.
+- **App → Supabase:** gravação imediata ao criar/editar/remover (não mais um polling de 2
+  em 2 minutos — isso só existia pela fragilidade do Apps Script). O RDO é a exceção: sobe
+  um retrato completo (debounced) e mescla no cliente. Ver [[Notas/Contrato do Backend]].
+- Toda escrita usa `id` gerado no front-end (upsert), então reenviar não duplica linha.
 
 ---
 
