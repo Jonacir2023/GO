@@ -79,19 +79,17 @@ não por convenção de código.
 
 ---
 
-## Robô de IA (`ia/perguntar`) — ainda no Apps Script, agora desatualizado
+## Robô de IA (`ia/perguntar`) — Apps Script só para a chamada à Anthropic
 
 Continua em `apps-script/BuildlyBackend.gs`, chamado de `buildly-completo.html`
-(`fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', ...)`). Lê a planilha (Diário, Pauta,
-Check-in, Notas Fiscais) para montar o contexto da resposta, mais o que só existe no
-navegador (Medições, Documentos, Mural) via `contextoLocal` (`montarContextoLocal()`).
-
-**Como nenhum módulo grava mais na planilha, esse contexto está congelado no que existia
-antes desta migração** — o robô vai responder com dados cada vez mais velhos, sem erro
-nenhum aparente. Não corrigido junto com o resto porque a lógica de resposta mora inteira
-no Apps Script (chave `ANTHROPIC_API_KEY` nas Propriedades do script) e é uma feature de
-IA, não um CRUD de módulo — decisão de como resolver (manter o Apps Script vivo lendo do
-Supabase, migrar para uma Edge Function, ou aposentar) é do usuário. Detalhes em
+(`fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', ...)`), mas **não lê mais a planilha
+como fonte principal**. Desde 20/09, o front-end manda tudo dentro de `contextoLocal`:
+Medições/Documentos/Mural (só existem no navegador, `montarContextoLocal()`) e RDO/Custos/
+Pauta/Check-in (buscados no Supabase da obra ativa, `montarContextoNuvem()` — RDO e Notas
+Fiscais com recorte de 3 meses, fotos/assinaturas removidas). `montarContextoParaIA` no
+Apps Script usa esses campos quando vêm, e só lê a planilha (`lerAbaParaIA`) como
+compatibilidade com uma versão antiga do app em cache. O Apps Script não fala com o
+Supabase — só recebe o contexto já pronto e chama a Anthropic. Detalhes da correção em
 [[Decisões/2026-09-19 Migração para Supabase multi-obra]].
 
 - Modelo: `claude-haiku-4-5-20251001` (constante `MODELO_IA_PERGUNTAS`).

@@ -1063,50 +1063,75 @@ function lerAbaParaIA(nomeAba, colunasData, desde) {
 // o contexto inteiro viaja dentro do prompt a cada pergunta, e as abas de
 // Diario e Notas Fiscais crescem todo dia — sem corte, cada pergunta ficaria
 // mais cara e mais lenta que a anterior ate estourar o limite do modelo.
+// Desde a migração para Supabase (ver Contrato do Backend), nenhum módulo
+// grava mais nesta planilha — RDO, Pauta, Check-in e Notas Fiscais moram
+// cada um no banco da obra ativa, um por obra. Este script não tem acesso a
+// esses bancos (nem sabe qual obra está ativa no navegador de quem
+// perguntou), então o app manda os quatro já prontos dentro de
+// contextoLocal (ver montarContextoNuvem() em buildly-completo.html) e esta
+// função usa isso quando vier. Só cai para a leitura da planilha (dados
+// cada vez mais velhos) se o app estiver numa versão antiga sem esse envio,
+// para o robô não quebrar de uma hora para outra.
 function montarContextoParaIA(contextoLocal) {
   var partes = {};
+  var cl = (contextoLocal && typeof contextoLocal === 'object') ? contextoLocal : {};
 
   // Dados que vivem só no app (Medições, Documentos, Mural). Entram primeiro
   // para ficarem visíveis mesmo que o resto do contexto seja longo.
-  if (contextoLocal && typeof contextoLocal === 'object') {
-    if (contextoLocal.obra) partes.obra = contextoLocal.obra;
-    if (contextoLocal.medicoes) partes.medicoes = contextoLocal.medicoes;
-    if (contextoLocal.documentos) partes.documentos = contextoLocal.documentos;
-    if (contextoLocal.mural_da_obra) partes.mural_da_obra = contextoLocal.mural_da_obra;
-  }
+  if (cl.obra) partes.obra = cl.obra;
+  if (cl.medicoes) partes.medicoes = cl.medicoes;
+  if (cl.documentos) partes.documentos = cl.documentos;
+  if (cl.mural_da_obra) partes.mural_da_obra = cl.mural_da_obra;
 
   var corte = new Date();
   corte.setMonth(corte.getMonth() - MESES_CONTEXTO_IA);
   var desde = Utilities.formatDate(corte, Session.getScriptTimeZone(), 'yyyy-MM-dd');
 
-  var rdos = lerAbaParaIA(SHEET_NAME_DIARIO, ['Data'], desde);
-  if (rdos) {
-    rdos.sort(function(a, b) {
-      return String(a['Data']).localeCompare(String(b['Data']));
-    });
-    partes.rdos_diario = rdos;
+  if (cl.rdos_diario) {
+    partes.rdos_diario = cl.rdos_diario;
+  } else {
+    var rdos = lerAbaParaIA(SHEET_NAME_DIARIO, ['Data'], desde);
+    if (rdos) {
+      rdos.sort(function(a, b) {
+        return String(a['Data']).localeCompare(String(b['Data']));
+      });
+      partes.rdos_diario = rdos;
+    }
   }
 
   // Pauta e CheckIn sao listas de acompanhamento, nao series historicas:
   // vao inteiras, porque uma pendencia antiga continua valendo hoje.
-  var pautas = lerAbaParaIA(SHEET_NAME_PAUTA);
-  if (pautas) partes.pautas = pautas;
+  if (cl.pautas) {
+    partes.pautas = cl.pautas;
+  } else {
+    var pautas = lerAbaParaIA(SHEET_NAME_PAUTA);
+    if (pautas) partes.pautas = pautas;
+  }
 
-  var checkins = lerAbaParaIA(SHEET_NAME_CHECKIN);
-  if (checkins) partes.checkins = checkins;
+  if (cl.checkins) {
+    partes.checkins = cl.checkins;
+  } else {
+    var checkins = lerAbaParaIA(SHEET_NAME_CHECKIN);
+    if (checkins) partes.checkins = checkins;
+  }
 
-  var nfs = lerAbaParaIA(SHEET_NAME_NF, ['Data Emissão', 'Data Emissao', 'Data'], desde);
-  if (nfs) {
-    partes.notas_fiscais = nfs;
-    // Os itens acompanham as notas que passaram no corte, senao sobrariam
-    // itens soltos sem a nota correspondente no contexto.
-    var idsNF = {};
-    nfs.forEach(function(nf) { if (nf['ID']) idsNF[String(nf['ID'])] = true; });
-    var itens = lerAbaParaIA(SHEET_NAME_ITENSNF);
-    if (itens) {
-      partes.itens_nf = itens.filter(function(it) {
-        return idsNF[String(it['ID NF'])];
-      });
+  if (cl.notas_fiscais) {
+    partes.notas_fiscais = cl.notas_fiscais;
+    if (cl.itens_nf) partes.itens_nf = cl.itens_nf;
+  } else {
+    var nfs = lerAbaParaIA(SHEET_NAME_NF, ['Data Emissão', 'Data Emissao', 'Data'], desde);
+    if (nfs) {
+      partes.notas_fiscais = nfs;
+      // Os itens acompanham as notas que passaram no corte, senao sobrariam
+      // itens soltos sem a nota correspondente no contexto.
+      var idsNF = {};
+      nfs.forEach(function(nf) { if (nf['ID']) idsNF[String(nf['ID'])] = true; });
+      var itens = lerAbaParaIA(SHEET_NAME_ITENSNF);
+      if (itens) {
+        partes.itens_nf = itens.filter(function(it) {
+          return idsNF[String(it['ID NF'])];
+        });
+      }
     }
   }
 
