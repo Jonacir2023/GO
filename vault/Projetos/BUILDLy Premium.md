@@ -11,8 +11,11 @@ tags: [projeto, buildly, cesbe]
 zerados de propósito).
 **Responsável:** Jonacir Cazelli · **Empresa:** Cesbe S.A.
 
-Plataforma de gestão de obra. Páginas HTML/JS estáticas, sem build, publicadas no GitHub Pages,
-com Google Sheets + Apps Script como backend.
+Plataforma de gestão de obra. Páginas HTML/JS estáticas, sem build, publicadas no GitHub Pages.
+Backend em migração do Google Sheets + Apps Script para **um projeto Supabase por obra** —
+ver [[Decisões/2026-09-19 Migração para Supabase multi-obra]]. O Apps Script (planilha
+"Buildly3") continua existindo só pelo recurso de pergunta-e-resposta por IA (🤖), que ainda
+não foi migrado e vai responder com dados cada vez mais antigos.
 
 ---
 
@@ -24,8 +27,8 @@ com Google Sheets + Apps Script como backend.
 | Este repositório (Buildly3) | **publicado** em https://jonacir2023.github.io/GO/buildly-completo.html — Pages ligado. Falta só a equipe passar a abrir este endereço. |
 | Repositório | `Jonacir2023/GO`, branch `main` |
 | Pasta local (Mac) | `~/Buildly3` |
-| Planilha | "Buildly3" — `19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw` |
-| Backend | Apps Script como web app (`/exec`) — ver [[Notas/Contrato do Backend]] |
+| Backend (dados dos módulos) | Um projeto Supabase por obra — Obra 1 `ivssgstckfcuiyetxdze`, Obra 2 `lwjbuzubnxnzkofcrhah`. Registro em `supabase-config.js`. |
+| Planilha "Buildly3" (`19SDuzU_...`) + Apps Script | Só o recurso de IA (🤖) ainda depende disso — ver [[Notas/Contrato do Backend]] (desatualizada, aponta pro Sheets como se fosse tudo) |
 
 Módulos: Pauta, Check-in, RDO, Custos, Reunião, Resumo do Tempo, Medições, Documentos,
 Manutenção. Ver [[Notas/Arquitetura do App]].
@@ -47,6 +50,74 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 ---
 
 ## Histórico
+
+### 19/09/2026 (4) — Início da migração para Supabase multi-obra
+
+Pedido do usuário: aba Obras precisa criar mais de uma obra, cada uma com "pacote de dados
+totalmente independente" — e, ao perguntar se o backend continuava Sheets, a resposta foi
+"muda para o Supabase". Decisão completa em
+[[Decisões/2026-09-19 Migração para Supabase multi-obra]]: **um projeto Supabase por obra**
+(banco separado, não coluna `obra_id`), 2 obras provisionadas até agora (de 4 pedidas — plano
+grátis permite 2 projetos simultâneos), schema de 19 tabelas espelhando todos os módulos
+atuais, RLS aberto (mesma postura de segurança de hoje).
+
+Feito nesta entrada: `supabase-config.js` (registro de obras + cliente + `obra_config`
+compartilhado, substitui `localStorage['b3_obra']` nos 7 arquivos que liam de lá) e a aba
+Obras reescrita para ler/gravar no Supabase da obra ativa, com seletor de obra. Testado: as 7
+suítes + sintaxe + isolamento continuam verdes; Playwright confirma o seletor populado com as
+2 obras e o formulário respondendo aos cliques — a gravação em si não pôde ser vista
+completando nesta sessão (ambiente de teste não alcança `supabase.co`, ver regra 25 em
+[[Notas/Regras Operacionais Críticas]]), mas o schema da tabela `obra_config` foi conferido
+direto no Postgres via `execute_sql` e bate exatamente com o que o código grava.
+
+Pendente: migrar Pauta, Check-in, RDO, Custos, Medições, Documentos, Manutenção e Reunião
+(hoje ainda no Apps Script/Sheets ou só no navegador) — [[Notas/Contrato do Backend]] e
+[[Notas/Arquitetura do App]] só serão atualizadas quando isso terminar, pra não descrever um
+backend que só existe pela metade.
+
+**Atualização, mesmo dia:** Pauta migrada (nativa + `pauta.html` + `envio-pauta.html`).
+Precisou de duas correções de schema no caminho: `pauta_assuntos.id`/`checkin_assuntos.id`
+de `uuid` para `text` (o front-end gera `Date.now().toString()`, não um UUID de verdade), e
+`pauta_membros`/`pauta_setores` ganharam índice único em `nome` para dar de upsert.
+
+Check-in migrado também (nativo + `Check-in.html`). Confirmado lendo o Apps Script: status
+mudado no Check-in sempre gravou na aba Pauta, nunca na aba Check-in — preservado assim no
+Supabase (`checkinEnviarStatus`/`enviarStatusParaPauta` atualizam `pauta_assuntos`). Ata de
+reunião (`checkin_reunioes`) e cadastro de assunto (`checkin_assuntos`) passam a persistir de
+verdade pela primeira vez — antes só viviam no navegador.
+
+Custos migrado (`custos.html`). Era o único módulo que nunca falava com o backend por conta
+própria — o `sincronizarComGoogleSheets()` compartilhado em `buildly-completo.html` é quem lia
+seu `localStorage` de fora do iframe. Com Pauta/Check-in/Custos migrados essa função (e o
+polling de 2 em 2 minutos) ficou sem função e foi removida; `custos.html` ganhou seu próprio
+par carregar/enviar, no mesmo padrão.
+
+Manutenção (mural), Documentos, Reunião e Medições migrados — os quatro módulos que antes
+eram só do navegador. O schema desenhado de antemão divergia mais do código real nesses
+quatro do que nos anteriores (nunca tinham backend, então nada os mantinha honestos):
+`documentos` e `reuniao_atas` ganharam colunas que faltavam; em Medições, o par
+`medicao_itens`/`medicoes` foi descartado — o modelo real aninha item e medição dentro do
+próprio cliente/empreiteiro, sempre salvo em bloco, então viraram colunas jsonb
+(`itens`/`medicoes`) em `medicao_contratos` em vez de tabelas relacionais separadas que
+ninguém consulta isoladamente.
+
+RDO migrado — o módulo mais complexo, tratado com uma pesquisa dedicada antes de mexer em
+código (agente `Explore`, mapa completo em [[Decisões/2026-09-19 Migração para Supabase
+multi-obra]]). Arquitetura deliberadamente diferente dos outros 8 módulos: uma tabela só
+(`rdo_snapshot`), uma linha por obra, com `state`/`history` inteiros como jsonb — o RDO já
+resolve conflito e mescla sozinho no cliente, testado pelas 4 suítes `test_rdo_*`, e
+normalizar isso em tabelas por registro jogaria fora lógica correta sem necessidade. Fotos
+deixam de subir ao Google Drive e passam a `data:` URI dentro do próprio diário. No
+processo, corrigida uma dependência cruzada que a migração da aba Obras tinha deixado passar
+(RDO lia/escrevia `b3_obra` por conta própria) — motivo da regra 26 no vault.
+
+**As 8 tarefas da migração estão completas.** Falta só a Tarefa #8 (teste de ponta a ponta
+contra os dois bancos reais, pelo usuário — esta sessão não alcança `supabase.co`, ver regra
+25) e atualizar [[Notas/Contrato do Backend]] e [[Notas/Arquitetura do App]], que ainda
+descrevem o Google Sheets. Pendência nova, fora do escopo original: o recurso de
+pergunta-e-resposta por IA (🤖) lê a planilha via Apps Script, que não recebe mais dado
+nenhum — vai responder cada vez mais desatualizado, sem erro visível. Decisão de como
+resolver isso é do usuário (detalhes na nota de decisão).
 
 ### 19/09/2026 (3) — Corrigida a regressão dos badges do @media print
 

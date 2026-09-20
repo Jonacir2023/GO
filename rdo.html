@@ -1256,6 +1256,8 @@
   #pdfOverlay { max-width: none; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 
@@ -1461,7 +1463,7 @@
     <div id="fotosGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px"></div>
     <button class="add-btn-full" onclick="document.getElementById('fotoInput').click()">📷 Adicionar foto</button>
     <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="adicionarFotoDia(event)">
-    <div id="fotoStatus" style="display:none;font-size:12px;color:#fff;margin-top:6px">⏳ Enviando foto ao Google Drive...</div>
+    <div id="fotoStatus" style="display:none;font-size:12px;color:#fff;margin-top:6px">⏳ Processando foto...</div>
   </div>
 
   <div class="section">
@@ -2175,8 +2177,6 @@
   }
 })();
 
-const APPS_SCRIPT_URL_DIARIO = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
-
 // ============================================================
 // CONSTANTES E ESTADO
 // ============================================================
@@ -2342,7 +2342,7 @@ const EMPTY_DAY = () => ({
   veiculosParados: {},  // id -> justificativa (para equips e VLs não selecionados)
   atividadesParalisadas: [],  // [{id (opcional, do cadastro), desc, just}]
   atividadesStatus: {},       // atId -> 'andamento' | 'concluida'
-  fotos: []  // [{fileId, url}] — arquivos no Google Drive, app guarda só links
+  fotos: []  // [{dataUrl, ativId?, legenda?}] — embutidas como data URI, direto no diário
 });
 
 let state = loadState();
@@ -2359,7 +2359,7 @@ ordenarAtividadesPadrao();
 // plataforma converge para os mesmos dados.
 function sincronizarObraCompartilhada() {
   try {
-    const compartilhada = JSON.parse(localStorage.getItem('b3_obra') || '{}');
+    const compartilhada = obraCompartilhada();
     if (!compartilhada || !Object.keys(compartilhada).length) return;
     if (!state.obra.nome && compartilhada.nome) state.obra.nome = compartilhada.nome;
     ['empresa', 'local', 'descricao', 'contrato', 'cliente', 'gestor', 'gerenciadora', 'logo',
@@ -3129,7 +3129,7 @@ function removerAtivParalisada(idx) {
 }
 
 // ============================================================
-// FOTOS DO DIA — upload ao Google Drive via Apps Script
+// FOTOS DO DIA — comprimidas e guardadas como data URI direto no diário
 // ============================================================
 const MAX_FOTOS_DIA = 20;
 
@@ -3160,8 +3160,8 @@ function renderFotosDia() {
   grid.innerHTML = fotos.map((f, i) => `
     <div>
       <div style="position:relative">
-        <a href="${f.url}" target="_blank" rel="noopener">
-          <img src="https://drive.google.com/thumbnail?id=${f.fileId}&sz=w400" alt="Foto ${i + 1}"
+        <a href="${f.dataUrl}" target="_blank" rel="noopener">
+          <img src="${f.dataUrl}" alt="Foto ${i + 1}"
             style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1.5px solid var(--line);display:block">
         </a>
         <button onclick="removerFotoDia(${i})" title="Remover"
@@ -3193,7 +3193,7 @@ function comprimirFoto(file, maxDim, qualidade) {
         canvas.width = w;
         canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', qualidade).split(',')[1]);
+        resolve(canvas.toDataURL('image/jpeg', qualidade));
       };
       img.onerror = () => reject(new Error('Imagem inválida'));
       img.src = reader.result;
@@ -3207,7 +3207,6 @@ async function adicionarFotoDia(ev) {
   const file = ev.target.files[0];
   ev.target.value = '';
   if (!file) return;
-  if (!APPS_SCRIPT_URL_DIARIO) { toast('❌ URL do Apps Script não configurada'); return; }
   currentDay.fotos = currentDay.fotos || [];
   if (currentDay.fotos.length >= MAX_FOTOS_DIA) {
     toast(`❌ Limite de ${MAX_FOTOS_DIA} fotos por diário`);
@@ -3216,26 +3215,14 @@ async function adicionarFotoDia(ev) {
   const status = document.getElementById('fotoStatus');
   if (status) status.style.display = 'block';
   try {
-    const base64 = await comprimirFoto(file, 1280, 0.72);
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        path: 'foto',
-        data: currentDay.data,
-        obra: state.obra.nome || 'Obra',
-        base64: base64
-      })
-    });
-    const json = await resp.json();
-    if (!json || !json.fileId) throw new Error((json && (json.error || json.erro || json.msg)) || 'Resposta inválida do Apps Script');
-    currentDay.fotos.push({ fileId: json.fileId, url: json.url });
+    const dataUrl = await comprimirFoto(file, 1280, 0.72);
+    currentDay.fotos.push({ dataUrl });
     salvarDiarioDia(false);
     renderFotosDia();
-    toast('✅ Foto enviada ao Google Drive');
+    toast('✅ Foto adicionada');
   } catch (err) {
-    console.error('Erro upload foto:', err);
-    toast('❌ Falha no envio: ' + (err && err.message ? err.message : 'erro desconhecido'));
+    console.error('Erro ao processar foto:', err);
+    toast('❌ Falha ao processar a foto: ' + (err && err.message ? err.message : 'erro desconhecido'));
   } finally {
     if (status) status.style.display = 'none';
   }
@@ -3260,7 +3247,7 @@ function salvarLegendaFoto(idx, valor) {
 }
 
 function removerFotoDia(idx) {
-  if (!confirm('Remover esta foto do diário? O arquivo permanece no Google Drive.')) return;
+  if (!confirm('Remover esta foto do diário? Não tem como desfazer.')) return;
   currentDay.fotos = currentDay.fotos || [];
   currentDay.fotos.splice(idx, 1);
   salvarDiarioDia(false);
@@ -3274,14 +3261,9 @@ function removerFotoDia(idx) {
 // "copiar do último diário" — só olhava o history local, nunca a nuvem, mesmo
 // com o backup completo (mesma estrutura, sem perda) disponível no Drive.
 async function tentarTrazerDiaAnteriorDaNuvem(atual) {
-  if (!APPS_SCRIPT_URL_DIARIO) return false;
   try {
-    const obra = state.obra.nome || 'Obra';
-    const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=backup&action=buscar-ultimo&obra=${encodeURIComponent(obra)}`);
-    const json = await resp.json().catch(() => null);
-    if (!json || !json.ok || !json.conteudo) return false;
-    const dados = JSON.parse(json.conteudo);
-    if (!dados.history) return false;
+    const dados = await buscarSnapshotDoServidor();
+    if (!dados || !dados.history) return false;
     const datasNuvem = Object.keys(dados.history).filter(d => d < atual).sort();
     if (!datasNuvem.length) return false;
     const origem = datasNuvem[datasNuvem.length - 1];
@@ -3563,16 +3545,14 @@ function gerarPdfRDO() {
   }
   if (!linhasOp) linhasOp = '<tr><td colspan="4" style="text-align:center">Nenhum equipamento registrado</td></tr>';
 
-  // Registro fotográfico — grade de imagens (miniaturas do Drive)
+  // Registro fotográfico — grade de imagens (já embutidas como data URI, sem
+  // depender de nenhum host externo para carregar).
   let blocoFotos = '';
   if ((day.fotos || []).length) {
     const cels = day.fotos.map((f, i) => {
       const legenda = legendaFoto(f, i);
-      // Sem crossorigin: o Drive não envia cabeçalho CORS nessa URL de
-      // miniatura, e exigi-lo faz a imagem não carregar de jeito nenhum.
-      // É a mesma forma usada na galeria do diário, onde as fotos aparecem.
       return `<figure class="pdf-foto">
-          <img src="https://drive.google.com/thumbnail?id=${escHtml(f.fileId)}&sz=w400" alt="Foto ${i + 1}" loading="eager">
+          <img src="${f.dataUrl}" alt="Foto ${i + 1}" loading="eager">
           <figcaption>${escHtml(legenda)}</figcaption>
         </figure>`;
     });
@@ -3867,11 +3847,6 @@ function carregarScriptUmaVez(src) {
 // navigator.share() com o arquivo — isso evita o compartilhamento nativo do SO, que em
 // alguns aparelhos falha silenciosamente ao tentar enviar para o WhatsApp direto da
 // caixa de impressão.
-// Limitação conhecida: fotos hospedadas no Google Drive não podem ser "fotografadas"
-// para dentro do PDF por uma restrição de CORS do próprio Drive: quando isso acontece,
-// a página de fotos é substituída por um aviso, mas o restante do RDO é compartilhado
-// normalmente. O botão "Imprimir / Salvar PDF" continua sendo o único que garante as
-// fotos incluídas.
 // O compartilhamento do PDF é feito em DUAS etapas de propósito:
 //   1) compartilharPdfRDO() gera o arquivo (demora alguns segundos — várias páginas,
 //      fotos etc.) e deixa pronto em memória.
@@ -3885,79 +3860,12 @@ function carregarScriptUmaVez(src) {
 // resolve isso: o segundo toque é que dispara o share(), já com o arquivo pronto.
 let _pdfParaCompartilhar = null;
 
-// Baixa cada foto do relatório e troca o src por um dado embutido (data URI),
-// única forma de o html2canvas conseguir desenhá-la. Cada foto é tentada em
-// duas URLs; se ambas falharem, o src original é mantido.
+// As fotos do relatório já nascem como data URI (ver adicionarFotoDia), então
+// só falta esperar o navegador decodificá-las antes do html2canvas desenhar
+// o overlay — sem isso, uma foto ainda decodificando pode sair em branco.
 async function prepararFotosParaCaptura(overlay) {
   const imgs = [...overlay.querySelectorAll('.pdf-foto img')];
   if (!imgs.length) return;
-
-  const comLimite = (ms) => {
-    const c = new AbortController();
-    return { sinal: c.signal, limpar: (t => () => clearTimeout(t))(setTimeout(() => c.abort(), ms)) };
-  };
-
-  // Via 1 — Apps Script. É a única que não depende de CORS do Google: o script
-  // lê o arquivo no Drive e devolve a imagem já em base64. Requer o endpoint
-  // path=foto&action=base64 publicado no Apps Script; sem ele, cai nas outras.
-  const viaAppsScript = async (fileId) => {
-    if (!APPS_SCRIPT_URL_DIARIO) return null;
-    const { sinal, limpar } = comLimite(15000);
-    try {
-      const r = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=foto&action=base64&fileId=${encodeURIComponent(fileId)}`, { signal: sinal });
-      if (!r.ok) return null;
-      const j = await r.json().catch(() => null);
-      if (!j) return null;
-      if (j.dataUri && j.dataUri.startsWith('data:image/')) return j.dataUri;
-      if (j.base64) return `data:${j.mimeType || 'image/jpeg'};base64,${j.base64}`;
-      return null;
-    } catch (_) {
-      return null;
-    } finally { limpar(); }
-  };
-
-  // Via 2 — buscar a imagem direto. Só funciona se o servidor mandar CORS.
-  const viaDireta = async (url) => {
-    const { sinal, limpar } = comLimite(6000);
-    try {
-      const r = await fetch(url, { mode: 'cors', signal: sinal });
-      if (!r.ok) return null;
-      const blob = await r.blob();
-      if (!blob.size || !/^image\//.test(blob.type)) return null;
-      return await new Promise((ok, falha) => {
-        const fr = new FileReader();
-        fr.onload = () => ok(fr.result);
-        fr.onerror = falha;
-        fr.readAsDataURL(blob);
-      });
-    } catch (_) {
-      return null;
-    } finally { limpar(); }
-  };
-
-  let falhas = 0;
-  await Promise.all(imgs.map(async (img) => {
-    const src = img.getAttribute('src') || '';
-    if (src.startsWith('data:')) return;
-    const fileId = (src.match(/[?&]id=([^&]+)/) || [])[1];
-
-    if (fileId) {
-      const viaScript = await viaAppsScript(fileId);
-      if (viaScript) { img.src = viaScript; return; }
-    }
-    for (const via of (fileId ? [`https://lh3.googleusercontent.com/d/${fileId}=w800`, src] : [src])) {
-      const d = await viaDireta(via);
-      if (d) { img.src = d; return; }
-    }
-    falhas++;
-    console.warn('Foto não pôde ser embutida no PDF:', src);
-  }));
-
-  if (falhas) {
-    toast(`⚠️ ${falhas} foto(s) não entraram no PDF — use Imprimir / Salvar PDF`);
-  }
-
-  // Espera o navegador decodificar as imagens já trocadas
   await Promise.all(imgs.map(im => (im.decode ? im.decode().catch(() => {}) : null)));
 }
 
@@ -4068,9 +3976,8 @@ async function compartilharPdfRDO() {
         if (!primeira) doc.addPage('a4', 'portrait');
         primeira = false;
         doc.setFontSize(12);
-        doc.text('Não foi possível incluir esta página no compartilhamento rápido', 15, 20);
-        doc.text('(fotos do Google Drive). Use "Imprimir / Salvar PDF" para o', 15, 27);
-        doc.text('relatório completo com fotos.', 15, 34);
+        doc.text('Não foi possível incluir esta página no compartilhamento rápido.', 15, 20);
+        doc.text('Use "Imprimir / Salvar PDF" para o relatório completo.', 15, 27);
       }
     }
 
@@ -4080,7 +3987,7 @@ async function compartilharPdfRDO() {
     const file = new File([blob], nomeArquivo, { type: 'application/pdf' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      _pdfParaCompartilhar = { file, num, aviso: paginasComFalha ? ' (fotos não incluídas nesta via)' : '' };
+      _pdfParaCompartilhar = { file, num, aviso: paginasComFalha ? ' (algumas páginas não entraram nesta via)' : '' };
       if (btn) {
         btn.disabled = false;
         btn.textContent = '👉 Toque para enviar';
@@ -4264,13 +4171,8 @@ function salvarPadAssinatura() {
   toast('✅ Assinatura registrada');
 }
 
-// ============================================================
-// INTEGRAÇÃO COM GOOGLE SHEETS
-// ============================================================
-
-// Atividades do dia em texto corrido, incluindo as paralisadas. Usado tanto no
-// envio para a planilha quanto no contexto que vai junto da pergunta ao robô,
-// para que os dois enxerguem exatamente o mesmo conteúdo.
+// Atividades do dia em texto corrido, incluindo as paralisadas — usado no
+// texto de WhatsApp/exportação da medição do dia.
 function textoAtividadesDia(day) {
   // A linha da atividade leva os DOIS locais: o do cadastro da atividade e o
   // escolhido na lista do dia (Local da Obra). Quem lê a planilha precisa saber
@@ -4303,140 +4205,6 @@ function textoAtividadesDia(day) {
       : '');
 }
 
-function buildPayloadGoogle(diarioData) {
-  const day = diarioData;
-
-  // Jornada
-  const jornada = `Café: ${day.cafeInicio||'--'}–${day.cafeFim||'--'} | Almoço: ${day.almocoInicio||'--'}–${day.almocoFim||'--'} | Enc.: ${day.encerramento||'--'}`;
-
-  // DSS
-  const dssMin = day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '';
-
-  // Atividades
-  const ativsTexto = textoAtividadesDia(day);
-
-  // Efetivo — resolver IDs para nomes
-  const efetivoPorFuncao = [];
-  const colaboradoresPresentes = [];
-  let totalEfetivo = 0;
-  state.colaboradores.categorias.forEach(cat => {
-    const presentes = cat.itens.filter(c => day.efetivo[c.id]);
-    if (presentes.length === 0) return;
-    totalEfetivo += presentes.length;
-    efetivoPorFuncao.push(`${cat.nome}: ${presentes.length}`);
-    presentes.forEach(c => colaboradoresPresentes.push(`${c.mat} – ${c.nome} (${cat.nome})`));
-  });
-
-  // Equipamentos — novo sistema localStorage
-  const savedEquip = S.get(`equipDia_${day.data}`) || {};
-  const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
-  const gruposEquip = {};
-  equipsAtivos.forEach(e => {
-    const k = e.desc.trim();
-    if (!gruposEquip[k]) gruposEquip[k] = 0;
-    gruposEquip[k]++;
-  });
-  let equipamentosTexto = Object.entries(gruposEquip)
-    .sort(([a],[b]) => a.localeCompare(b,'pt-BR'))
-    .map(([desc, n]) => `${desc}: ${n} un.`).join('\n');
-  const horLinhas = [];
-  equipsAtivos.forEach(e => {
-    const hEq = (day.horimetros || {})[e.id];
-    if (!hEq || (!hEq.ini && !hEq.fim)) return;
-    const tot = horimetroTotal(hEq);
-    horLinhas.push(`${e.numero} ${e.desc}: ${hEq.ini || '--'} → ${hEq.fim || '--'}${tot !== null ? ' = ' + tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' h' : ''}`);
-  });
-  if (horLinhas.length) equipamentosTexto += '\n\nHORÍMETROS:\n' + horLinhas.join('\n');
-
-  // Veículos Leves — novo sistema localStorage
-  const savedVL = S.get(`vlDia_${day.data}`) || {};
-  const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
-  const savedEquipBP = S.get(`equipDia_${day.data}`) || {};
-  const equipsParadosBP = vigentesNoDia(state.equipamentos, day.data, savedEquipBP).filter(e => !savedEquipBP[e.id]);
-  const vlParadosBP = vigentesNoDia(state.veiculosFrota, day.data, savedVL).filter(v => !savedVL[v.id]);
-  const parados = day.veiculosParados || {};
-  const paradosTexto = [
-    ...equipsParadosBP.map(e => {
-      const just = parados[e.id] ? `: ${parados[e.id]}` : '';
-      return `${e.isMotorista ? '🚛' : '🚜'} ${e.numero} — ${e.desc}${just}`;
-    }),
-    ...vlParadosBP.map(v => {
-      const just = parados[v.id] ? `: ${parados[v.id]}` : '';
-      return `🚗 ${v.desc}${v.placa ? ' ('+v.placa+')' : ''}${just}`;
-    })
-  ].join('\n');
-  const gruposVL = {};
-  vlAtivos.forEach(v => {
-    const k = v.desc.trim();
-    if (!gruposVL[k]) gruposVL[k] = 0;
-    gruposVL[k]++;
-  });
-  const veiculosTexto = Object.entries(gruposVL)
-    .sort(([a],[b]) => a.localeCompare(b,'pt-BR'))
-    .map(([desc, n]) => `${desc}: ${n} un.`).join('\n');
-
-  // Eventos
-  const segTexto = (day.eventosSeguranca||[]).map(ev =>
-    `${ev.tipo} (${ev.gravidade})${ev.desc ? ': ' + ev.desc : ''}${ev.acao ? ' | Ação: ' + ev.acao : ''}`
-  ).join('\n');
-  const ambTexto = (day.eventosAmbiente||[]).map(ev =>
-    `${ev.tipo} (${ev.gravidade})${ev.desc ? ': ' + ev.desc : ''}${ev.acao ? ' | Ação: ' + ev.acao : ''}`
-  ).join('\n');
-
-  return {
-    rdoNum:               numeroRDO(day.data),
-    data:                 day.data,
-    diaSemana:            diaDaSemana(day.data),
-    obra:                 state.obra.nome || '',
-    empresa:              state.obra.empresa || '',
-    local:                state.obra.local || '',
-    descricaoObra:        state.obra.descricao || '',
-    tempo:                tempoLabel(day),
-    jornada,
-    dssHorario:           day.dssHorario || '',
-    dssMinistrou:         dssMin,
-    dssTema:              day.dssTema || '',
-    atividades:           ativsTexto,
-    efetivoTotal:         totalEfetivo,
-    efetivoPorFuncao:     efetivoPorFuncao.join('\n'),
-    colaboradoresPresentes: colaboradoresPresentes.join('\n'),
-    equipamentos:         equipamentosTexto,
-    veiculosLeves:        veiculosTexto,
-    veiculosParados:      paradosTexto,
-    eventosSeguranca:     segTexto,
-    eventosMeioAmbiente:  ambTexto,
-    observacoes:          day.observacoesDia || '',
-    apontador:            day.apontador || '',
-    localObra:            day.localObra || '',
-    descricaoLocal:       day.descricaoLocal || '',
-    fotos:                (day.fotos || []).map((f, i) => legendaFoto(f, i) + ' — ' + f.url).join('\n')
-  };
-}
-
-// IMPORTANTE: O Apps Script implantado deve ser a versão de 23 colunas
-// (com coluna S = Veículos/Equip. Parados). Reimplantar DiarioObras.gs se houver
-// descasamento de colunas na planilha.
-async function salvarDiarioGoogle(diarioData) {
-  if (!APPS_SCRIPT_URL_DIARIO) return;
-  try {
-    const payload = buildPayloadGoogle(diarioData);
-    // POST com corpo JSON: sem limite de tamanho de URL (diários grandes, fotos, legendas)
-    const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=diario&action=salvar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    const json = await resp.json().catch(() => null);
-    if (json && json.ok) {
-      console.log('✅ Diário enviado ao Google Sheets');
-    } else {
-      throw new Error((json && json.error) || 'Resposta inválida do Apps Script');
-    }
-  } catch (err) {
-    console.error('Erro salvar diário no Google Sheets:', err);
-    toast('❌ Planilha não atualizada: ' + (err && err.message ? err.message : 'erro de conexão'));
-  }
-}
 
 function salvarDiarioDia(notificar) {
   if (!currentDay || !currentDay.data) return;
@@ -4483,7 +4251,6 @@ function salvarDiarioDia(notificar) {
     const descEl  = document.getElementById('descricaoLocal');
     if (localEl) currentDay.localObra    = localEl.value;
     if (descEl)  currentDay.descricaoLocal = descEl.value;
-    salvarDiarioGoogle(currentDay);
     toast('Diário salvo no histórico');
     backupAutomatico();
   }
@@ -5320,10 +5087,15 @@ function salvarConfigObra() {
 
   // Reflete no cadastro compartilhado (botão "🏢 Obras" da plataforma), pra
   // Pauta/Check-in/Custos também mostrarem estes dados.
-  try {
-    localStorage.setItem('b3_obra', JSON.stringify({ ...state.obra, _atualizadoEm: Date.now() }));
-  } catch (e) {
-    console.warn('Obra compartilhada: não foi possível salvar', e.message);
+  if (window.B3Obras) {
+    B3Obras.configSalvar({
+      nome: state.obra.nome, empresa: state.obra.empresa, local: state.obra.local,
+      descricao: state.obra.descricao, contrato: state.obra.contrato, cliente: state.obra.cliente,
+      gestor: state.obra.gestor, gerenciadora: state.obra.gerenciadora,
+      dataInicio: state.obra.dataInicio, dataTermino: state.obra.dataTermino,
+      encerramentoNormal: state.obra.encerramentoNormal, encerramentoSexta: state.obra.encerramentoSexta,
+      encerramentoSabado: state.obra.encerramentoSabado
+    }).catch(e => console.warn('Obra compartilhada: não foi possível salvar no Supabase', e.message));
   }
 
   toast('Configurações salvas');
@@ -5357,6 +5129,7 @@ function uploadLogo(event) {
       renderLogoPreview();
       atualizarHeader();
       toast('Logo carregado');
+      if (window.B3Obras) B3Obras.configSalvar({ logo: dataUrl }).catch(e => console.warn('Logo compartilhado: não consegui salvar no Supabase', e.message));
     };
     img.src = e.target.result;
   };
@@ -5370,6 +5143,7 @@ function removerLogo() {
     renderLogoPreview();
     atualizarHeader();
     toast('Logo removido');
+    if (window.B3Obras) B3Obras.configSalvar({ logo: '' }).catch(e => console.warn('Logo compartilhado: não consegui remover no Supabase', e.message));
   }, '🖼️ Remover Logo');
 }
 
@@ -6536,7 +6310,7 @@ function buildRelatorio(day) {
   if ((day.fotos || []).length > 0) {
     txt += `\n${divisor}\n\n`;
     txt += `*📷 Fotos do Dia — ${day.fotos.length}*\n`;
-    day.fotos.forEach((f, i) => { txt += `${legendaFoto(f, i)} — ${f.url}\n`; });
+    day.fotos.forEach((f, i) => { txt += `${legendaFoto(f, i)}\n`; });
   }
 
   // Observações do Dia
@@ -7025,10 +6799,9 @@ function gerarRelatorio() {
   if (descEl)  currentDay.descricaoLocal = descEl.value;
   const txt = buildRelatorio(currentDay);
   document.getElementById('output').textContent = txt;
-  // Salvar no histórico local e enviar à planilha (substitui a linha da mesma data + apontador)
+  // Salvar no histórico local (substitui o registro da mesma data + apontador)
   salvarDiarioDia(false);
-  salvarDiarioGoogle(currentDay);
-  toast('✅ Relatório gerado — diário salvo e enviado à planilha');
+  toast('✅ Relatório gerado — diário salvo');
   // Backup automático silencioso a cada geração de relatório
   backupAutomatico();
   return txt;
@@ -7204,7 +6977,7 @@ function backupAutomatico() {
       diarios: datasDoHistorico().length
     }));
     atualizarInfoAutoBackup();
-    backupNuvem(false); // espelho diário no Google Drive (1x/dia, silencioso)
+    backupNuvem(false); // espelho diário no Supabase (1x/dia, silencioso)
   } catch(e) {
     // localStorage cheio ou bloqueado — tenta download como fallback
     exportarBackup(true);
@@ -7355,23 +7128,34 @@ function mesclarDaNuvem(dados) {
   return { novos, atualizados };
 }
 
+// Busca o retrato mais recente no Supabase (uma linha só, id=1). Devolve
+// null se ainda não houver nenhum backup para esta obra.
+async function buscarSnapshotDoServidor() {
+  const { data, error } = await B3Obras.cliente().from('rdo_snapshot').select('*').eq('id', 1).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    state: data.state || null,
+    history: data.history || null,
+    chavesDia: data.chaves_dia || null,
+    atualizadoEm: data.atualizado_em
+  };
+}
+
 // Envio: sobe o retrato completo, com débito para não disparar a cada tecla.
 function enviarParaNuvemComDebito() {
-  if (_mesclando || !APPS_SCRIPT_URL_DIARIO) return;
+  if (_mesclando) return;
   clearTimeout(_envioTimer);
   _envioTimer = setTimeout(() => { backupNuvem(false, true); }, 4000);
 }
 
 async function sincronizarComOutrosAparelhos(manual) {
-  if (!APPS_SCRIPT_URL_DIARIO) { if (manual) toast('❌ URL do Apps Script não configurada'); return; }
   try {
     if (manual) toast('🔄 Sincronizando...');
     await backupNuvem(false, true);          // manda o que é daqui antes de buscar
-    const obra = state.obra.nome || 'Obra';
-    const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=backup&action=buscar-ultimo&obra=${encodeURIComponent(obra)}`);
-    const json = await resp.json().catch(() => null);
-    if (!json || !json.ok || !json.conteudo) { if (manual) toast('Nada novo na nuvem'); return; }
-    const r = mesclarDaNuvem(JSON.parse(json.conteudo));
+    const dados = await buscarSnapshotDoServidor();
+    if (!dados || !dados.history) { if (manual) toast('Nada novo na nuvem'); return; }
+    const r = mesclarDaNuvem(dados);
     if (r.novos || r.atualizados) {
       initCurrentDay((currentDay && currentDay.data) || todayISO());
       if (typeof renderCalendario === 'function') renderCalendario();
@@ -7391,7 +7175,6 @@ function iniciarSincronizacaoPeriodica() {
 }
 
 async function backupNuvem(manual, forcar) {
-  if (!APPS_SCRIPT_URL_DIARIO) { if (manual) toast('❌ URL do Apps Script não configurada'); return; }
   const hoje = todayISO();
   const ultimo = localStorage.getItem('ultimoBackupNuvem');
   // O espelho diário continua 1x/dia; a sincronização entre aparelhos usa
@@ -7404,22 +7187,15 @@ async function backupNuvem(manual, forcar) {
       const k = localStorage.key(i);
       if (/^(efetivoDia_|equipDia_|vlDia_|ativDia_)/.test(k)) chavesDia[k] = localStorage.getItem(k);
     }
-    const conteudo = JSON.stringify({
-      state, history, chavesDia,
-      exportado: new Date().toISOString(),
-      versao: 'v4', tipo: manual ? 'manual' : 'auto-nuvem'
+    const { error } = await B3Obras.cliente().from('rdo_snapshot').upsert({
+      id: 1, state, history, chaves_dia: chavesDia,
+      atualizado_em: new Date().toISOString(), atualizado_por: aparelhoId()
     });
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ path: 'backup', obra: state.obra.nome || 'Obra', conteudo })
-    });
-    const json = await resp.json().catch(() => null);
-    if (!json || !json.ok) throw new Error((json && json.error) || 'Resposta inválida');
+    if (error) throw error;
     localStorage.setItem('ultimoBackupNuvem', hoje);
     const el = document.getElementById('infoBackupNuvem');
     if (el) el.textContent = '☁️ Último backup na nuvem: ' + new Date().toLocaleString('pt-BR');
-    if (manual) toast('☁️ Backup salvo no Google Drive');
+    if (manual) toast('☁️ Backup salvo no Supabase');
   } catch (err) {
     console.error('Backup nuvem falhou:', err);
     if (manual) toast('❌ Backup na nuvem falhou: ' + (err.message || 'erro'));
@@ -7427,16 +7203,12 @@ async function backupNuvem(manual, forcar) {
 }
 
 async function restaurarNuvem(silencioso) {
-  if (!APPS_SCRIPT_URL_DIARIO) { if (!silencioso) toast('❌ URL do Apps Script não configurada'); return false; }
-  const obra = state.obra.nome || 'Obra';
   try {
-    const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=backup&action=buscar-ultimo&obra=${encodeURIComponent(obra)}`);
-    const json = await resp.json().catch(() => null);
-    if (!json || !json.ok) {
-      if (!silencioso) toast('❌ ' + ((json && json.msg) || 'Nenhum backup encontrado na nuvem'));
+    const dados = await buscarSnapshotDoServidor();
+    if (!dados || !dados.state) {
+      if (!silencioso) toast('❌ Nenhum backup encontrado no Supabase');
       return false;
     }
-    const dados = JSON.parse(json.conteudo);
     if (dados.state) state = mergeDefaults(dados.state);
     if (dados.history) history = dados.history;
     // Backup antigo pode vir com chaves só de data — migra ao restaurar.
@@ -7450,7 +7222,7 @@ async function restaurarNuvem(silencioso) {
     atualizarHeader();
     renderConfig();
     renderCalendario();
-    toast('☁️ Restaurado — backup de ' + new Date(json.data).toLocaleString('pt-BR'));
+    toast('☁️ Restaurado — backup de ' + new Date(dados.atualizadoEm).toLocaleString('pt-BR'));
     return true;
   } catch (err) {
     console.error('Restaurar nuvem falhou:', err);
@@ -7566,14 +7338,12 @@ function apareceVazio() {
 }
 
 async function checarRestauracaoAutomatica() {
-  if (!apareceVazio() || !APPS_SCRIPT_URL_DIARIO) return;
+  if (!apareceVazio()) return;
   if (sessionStorage.getItem('restauracaoDispensada')) return;
-  const obra = state.obra.nome || 'Obra';
   try {
-    const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=backup&action=buscar-ultimo&obra=${encodeURIComponent(obra)}`);
-    const json = await resp.json().catch(() => null);
-    if (!json || !json.ok) return;
-    const dataBackup = new Date(json.data).toLocaleString('pt-BR');
+    const dados = await buscarSnapshotDoServidor();
+    if (!dados || !dados.state) return;
+    const dataBackup = new Date(dados.atualizadoEm).toLocaleString('pt-BR');
     const banner = document.createElement('div');
     banner.id = 'bannerRestaurar';
     banner.style.cssText = 'position:fixed;left:12px;right:12px;bottom:88px;z-index:9998;background:#3a3f49;border:1.5px solid #dda583;border-radius:10px;padding:14px;box-shadow:0 4px 16px rgba(0,0,0,.3)';
@@ -7590,6 +7360,12 @@ async function checarRestauracaoAutomatica() {
 
 window.addEventListener('DOMContentLoaded', () => {
   atualizarHeader();
+  if (window.B3Obras) B3Obras.configCarregar().then(o => {
+    sincronizarObraCompartilhada();
+    saveState();
+    atualizarHeader();
+    if (typeof atualizarHeaderEdicao === 'function') atualizarHeaderEdicao();
+  }).catch(function(){});
   initCurrentDay(todayISO());
   const t = new Date();
   cal.year = t.getFullYear();

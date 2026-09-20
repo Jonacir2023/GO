@@ -119,6 +119,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 .notif{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;z-index:400;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
 .notif.show{opacity:1}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 
@@ -422,8 +424,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   }
 })();
 
-const APPS_SCRIPT_URL_PAUTA = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
-
 // ── STORAGE
 const S = {
   get(k){try{return JSON.parse(localStorage.getItem('pauta_'+k))}catch{return null}},
@@ -454,34 +454,56 @@ function init(){
   document.getElementById('cfg-webhook').value = config.webhook || '';
 
   popularSelects();
+  carregarMembrosSetores();
   carregarDoServidor();
 }
 
-// Busca a lista de pautas direto da planilha: acrescenta o que só existe lá
+// Cadastro de membros/setores (aba Admin) — compartilhado por obra no
+// Supabase, não mais preso a um navegador.
+async function carregarMembrosSetores(){
+  try {
+    const cli = B3Obras.cliente();
+    const [rm, rs] = await Promise.all([
+      cli.from('pauta_membros').select('nome').order('nome'),
+      cli.from('pauta_setores').select('nome').order('nome')
+    ]);
+    if (rm.error) throw rm.error;
+    if (rs.error) throw rs.error;
+    membros = (rm.data || []).map(r => r.nome);
+    setores = (rs.data || []).map(r => r.nome);
+    S.set('membros', membros);
+    S.set('setores', setores);
+    popularSelects();
+    renderMembrosAdm();
+    renderSetoresAdm();
+  } catch (e) {
+    console.warn('Pauta: não foi possível buscar membros/setores do Supabase:', e.message);
+  }
+}
+
+// Busca a lista de pautas direto do Supabase: acrescenta o que só existe lá
 // e atualiza o status do que já existe localmente (ex: alguém marcou
 // "Concluído" em outro aparelho). Sem isto, um navegador/aparelho novo
-// mostrava a aba "Listar" vazia mesmo com assuntos em andamento na planilha.
+// mostrava a aba "Listar" vazia mesmo com assuntos em andamento no servidor.
 async function carregarDoServidor(){
   try {
-    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=listar');
-    const data = await resp.json();
-    if (!data || (!data.dados && !data.pautas)) return;
-    const doServidor = data.dados || data.pautas || [];
+    const { data, error } = await B3Obras.cliente().from('pauta_assuntos').select('*');
+    if (error) throw error;
+    const doServidor = data || [];
     const porId = new Map(assuntos.map(a => [String(a.id), a]));
     let adicionados = 0, atualizados = 0;
     doServidor.forEach(p => {
-      if (!p.id) return;
       const chave = String(p.id);
       const existente = porId.get(chave);
       if (existente) {
         if (p.status && existente.status !== p.status) { existente.status = p.status; atualizados++; }
       } else {
         const novo = {
-          id: p.id, assunto: p.assunto, desc: p.desc || '',
-          criador: p.criador || '', resp: p.resp || '', setor: p.setor || '',
+          id: p.id, assunto: p.assunto, desc: p.descricao || '',
+          criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
           prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-          dataLanc: p.dataLanc || '', dataTerm: p.dataTerm || '',
-          criadoEm: Date.parse(p['Criado Em']) || Date.now()
+          dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+          criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now()
         };
         assuntos.push(novo);
         porId.set(chave, novo);
@@ -493,7 +515,7 @@ async function carregarDoServidor(){
       renderListar();
     }
   } catch (e) {
-    console.warn('Pauta: não foi possível buscar da planilha:', e.message);
+    console.warn('Pauta: não foi possível buscar do Supabase:', e.message);
   }
 }
 
@@ -579,7 +601,7 @@ function enviarAssunto(){
 
   assuntos.push(item);
   S.set('assuntos', assuntos);
-  criarPautaGoogle(item);
+  enviarParaSupabase(item);
 
   // Limpar form
   document.getElementById('f-assunto').value = '';
@@ -652,14 +674,10 @@ function removerAssunto(id){
   renderListar();
   notify('Removido','var(--red)');
 
-  // Apaga de verdade na planilha — sem isto, a linha continuava lá e a
-  // próxima busca da planilha trazia o assunto de volta como se fosse novo.
-  if (APPS_SCRIPT_URL_PAUTA) {
-    fetch(APPS_SCRIPT_URL_PAUTA, {
-      method: 'POST',
-      body: JSON.stringify({ path: 'pauta', action: 'remover', id })
-    }).catch(e => console.warn('Pauta: não foi possível remover na planilha:', e.message));
-  }
+  // Apaga de verdade no Supabase — sem isto, a linha continuava lá e a
+  // próxima busca do servidor trazia o assunto de volta como se fosse novo.
+  B3Obras.cliente().from('pauta_assuntos').delete().eq('id', id)
+    .then(({ error }) => { if (error) console.warn('Pauta: não foi possível remover no Supabase:', error.message); });
 }
 
 function limparAssuntos(){
@@ -670,47 +688,24 @@ function limparAssuntos(){
   notify('Assuntos limpos','var(--red)');
 }
 
-// ── INTEGRAÇÃO COM GOOGLE SHEETS
-async function criarPautaGoogle(item) {
-  if (!APPS_SCRIPT_URL_PAUTA) return;
+// ── INTEGRAÇÃO COM SUPABASE
+async function enviarParaSupabase(item) {
   try {
-    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=criar', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: item.id,
-        assunto: item.assunto,
-        descricao: item.desc,
-        criador: item.criador,
-        responsavel: item.resp,
-        setor: item.setor,
-        prioridade: item.prioridade === 'alta' ? 'Alta' : item.prioridade === 'media' ? 'Média' : 'Baixa',
-        data_lancamento: item.dataLanc,
-        data_termino: item.dataTerm
-      })
+    const { error } = await B3Obras.cliente().from('pauta_assuntos').upsert({
+      id: item.id,
+      assunto: item.assunto,
+      descricao: item.desc,
+      criador: item.criador,
+      responsavel: item.resp,
+      setor: item.setor,
+      prioridade: item.prioridade,
+      status: item.status,
+      data_lancamento: item.dataLanc || null,
+      data_termino: item.dataTerm || null
     });
-    const data = await resp.json();
-    if (data.ok) {
-      console.log('✅ Pauta criada no Google Sheets');
-    }
+    if (error) throw error;
   } catch (err) {
-    console.error('Erro criar pauta no Google Sheets:', err);
-  }
-}
-
-async function atualizarStatusPautaGoogle(id, novoStatus) {
-  if (!APPS_SCRIPT_URL_PAUTA) return;
-  try {
-    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=atualizar-status', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: id,
-        novo_status: novoStatus === 'afazer' ? 'Aberta' : novoStatus === 'fazendo' ? 'Em Andamento' : 'Concluído'
-      })
-    });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error);
-  } catch (err) {
-    console.error('Erro atualizar status:', err);
+    console.warn('Pauta: não consegui salvar no Supabase:', err.message);
   }
 }
 
@@ -809,7 +804,8 @@ function addMembro(){
   document.getElementById('inp-membro').value = '';
   renderMembrosAdm();
   popularSelects();
-  notify('Membro adicionado!');
+  B3Obras.cliente().from('pauta_membros').upsert({ nome: v }, { onConflict: 'nome' })
+    .then(({ error }) => notify(error ? 'Salvo aqui, mas não consegui gravar no servidor.' : 'Membro adicionado!', error ? 'var(--red)' : null));
 }
 
 function removerMembro(v){
@@ -818,6 +814,8 @@ function removerMembro(v){
   renderMembrosAdm();
   popularSelects();
   notify('Removido','var(--red)');
+  B3Obras.cliente().from('pauta_membros').delete().eq('nome', v)
+    .then(({ error }) => { if (error) console.warn('Pauta: não removi o membro no servidor:', error.message); });
 }
 
 function renderMembrosAdm(){
@@ -844,7 +842,8 @@ function addSetor(){
   document.getElementById('inp-setor').value = '';
   renderSetoresAdm();
   popularSelects();
-  notify('Setor adicionado!');
+  B3Obras.cliente().from('pauta_setores').upsert({ nome: v }, { onConflict: 'nome' })
+    .then(({ error }) => notify(error ? 'Salvo aqui, mas não consegui gravar no servidor.' : 'Setor adicionado!', error ? 'var(--red)' : null));
 }
 
 function removerSetor(v){
@@ -853,6 +852,8 @@ function removerSetor(v){
   renderSetoresAdm();
   popularSelects();
   notify('Removido','var(--red)');
+  B3Obras.cliente().from('pauta_setores').delete().eq('nome', v)
+    .then(({ error }) => { if (error) console.warn('Pauta: não removi o setor no servidor:', error.message); });
 }
 
 function renderSetoresAdm(){
@@ -899,11 +900,29 @@ function restaurarBackup(e){
       popularSelects();
       renderMembrosAdm();
       renderSetoresAdm();
+      empurrarMembrosSetores();
       notify('Cadastros restaurados!');
       e.target.value = '';
     } catch(err){ notify('Arquivo corrompido','var(--red)'); }
   };
   r.readAsText(file);
+}
+
+// Reenvia ao Supabase o cadastro restaurado de um arquivo de backup.
+async function empurrarMembrosSetores() {
+  try {
+    const cli = B3Obras.cliente();
+    if (membros.length) {
+      const { error } = await cli.from('pauta_membros').upsert(membros.map(nome => ({ nome })), { onConflict: 'nome' });
+      if (error) throw error;
+    }
+    if (setores.length) {
+      const { error } = await cli.from('pauta_setores').upsert(setores.map(nome => ({ nome })), { onConflict: 'nome' });
+      if (error) throw error;
+    }
+  } catch (e) {
+    console.warn('Pauta: não consegui reenviar o cadastro restaurado ao servidor:', e.message);
+  }
 }
 
 // FECHAR MODAL CLICANDO FORA

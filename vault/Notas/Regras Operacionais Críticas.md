@@ -126,6 +126,24 @@ preferências de estilo.
     Chromium — só em print visual real. Toda classe nova dentro dessa seção começa com
     `.pdf-doc `, sempre. Ver [[Projetos/BUILDLy Premium]], histórico de 19/09.
 
+25. **Esta sessão não alcança `*.supabase.co` nem `cdn.jsdelivr.net`.** O proxy de saída do
+    ambiente de teste usa lista de permissão, e nenhum dos dois está nela (`curl` para a REST
+    API do Supabase devolve `403` no `CONNECT` — confirmado, não é bug do app). Isso significa
+    que abrir o app num Chromium headless aqui não carrega nem o `supabase-js` do CDN, então o
+    percurso completo (clique → grava no Supabase → aparece na tela) não dá pra ver rodar
+    nesta sessão — só no app publicado, pelo usuário. O que dá pra verificar daqui é o dado em
+    si, com `execute_sql` do MCP do Supabase (canal separado do navegador, não passa por esse
+    proxy). Ver [[Decisões/2026-09-19 Migração para Supabase multi-obra]].
+
+26. **Migrar um módulo não termina em código próprio — verifique quem mais lê a chave que
+    ele escrevia.** Ao migrar a aba Obras para o Supabase, `b3_obra` parou de ser escrito —
+    mas `rdo.html` também lia e escrevia essa chave por conta própria
+    (`sincronizarObraCompartilhada()`, `salvarConfigObra()`, `uploadLogo()`), sem que nada
+    nos arquivos migrados apontasse para lá. Só apareceu ao migrar o RDO, várias tarefas
+    depois. `grep -rn` pela chave antiga em **todo o repositório**, não só nos arquivos que
+    a tarefa atual toca, antes de considerar uma migração de armazenamento compartilhado
+    concluída.
+
 ---
 
 ## Relacionado

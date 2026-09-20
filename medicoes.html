@@ -1253,6 +1253,8 @@
   #pdfOverlay { max-width: none; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 
 <body>
@@ -1493,9 +1495,6 @@ function voltarParaHome() {
     window.location.href = 'buildly-completo.html';
   }
 }
-function obraCompartilhada() {
-  try { return JSON.parse(localStorage.getItem('b3_obra')) || {}; } catch (e) { return {}; }
-}
 function atualizarHeader() {
   const o = obraCompartilhada();
   document.getElementById('hdrEmpresa').textContent = o.empresa || 'EMPRESA';
@@ -1541,7 +1540,56 @@ function fmtQtd(v) {
 // ============================================================
 let contratos = [];
 try { contratos = JSON.parse(localStorage.getItem('med_contratos') || '[]'); } catch (e) { contratos = []; }
-function salvarContratos() { localStorage.setItem('med_contratos', JSON.stringify(contratos)); }
+function salvarContratos() {
+  localStorage.setItem('med_contratos', JSON.stringify(contratos));
+  contratosEnviarTodosParaSupabase();
+}
+
+// Cada cliente/empreiteiro é uma linha só, com itens e medições embutidos
+// como JSON — casa com o modelo local, onde tudo já é salvo junto. Reenvia
+// a lista inteira a cada salvarContratos() (a lista é pequena por obra).
+async function contratosEnviarTodosParaSupabase() {
+  if (!contratos.length) return;
+  try {
+    const { error } = await B3Obras.cliente().from('medicao_contratos').upsert(contratos.map(c => ({
+      id: String(c.id), nome: c.nome, tipo: c.tipo, empresa: c.empresa || null,
+      especialidade: c.especialidade || null, numero_contrato: c.numeroContrato || null,
+      itens: c.itens || [], medicoes: c.medicoes || [],
+      atualizado_em: new Date().toISOString()
+    })));
+    if (error) throw error;
+  } catch (e) {
+    console.warn('Medições: não consegui salvar no Supabase agora — fica pendente:', e.message);
+  }
+}
+
+// Busca contratos do Supabase: só acrescenta o que ainda não existe aqui
+// (não decide qual lado está mais atualizado — cada contrato é editado só
+// por quem o cadastrou, então não há de fato disputa entre aparelhos).
+async function carregarContratosDoServidor() {
+  try {
+    const { data, error } = await B3Obras.cliente().from('medicao_contratos').select('*');
+    if (error) throw error;
+    const idsLocais = new Set(contratos.map(c => String(c.id)));
+    let mudou = false;
+    (data || []).forEach(c => {
+      if (idsLocais.has(String(c.id))) return;
+      contratos.push({
+        id: c.id, tipo: c.tipo || 'cliente', nome: c.nome, empresa: c.empresa || '',
+        especialidade: c.especialidade || '', numeroContrato: c.numero_contrato || '',
+        itens: c.itens || [], medicoes: c.medicoes || [], _expandido: false
+      });
+      mudou = true;
+    });
+    if (mudou) {
+      localStorage.setItem('med_contratos', JSON.stringify(contratos));
+      renderContratos();
+      atualizarSelectsContrato();
+    }
+  } catch (e) {
+    console.warn('Medições: não foi possível buscar do Supabase:', e.message);
+  }
+}
 
 // ============================================================
 // CADASTRO — CLIENTES / EMPREITEIROS
@@ -1626,10 +1674,12 @@ function salvarContrato() {
 function excluirContrato(id) {
   if (!confirm('Excluir este cliente/empreiteiro e todas as medições dele? Não tem como desfazer.')) return;
   contratos = contratos.filter(c => c.id !== id);
-  salvarContratos();
+  localStorage.setItem('med_contratos', JSON.stringify(contratos));
   renderContratos();
   atualizarSelectsContrato();
   toast('Excluído');
+  B3Obras.cliente().from('medicao_contratos').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Medições: não foi possível remover no Supabase:', error.message); });
 }
 
 function toggleContrato(id) {
@@ -2217,9 +2267,11 @@ document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   atualizarHeader();
+  if (window.B3Obras) B3Obras.configCarregar().then(atualizarHeader).catch(function(){});
   document.getElementById('hdrDate').textContent = formatDateBR(todayISO());
   renderContratos();
   atualizarSelectsContrato();
+  carregarContratosDoServidor();
 });
 </script>
 </body>

@@ -1253,6 +1253,8 @@
   #pdfOverlay { max-width: none; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 
 <body>
@@ -1419,9 +1421,6 @@ function voltarParaHome() {
     window.location.href = 'buildly-completo.html';
   }
 }
-function obraCompartilhada() {
-  try { return JSON.parse(localStorage.getItem('b3_obra')) || {}; } catch (e) { return {}; }
-}
 function atualizarHeader() {
   const o = obraCompartilhada();
   document.getElementById('hdrEmpresa').textContent = o.empresa || 'EMPRESA';
@@ -1570,6 +1569,48 @@ let mural = [];
 try { mural = JSON.parse(localStorage.getItem('manut_mural') || '[]'); } catch (e) { mural = []; }
 function salvarMural() { localStorage.setItem('manut_mural', JSON.stringify(mural)); }
 
+// Busca o mural do Supabase: acrescenta o que só existe lá e remove
+// localmente quem já esteve sincronizado mas foi apagado no servidor.
+async function carregarMuralDoServidor() {
+  try {
+    const { data, error } = await B3Obras.cliente().from('manutencao_mural').select('*');
+    if (error) throw error;
+    const doServidor = data || [];
+    const idsServidor = new Set(doServidor.map(m => String(m.id)));
+    const porId = new Map(mural.map(m => [String(m.id), m]));
+    let adicionadas = 0, removidas = 0;
+    doServidor.forEach(m => {
+      const chave = String(m.id);
+      if (porId.has(chave)) { porId.get(chave)._sincronizado = true; return; }
+      const novo = { id: m.id, autor: m.autor || '', texto: m.texto, criadoEm: m.criado_em ? Date.parse(m.criado_em) : Date.now(), _sincronizado: true };
+      mural.push(novo);
+      porId.set(chave, novo);
+      adicionadas++;
+    });
+    mural = mural.filter(m => {
+      if (m._sincronizado && !idsServidor.has(String(m.id))) { removidas++; return false; }
+      return true;
+    });
+    if (adicionadas > 0 || removidas > 0) { salvarMural(); renderMural(); }
+    for (const m of mural.filter(x => !x._sincronizado)) await enviarMuralParaSupabase(m);
+  } catch (e) {
+    console.warn('Manutenção: não foi possível buscar o mural do Supabase:', e.message);
+  }
+}
+
+async function enviarMuralParaSupabase(item) {
+  try {
+    const { error } = await B3Obras.cliente().from('manutencao_mural').upsert({
+      id: String(item.id), autor: item.autor || null, texto: item.texto
+    });
+    if (error) throw error;
+    item._sincronizado = true;
+    salvarMural();
+  } catch (e) {
+    console.warn('Manutenção: não consegui salvar o mural no Supabase agora — fica pendente:', e.message);
+  }
+}
+
 function renderMural() {
   const cont = document.getElementById('listaMural');
   if (!mural.length) { cont.innerHTML = '<div class="empty">Nenhuma mensagem ainda</div>'; return; }
@@ -1593,12 +1634,14 @@ function postarMural() {
   const texto = document.getElementById('muralTexto').value.trim();
   if (!autor) { toast('❌ Informe seu nome'); return; }
   if (!texto) { toast('❌ Escreva uma mensagem'); return; }
-  mural.push({ id: uid('mural_'), autor, texto, criadoEm: Date.now() });
+  const item = { id: uid('mural_'), autor, texto, criadoEm: Date.now() };
+  mural.push(item);
   salvarMural();
   localStorage.setItem('manut_ultimo_autor', autor);
   document.getElementById('muralTexto').value = '';
   renderMural();
   toast('✓ Postado no mural');
+  enviarMuralParaSupabase(item);
 }
 
 function excluirMural(id) {
@@ -1606,6 +1649,8 @@ function excluirMural(id) {
   mural = mural.filter(m => m.id !== id);
   salvarMural();
   renderMural();
+  B3Obras.cliente().from('manutencao_mural').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Manutenção: não foi possível remover o mural no Supabase:', error.message); });
 }
 
 // ============================================================
@@ -1618,7 +1663,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('view-' + btn.dataset.view).classList.add('active');
     if (btn.dataset.view === 'status') renderStatus();
-    if (btn.dataset.view === 'mural') renderMural();
+    if (btn.dataset.view === 'mural') { renderMural(); carregarMuralDoServidor(); }
   });
 });
 
@@ -1627,6 +1672,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 // ============================================================
 function atualizarManutencao() {
   atualizarHeader();
+  if (window.B3Obras) B3Obras.configCarregar().then(atualizarHeader).catch(function(){});
   renderStatus();
   renderMural();
 }

@@ -404,6 +404,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 
@@ -815,6 +817,19 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 
   <div id="obra-scroll-body" style="position:fixed;top:70px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px">
     <div class="sec">
+      <div class="sec-title">🔀 Obra ativa</div>
+      <div class="frow">
+        <label>Trabalhando em</label>
+        <select id="obra-seletor" onchange="obraTrocarAtual(this.value)"></select>
+      </div>
+      <p style="font-size:11px;color:#fff;margin-top:4px">
+        Cada obra é um banco de dados totalmente separado. Trocar aqui muda
+        Pauta, Check-in, RDO, Custos e todas as outras abas para os dados
+        dessa obra.
+      </p>
+    </div>
+
+    <div class="sec">
       <div class="sec-title">🏗️ Identificação</div>
       <div class="frow"><label>Nome da Obra</label><input type="text" id="obra-nome" placeholder="Ex.: Obra Beira-Mar Norte"/></div>
       <div class="frow"><label>Empresa</label><input type="text" id="obra-empresa" placeholder="Ex.: Construtora XYZ"/></div>
@@ -849,18 +864,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
       <div class="frow"><label>Encerramento sexta-feira</label><input type="time" id="obra-encerramento-sexta" value="16:00"/></div>
       <div class="frow"><label>Encerramento sábado</label><input type="time" id="obra-encerramento-sabado" value="16:00"/></div>
       <button class="btn btn-primary btn-full" onclick="obraSalvar()">💾 SALVAR OBRA</button>
-    </div>
-
-    <div class="sec" style="border-color:var(--red)">
-      <div class="sec-title" style="color:var(--red)">🧹 Remover dados de outra obra</div>
-      <p style="font-size:12px;color:#fff;margin-bottom:8px">
-        Use apenas se o Diário de Obras (RDO) de uma obra ERRADA (ex.: um backup
-        importado por engano) ficou salvo neste navegador. Isso apaga só o RDO
-        daquela obra específica — não mexe na obra atual nem em Pauta/Check-in.
-      </p>
-      <div id="obra-remover-lista" style="font-size:11px;color:#fff;margin-bottom:8px"></div>
-      <input type="text" id="obra-remover-nome" placeholder="Nome exato da obra a remover (ex.: Suzano)"/>
-      <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);margin-top:8px" onclick="obraRemoverDadosDeOutraObra()">🗑️ Apagar RDO dessa obra</button>
     </div>
   </div>
 </div>
@@ -1017,19 +1020,43 @@ function switchTab(tab, el) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// OBRA — cadastro compartilhado entre todos os apps (Pauta, Check-in,
-// RDO, Custos). Fonte única: localStorage['b3_obra']. O RDO também
-// sincroniza de volta a partir da sua própria aba Cadastro > Obra (ver
-// rdo.html), então editar em qualquer um dos dois lugares reflete no outro.
+// OBRA — cada obra é um projeto Supabase independente (banco próprio).
+// obraCompartilhada() (global, ver supabase-config.js) lê um cache
+// síncrono da última leitura; obraInit() busca a versão atual no servidor
+// ao abrir a aba. Trocar de obra troca de banco inteiro — nada de Pauta,
+// Check-in, RDO ou Custos é compartilhado entre obras.
 // ═══════════════════════════════════════════════════════════════
-function obraCompartilhada() {
-  try { return JSON.parse(localStorage.getItem('b3_obra')) || {}; } catch { return {}; }
+function obraPopularSeletor() {
+  const sel = document.getElementById('obra-seletor');
+  if (!sel) return;
+  const atualId = B3Obras.atualId();
+  sel.innerHTML = B3Obras.listar().map(o =>
+    `<option value="${o.id}"${o.id === atualId ? ' selected' : ''}>${o.nome}</option>`
+  ).join('');
 }
 
-function obraInit() {
+async function obraTrocarAtual(id) {
+  B3Obras.trocar(id);
+  obraNotify('Trocando de obra…');
+  await obraInit();
+  obraNotify('✅ Obra ativa: ' + (B3Obras.atual() || {}).nome);
+}
+
+async function obraInit() {
   const scrollBody = document.getElementById('obra-scroll-body');
   if (scrollBody) scrollBody.scrollTop = 0;
-  const o = obraCompartilhada();
+  obraPopularSeletor();
+  const oCache = obraCompartilhada();
+  obraPreencherForm(oCache);
+  try {
+    const o = await B3Obras.configCarregar();
+    obraPreencherForm(o);
+  } catch (e) {
+    obraNotify('Não consegui buscar a obra no servidor — mostrando o último dado salvo.', 'var(--red)');
+  }
+}
+
+function obraPreencherForm(o) {
   document.getElementById('obra-nome').value = o.nome || '';
   document.getElementById('obra-empresa').value = o.empresa || '';
   document.getElementById('obra-local').value = o.local || '';
@@ -1044,47 +1071,6 @@ function obraInit() {
   document.getElementById('obra-encerramento-sexta').value = o.encerramentoSexta || '16:00';
   document.getElementById('obra-encerramento-sabado').value = o.encerramentoSabado || '16:00';
   obraRenderLogoPreview(o.logo);
-  obraListarSalvas();
-}
-
-// Lista os nomes de obra que têm um Diário de Obras (RDO) salvo neste
-// navegador, para ajudar a identificar o nome exato antes de remover.
-function obraListarSalvas() {
-  const el = document.getElementById('obra-remover-lista');
-  if (!el) return;
-  const nomes = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.indexOf('diario_obras_v4_state_') === 0) {
-      let nome = k.replace('diario_obras_v4_state_', '');
-      try {
-        const s = JSON.parse(localStorage.getItem(k));
-        if (s && s.obra && s.obra.nome) nome = s.obra.nome;
-      } catch (e) { /* mantém o slug como nome */ }
-      nomes.push(nome);
-    }
-  }
-  el.textContent = nomes.length
-    ? 'RDOs salvos neste navegador: ' + nomes.join(', ')
-    : 'Nenhum RDO salvo neste navegador ainda.';
-}
-
-// Apaga o Diário de Obras (estado + histórico) de UMA obra específica,
-// identificada pelo nome. Não mexe na obra atualmente em uso nem em
-// Pauta/Check-in — só remove as chaves 'diario_obras_v4_*' daquele nome.
-function obraRemoverDadosDeOutraObra() {
-  const campo = document.getElementById('obra-remover-nome');
-  const nome = (campo.value || '').trim();
-  if (!nome) { obraNotify('Digite o nome exato da obra a remover', 'var(--red)'); return; }
-  const slug = nome.replace(/\s+/g, '_').toLowerCase();
-  const chaves = ['diario_obras_v4_state_' + slug, 'diario_obras_v4_history_' + slug];
-  const existentes = chaves.filter(k => localStorage.getItem(k) !== null);
-  if (!existentes.length) { obraNotify('Nenhum RDO encontrado com o nome "' + nome + '"', 'var(--red)'); return; }
-  if (!confirm(`Isso vai apagar PERMANENTEMENTE o Diário de Obras (RDO) salvo com o nome "${nome}" neste navegador. Não tem como desfazer. Confirma?`)) return;
-  existentes.forEach(k => localStorage.removeItem(k));
-  campo.value = '';
-  obraListarSalvas();
-  obraNotify('✓ Dados de "' + nome + '" apagados');
 }
 
 function obraRenderLogoPreview(logo) {
@@ -1099,7 +1085,7 @@ function obraUploadLogo(event) {
   const reader = new FileReader();
   reader.onload = e => {
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       const canvas = document.createElement('canvas');
       const maxSize = 200;
       let w = img.width, h = img.height;
@@ -1111,49 +1097,55 @@ function obraUploadLogo(event) {
       ctx.fillRect(0, 0, w, h);
       ctx.drawImage(img, 0, 0, w, h);
       const dataUrl = canvas.toDataURL('image/png');
-      const o = obraCompartilhada();
-      o.logo = dataUrl;
-      localStorage.setItem('b3_obra', JSON.stringify(o));
       obraRenderLogoPreview(dataUrl);
-      obraNotify('Logo carregado');
+      try {
+        await B3Obras.configSalvar({ logo: dataUrl });
+        obraNotify('Logo carregado');
+      } catch (err) {
+        obraNotify('Não consegui salvar o logo no servidor.', 'var(--red)');
+      }
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function obraRemoverLogo() {
-  const o = obraCompartilhada();
-  o.logo = '';
-  localStorage.setItem('b3_obra', JSON.stringify(o));
+async function obraRemoverLogo() {
   obraRenderLogoPreview('');
-  obraNotify('Logo removido', 'var(--red)');
+  try {
+    await B3Obras.configSalvar({ logo: '' });
+    obraNotify('Logo removido', 'var(--red)');
+  } catch (err) {
+    obraNotify('Não consegui remover o logo no servidor.', 'var(--red)');
+  }
 }
 
-function obraSalvar() {
-  const o = obraCompartilhada();
-  o.nome = document.getElementById('obra-nome').value.trim();
-  o.empresa = document.getElementById('obra-empresa').value.trim();
-  o.local = document.getElementById('obra-local').value.trim();
-  o.descricao = document.getElementById('obra-descricao').value.trim();
-  o.contrato = document.getElementById('obra-contrato').value.trim();
-  o.cliente = document.getElementById('obra-cliente').value.trim();
-  o.gestor = document.getElementById('obra-gestor').value.trim();
-  o.gerenciadora = document.getElementById('obra-gerenciadora').value.trim();
-  o.dataInicio = document.getElementById('obra-data-inicio').value;
-  o.dataTermino = document.getElementById('obra-data-termino').value;
-  o.encerramentoNormal = document.getElementById('obra-encerramento-normal').value || '17:00';
-  o.encerramentoSexta = document.getElementById('obra-encerramento-sexta').value || '16:00';
-  o.encerramentoSabado = document.getElementById('obra-encerramento-sabado').value || '16:00';
-  o._atualizadoEm = Date.now();
-  localStorage.setItem('b3_obra', JSON.stringify(o));
-
-  // Reflete o nome de imediato onde já está visível nesta página, sem
-  // precisar recarregar.
-  const lbl = document.getElementById('checkin-hdr-obra-label');
-  if (lbl) lbl.textContent = o.nome || '— Configure em 🏢 Obras —';
-
-  obraNotify('✅ Obra salva!');
+async function obraSalvar() {
+  const patch = {
+    nome: document.getElementById('obra-nome').value.trim(),
+    empresa: document.getElementById('obra-empresa').value.trim(),
+    local: document.getElementById('obra-local').value.trim(),
+    descricao: document.getElementById('obra-descricao').value.trim(),
+    contrato: document.getElementById('obra-contrato').value.trim(),
+    cliente: document.getElementById('obra-cliente').value.trim(),
+    gestor: document.getElementById('obra-gestor').value.trim(),
+    gerenciadora: document.getElementById('obra-gerenciadora').value.trim(),
+    dataInicio: document.getElementById('obra-data-inicio').value,
+    dataTermino: document.getElementById('obra-data-termino').value,
+    encerramentoNormal: document.getElementById('obra-encerramento-normal').value || '17:00',
+    encerramentoSexta: document.getElementById('obra-encerramento-sexta').value || '16:00',
+    encerramentoSabado: document.getElementById('obra-encerramento-sabado').value || '16:00'
+  };
+  try {
+    const o = await B3Obras.configSalvar(patch);
+    // Reflete o nome de imediato onde já está visível nesta página, sem
+    // precisar recarregar.
+    const lbl = document.getElementById('checkin-hdr-obra-label');
+    if (lbl) lbl.textContent = o.nome || '— Configure em 🏢 Obras —';
+    obraNotify('✅ Obra salva!');
+  } catch (err) {
+    obraNotify('❌ Não consegui salvar no servidor. Tente de novo.', 'var(--red)');
+  }
 }
 
 function obraNotify(msg, cor) {
@@ -1195,7 +1187,7 @@ function montarContextoLocal() {
   const ctx = {};
 
   try {
-    const obra = JSON.parse(localStorage.getItem('b3_obra') || '{}');
+    const obra = obraCompartilhada();
     if (obra && Object.keys(obra).length) {
       ctx.obra = {
         nome: obra.nome || '', empresa: obra.empresa || '', local: obra.local || '',
@@ -1330,45 +1322,63 @@ let pautaPrioridade = 'media';
 let pautaStatus = 'afazer';
 
 function pautaInit() {
-  console.log('📋 pautaInit() — Inicializando Pauta');
-  console.log(`   Assuntos carregados: ${pautaAssuntos.length}`);
-
   document.getElementById('pauta-hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('pauta-f-data-lanc').value = new Date().toISOString().slice(0,10);
   pautaPopularSelects();
+  pautaCarregarMembrosSetores();
   pautaCarregarDoServidor();
 }
 
-// Busca a lista de pautas direto da planilha: acrescenta o que só existe lá
-// (id novo) e atualiza o status do que já existe localmente (ex: alguém
-// marcou "Concluído" em outro aparelho). Sem isto, um navegador/aparelho
-// novo mostrava a aba "Listar" vazia mesmo com assuntos em andamento na
-// planilha — o app só lia do localStorage, nunca da planilha em si.
+// Grava (ou reenvia) um assunto no Supabase da obra ativa. Chamado ao criar
+// e, para quem ainda não confirmou (_sincronizado ausente), de novo a cada
+// carregarDoServidor() — cobre o caso de ter sido criado sem rede.
+async function pautaEnviarParaSupabase(item) {
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_assuntos').upsert({
+      id: item.id,
+      assunto: item.assunto,
+      descricao: item.desc,
+      criador: item.criador,
+      responsavel: item.resp,
+      setor: item.setor,
+      prioridade: item.prioridade,
+      status: item.status,
+      data_lancamento: item.dataLanc || null,
+      data_termino: item.dataTerm || null
+    });
+    if (error) throw error;
+    item._sincronizado = true;
+    pautaS.set('assuntos', pautaAssuntos);
+  } catch (e) {
+    console.warn('Pauta: não consegui salvar no Supabase agora — fica pendente:', e.message);
+  }
+}
+
+// Busca a lista de pautas direto do Supabase: acrescenta o que só existe lá
+// e atualiza o status do que já existe localmente (ex: alguém marcou
+// "Concluído" em outro aparelho). Sem isto, um navegador/aparelho novo
+// mostrava a aba "Listar" vazia mesmo com assuntos em andamento no servidor.
 async function pautaCarregarDoServidor() {
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + '?path=pauta&action=listar');
-    const data = await resp.json();
-    if (!data || (!data.dados && !data.pautas)) return;
-    const doServidor = data.dados || data.pautas || [];
-    const idsServidor = new Set(doServidor.map(p => String(p.id)).filter(Boolean));
+    const { data, error } = await B3Obras.cliente().from('pauta_assuntos').select('*');
+    if (error) throw error;
+    const doServidor = data || [];
+    const idsServidor = new Set(doServidor.map(p => String(p.id)));
     const porId = new Map(pautaAssuntos.map(a => [String(a.id), a]));
     let adicionados = 0, atualizados = 0, removidos = 0;
     doServidor.forEach(p => {
-      if (!p.id) return;
       const chave = String(p.id);
       const existente = porId.get(chave);
       if (existente) {
         if (p.status && existente.status !== p.status) { existente.status = p.status; atualizados++; }
+        existente._sincronizado = true;
       } else {
         const novo = {
-          id: p.id, assunto: p.assunto, desc: p.desc || '',
-          criador: p.criador || '', resp: p.resp || '', setor: p.setor || '',
+          id: p.id, assunto: p.assunto, desc: p.descricao || '',
+          criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
           prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-          dataLanc: p.dataLanc || '', dataTerm: p.dataTerm || '',
-          criadoEm: Date.parse(p['Criado Em']) || Date.now(),
-          // Já veio da planilha — marca como sincronizado para o ciclo
-          // automático de 2 em 2 minutos não reenviar (e reduplicar) este
-          // item na próxima rodada.
+          dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+          criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now(),
           _sincronizado: true
         };
         pautaAssuntos.push(novo);
@@ -1377,11 +1387,9 @@ async function pautaCarregarDoServidor() {
       }
     });
 
-    // Remove localmente quem já esteve sincronizado mas sumiu da planilha —
-    // ou seja, foi apagado direto na planilha. Itens ainda não
-    // sincronizados (sem _sincronizado) nunca entram aqui: eles
-    // legitimamente ainda não existem no servidor, então sumir da lista do
-    // servidor não significa que foram apagados de propósito.
+    // Remove localmente quem já esteve sincronizado mas sumiu do servidor —
+    // ou seja, foi apagado direto lá. Itens ainda não sincronizados nunca
+    // entram aqui: eles legitimamente ainda não existem no servidor.
     pautaAssuntos = pautaAssuntos.filter(a => {
       if (a._sincronizado && !idsServidor.has(String(a.id))) { removidos++; return false; }
       return true;
@@ -1390,10 +1398,38 @@ async function pautaCarregarDoServidor() {
     if (adicionados > 0 || atualizados > 0 || removidos > 0) {
       pautaS.set('assuntos', pautaAssuntos);
       pautaRenderListar();
-      console.log(`✅ Pauta: ${adicionados} novo(s), ${atualizados} atualizado(s), ${removidos} removido(s) da planilha`);
+    }
+
+    // Quem foi criado sem rede (offline) ainda não tem _sincronizado — tenta
+    // agora que o servidor respondeu.
+    for (const p of pautaAssuntos.filter(a => !a._sincronizado)) {
+      await pautaEnviarParaSupabase(p);
     }
   } catch (e) {
-    console.warn('Pauta: não foi possível buscar da planilha:', e.message);
+    console.warn('Pauta: não foi possível buscar do Supabase:', e.message);
+  }
+}
+
+// Cadastro de membros/setores (aba Admin) — compartilhado por obra no
+// Supabase, não mais preso a um navegador.
+async function pautaCarregarMembrosSetores() {
+  try {
+    const cli = B3Obras.cliente();
+    const [rm, rs] = await Promise.all([
+      cli.from('pauta_membros').select('nome').order('nome'),
+      cli.from('pauta_setores').select('nome').order('nome')
+    ]);
+    if (rm.error) throw rm.error;
+    if (rs.error) throw rs.error;
+    pautaMembros = (rm.data || []).map(r => r.nome);
+    pautaSetores = (rs.data || []).map(r => r.nome);
+    pautaS.set('membros', pautaMembros);
+    pautaS.set('setores', pautaSetores);
+    pautaPopularSelects();
+    pautaRenderMembrosAdm();
+    pautaRenderSetoresAdm();
+  } catch (e) {
+    console.warn('Pauta: não foi possível buscar membros/setores do Supabase:', e.message);
   }
 }
 
@@ -1436,8 +1472,6 @@ function pautaPopularSelects() {
 }
 
 function pautaEnviarAssunto() {
-  console.log('📝 pautaEnviarAssunto() chamado');
-
   const assunto = document.getElementById('pauta-f-assunto').value.trim();
   const descricao = document.getElementById('pauta-f-descricao').value.trim();
   const criador = document.getElementById('pauta-f-criador').value;
@@ -1445,9 +1479,6 @@ function pautaEnviarAssunto() {
   const setor = document.getElementById('pauta-f-setor').value;
   const dataLanc = document.getElementById('pauta-f-data-lanc').value;
   const dataTerm = document.getElementById('pauta-f-data-term').value;
-
-  console.log('   Assunto:', assunto);
-  console.log('   Setor:', setor);
 
   if (!assunto) { pautaNotify('Informe o assunto', 'var(--red)'); return; }
   if (!setor) { pautaNotify('Selecione o setor', 'var(--red)'); return; }
@@ -1460,21 +1491,9 @@ function pautaEnviarAssunto() {
     criadoEm: Date.now()
   };
 
-  console.log('📌 Item criado:', item);
-
   pautaAssuntos.push(item);
-  console.log(`✅ Item adicionado ao array (total: ${pautaAssuntos.length})`);
-
   pautaS.set('assuntos', pautaAssuntos);
-  console.log('💾 Salvo em localStorage - pauta_assuntos');
-
-  // Verificação
-  const verificacao = localStorage.getItem('pauta_assuntos');
-  console.log('🔍 Verificação: dados foram salvos?', verificacao ? 'SIM' : 'NÃO');
-  if (verificacao) {
-    const parsed = JSON.parse(verificacao);
-    console.log(`   Total de itens no localStorage: ${parsed.length}`);
-  }
+  pautaEnviarParaSupabase(item);
 
   document.getElementById('pauta-f-assunto').value = '';
   document.getElementById('pauta-f-descricao').value = '';
@@ -1536,12 +1555,10 @@ function pautaRemoverAssunto(id) {
   pautaRenderListar();
   pautaNotify('Removido', 'var(--red)');
 
-  // Apaga de verdade na planilha — sem isto, a linha continuava lá e a
-  // próxima busca da planilha trazia o assunto de volta como se fosse novo.
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ path: 'pauta', action: 'remover', id })
-  }).catch(e => console.warn('Pauta: não foi possível remover na planilha:', e.message));
+  // Apaga de verdade no Supabase — sem isto, a linha continuava lá e a
+  // próxima busca do servidor trazia o assunto de volta como se fosse novo.
+  B3Obras.cliente().from('pauta_assuntos').delete().eq('id', id)
+    .then(({ error }) => { if (error) console.warn('Pauta: não foi possível remover no Supabase:', error.message); });
 }
 
 function pautaLimparAssuntos() {
@@ -1570,7 +1587,7 @@ function pautaAbaAdmin(aba, el) {
   el.classList.add('active');
 }
 
-function pautaAddMembro() {
+async function pautaAddMembro() {
   const v = document.getElementById('pauta-inp-membro').value.trim();
   if (!v) { pautaNotify('Informe o nome', 'var(--red)'); return; }
   if (pautaMembros.includes(v)) { pautaNotify('Já cadastrado', 'var(--yellow)'); return; }
@@ -1579,15 +1596,27 @@ function pautaAddMembro() {
   document.getElementById('pauta-inp-membro').value = '';
   pautaRenderMembrosAdm();
   pautaPopularSelects();
-  pautaNotify('Membro adicionado!');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_membros').upsert({ nome: v }, { onConflict: 'nome' });
+    if (error) throw error;
+    pautaNotify('Membro adicionado!');
+  } catch (e) {
+    pautaNotify('Salvo aqui, mas não consegui gravar no servidor.', 'var(--red)');
+  }
 }
 
-function pautaRemoverMembro(v) {
+async function pautaRemoverMembro(v) {
   pautaMembros = pautaMembros.filter(m => m !== v);
   pautaS.set('membros', pautaMembros);
   pautaRenderMembrosAdm();
   pautaPopularSelects();
   pautaNotify('Removido', 'var(--red)');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_membros').delete().eq('nome', v);
+    if (error) throw error;
+  } catch (e) {
+    console.warn('Pauta: não removi o membro no servidor:', e.message);
+  }
 }
 
 function pautaRenderMembrosAdm() {
@@ -1604,7 +1633,7 @@ function pautaRenderMembrosAdm() {
   `).join('');
 }
 
-function pautaAddSetor() {
+async function pautaAddSetor() {
   const v = document.getElementById('pauta-inp-setor').value.trim();
   if (!v) { pautaNotify('Informe o setor', 'var(--red)'); return; }
   if (pautaSetores.includes(v)) { pautaNotify('Já cadastrado', 'var(--yellow)'); return; }
@@ -1613,15 +1642,27 @@ function pautaAddSetor() {
   document.getElementById('pauta-inp-setor').value = '';
   pautaRenderSetoresAdm();
   pautaPopularSelects();
-  pautaNotify('Setor adicionado!');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_setores').upsert({ nome: v }, { onConflict: 'nome' });
+    if (error) throw error;
+    pautaNotify('Setor adicionado!');
+  } catch (e) {
+    pautaNotify('Salvo aqui, mas não consegui gravar no servidor.', 'var(--red)');
+  }
 }
 
-function pautaRemoverSetor(v) {
+async function pautaRemoverSetor(v) {
   pautaSetores = pautaSetores.filter(s => s !== v);
   pautaS.set('setores', pautaSetores);
   pautaRenderSetoresAdm();
   pautaPopularSelects();
   pautaNotify('Removido', 'var(--red)');
+  try {
+    const { error } = await B3Obras.cliente().from('pauta_setores').delete().eq('nome', v);
+    if (error) throw error;
+  } catch (e) {
+    console.warn('Pauta: não removi o setor no servidor:', e.message);
+  }
 }
 
 function pautaRenderSetoresAdm() {
@@ -1663,11 +1704,29 @@ function pautaRestaurarBackup(e) {
       pautaPopularSelects();
       pautaRenderMembrosAdm();
       pautaRenderSetoresAdm();
+      pautaEmpurrarMembrosSetores();
       pautaNotify('Cadastros restaurados!');
       e.target.value = '';
     } catch(err) { pautaNotify('Arquivo corrompido', 'var(--red)'); }
   };
   r.readAsText(file);
+}
+
+// Reenvia ao Supabase o cadastro restaurado de um arquivo de backup.
+async function pautaEmpurrarMembrosSetores() {
+  try {
+    const cli = B3Obras.cliente();
+    if (pautaMembros.length) {
+      const { error } = await cli.from('pauta_membros').upsert(pautaMembros.map(nome => ({ nome })), { onConflict: 'nome' });
+      if (error) throw error;
+    }
+    if (pautaSetores.length) {
+      const { error } = await cli.from('pauta_setores').upsert(pautaSetores.map(nome => ({ nome })), { onConflict: 'nome' });
+      if (error) throw error;
+    }
+  } catch (e) {
+    console.warn('Pauta: não consegui reenviar o cadastro restaurado ao servidor:', e.message);
+  }
 }
 
 document.getElementById('pauta-modal-admin').addEventListener('click', function(e) {
@@ -1758,87 +1817,38 @@ const checkinS = {
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
 
+// Puxa direto da Pauta (import inicial) — não escreve em checkin_assuntos;
+// é só como o Check-in descobre assuntos novos que ainda não tem na lista.
 async function checkinCarregarAssuntosDaPauta() {
   try {
-    const response = await fetch(APPS_SCRIPT_URL + '?path=pauta&action=listar');
-    const data = await response.json();
+    const { data, error } = await B3Obras.cliente().from('pauta_assuntos').select('*');
+    if (error) throw error;
+    const assuntosPauta = (data || []).map(p => ({
+      id: p.id, assunto: p.assunto, desc: p.descricao || '',
+      criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
+      prioridade: p.prioridade || 'media', status: p.status || 'afazer',
+      dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+      criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now()
+    }));
+    checkinNotify('✅ Assuntos carregados da Pauta!', '#7cb083');
 
-    if (data.status === 'ok') {
-      const assuntosPauta = data.dados || [];
-      checkinNotify('✅ Assuntos carregados da Pauta!', '#7cb083');
+    // Mergear com assuntos locais (não duplicar IDs)
+    let assuntosLocais = checkinS.get('assuntos') || [];
+    const ids = new Set(assuntosLocais.map(a => String(a.id)));
 
-      // Mergear com assuntos locais (não duplicar IDs)
-      let assuntosLocais = checkinS.get('assuntos') || [];
-      const ids = new Set(assuntosLocais.map(a => a.id));
+    assuntosPauta.forEach(a => {
+      if (!ids.has(String(a.id))) {
+        assuntosLocais.push(a);
+      }
+    });
 
-      assuntosPauta.forEach(a => {
-        if (!ids.has(a.id)) {
-          assuntosLocais.push(a);
-        }
-      });
-
-      checkinS.set('assuntos', assuntosLocais);
-      checkinRenderCadastro();
-      return assuntosLocais;
-    } else {
-      checkinNotify('❌ Erro ao carregar assuntos', '#d98a7c');
-    }
+    checkinS.set('assuntos', assuntosLocais);
+    checkinAssuntos = assuntosLocais;
+    checkinRenderCadastro();
+    return assuntosLocais;
   } catch (e) {
     checkinNotify('❌ Erro de conexão: ' + e.message, '#d98a7c');
     console.error('Erro ao sincronizar:', e);
-  }
-}
-
-async function checkinAtualizarStatusNoServidor(id, novoStatus) {
-  try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        path: 'pauta',
-        action: 'atualizar-status',
-        id: id,
-        status: novoStatus
-      })
-    });
-
-    const data = await response.json();
-
-    if (data.status === 'ok') {
-      checkinNotify('✅ Status atualizado no servidor', '#7cb083');
-    } else {
-      checkinNotify('❌ Erro ao atualizar', '#d98a7c');
-    }
-  } catch (e) {
-    console.error('Erro ao atualizar status:', e);
-  }
-}
-
-async function checkinSalvarReuniao() {
-  const assuntos = checkinS.get('assuntos') || [];
-  const reuniao = {
-    data: new Date().toISOString(),
-    duracao: document.getElementById('checkin-duracao')?.value || '0:00',
-    participantes: [],
-    assuntos: assuntos,
-    observacoes: document.getElementById('checkin-obs')?.value || ''
-  };
-
-  try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        path: 'checkin',
-        action: 'salvar',
-        dados: reuniao
-      })
-    });
-
-    const data = await response.json();
-    if (data.status === 'ok') {
-      checkinNotify('✅ Reunião salva com sucesso!', '#7cb083');
-    }
-  } catch (e) {
-    checkinNotify('❌ Erro ao salvar reunião', '#d98a7c');
   }
 }
 
@@ -1894,6 +1904,9 @@ function checkinInit() {
   document.getElementById('checkin-ci-data').value = now.toISOString().slice(0,10);
   document.getElementById('checkin-ci-hora').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('checkin-hdr-obra-label').textContent = obraCompartilhada().nome || '— Configure em 🏢 Obras —';
+  if (window.B3Obras) B3Obras.configCarregar().then(o => {
+    document.getElementById('checkin-hdr-obra-label').textContent = o.nome || '— Configure em 🏢 Obras —';
+  }).catch(function(){});
 
   // Recarregar assuntos do localStorage (garante dados atualizados)
   checkinAssuntos = checkinS.get('assuntos') || [];
@@ -1909,51 +1922,48 @@ function checkinInit() {
 }
 
 // Sem isto, um navegador/aparelho novo mostrava Cadastro e Check-in vazios
-// mesmo com assuntos em andamento na aba CheckIn da planilha — nada aqui
-// nunca chamava path=checkin&action=historico. Também atualiza o status do
+// mesmo com assuntos em andamento no Supabase. Também atualiza o status do
 // que já existe localmente, pra refletir mudanças feitas em outro aparelho.
 async function checkinCarregarHistoricoDoServidor() {
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + '?path=checkin&action=historico');
-    const data = await resp.json();
-    if (!data || (!data.dados && !data.checkins)) return;
-    const doServidor = data.dados || data.checkins || [];
+    const { data, error } = await B3Obras.cliente().from('checkin_assuntos').select('*');
+    if (error) throw error;
+    const doServidor = data || [];
 
     let idsRemovidos = [];
     try { idsRemovidos = JSON.parse(localStorage.getItem('chk_removidos') || '[]'); } catch { idsRemovidos = []; }
     const removidosSet = new Set(idsRemovidos.map(String));
 
-    const idsServidor = new Set(doServidor.map(c => String(c.id)).filter(Boolean));
+    const idsServidor = new Set(doServidor.map(c => String(c.id)));
     const porId = new Map(checkinAssuntos.map(a => [String(a.id), a]));
     let adicionados = 0, atualizados = 0, removidos = 0;
     doServidor.forEach(c => {
-      if (!c.id || removidosSet.has(String(c.id))) return;
+      if (removidosSet.has(String(c.id))) return;
       const chave = String(c.id);
       const existente = porId.get(chave);
       if (existente) {
         // O status do servidor NÃO pode passar por cima de decisão tomada
         // aqui. Dois casos protegem o que o usuário fez:
-        //  - statusLocalEm: mudou no app e ainda não subiu para a planilha;
+        //  - statusLocalEm: mudou no app e ainda não subiu para o servidor;
         //  - statusTravadoEm = hoje: a reunião de hoje já foi salva, então o
         //    dia está fechado e não muda mais.
-        // Sem isso, o botão Atualizar devolvia o status antigo da planilha e
-        // desfazia a reunião que acabara de ser registrada.
+        // Sem isso, o botão Atualizar devolvia o status antigo e desfazia a
+        // reunião que acabara de ser registrada.
         const mudouAqui = !!existente.statusLocalEm;
         const diaFechado = existente.statusTravadoEm === checkinDataDeHoje();
         if (c.status && existente.status !== c.status && !mudouAqui && !diaFechado) {
           existente.status = c.status; atualizados++;
         }
+        existente._sincronizado = true;
       } else {
         const novo = {
-          id: c.id, assunto: c.assunto, desc: c.desc || '',
-          criador: c.criador || '', resp: c.resp || '', setor: c.setor || '',
+          id: c.id, assunto: c.assunto, desc: c.descricao || '',
+          criador: c.criador || '', resp: c.responsavel || '', setor: c.setor || '',
           prioridade: c.prioridade || 'media', status: c.status || 'afazer',
-          dataTerm: c.dataTerm || '', concluidoEm: c.concluidoEm || '',
-          criadoEm: Date.parse(c.criadoEm) || Date.now(),
-          _origem: 'checkin',
-          // Já veio da planilha — marca como sincronizado para o ciclo
-          // automático de 2 em 2 minutos não reenviar (e reduplicar) este
-          // item na próxima rodada.
+          dataLanc: c.data_lancamento || '', dataTerm: c.data_termino || '',
+          concluidoEm: c.concluido_em ? Date.parse(c.concluido_em) : '',
+          criadoEm: c.criado_em ? Date.parse(c.criado_em) : Date.now(),
+          _origem: c.origem || 'checkin',
           _sincronizado: true
         };
         checkinAssuntos.push(novo);
@@ -1962,9 +1972,9 @@ async function checkinCarregarHistoricoDoServidor() {
       }
     });
 
-    // Remove localmente quem já esteve sincronizado mas sumiu da planilha —
-    // ou seja, foi apagado direto na planilha. Itens ainda não
-    // sincronizados nunca entram aqui (ver pautaCarregarDoServidor).
+    // Remove localmente quem já esteve sincronizado mas sumiu do servidor —
+    // ou seja, foi apagado direto lá. Itens ainda não sincronizados nunca
+    // entram aqui (ver pautaCarregarDoServidor).
     checkinAssuntos = checkinAssuntos.filter(a => {
       if (a._sincronizado && !idsServidor.has(String(a.id))) { removidos++; return false; }
       return true;
@@ -1975,10 +1985,40 @@ async function checkinCarregarHistoricoDoServidor() {
       checkinRenderCadastro();
       checkinRenderKanban();
       checkinAtualizarContadores();
-      console.log(`✅ Check-in: ${adicionados} novo(s), ${atualizados} atualizado(s), ${removidos} removido(s) da planilha`);
+    }
+
+    // Quem foi criado/editado sem rede ainda não tem _sincronizado — tenta
+    // agora que o servidor respondeu.
+    for (const a of checkinAssuntos.filter(x => !x._sincronizado)) {
+      await checkinEnviarAssuntoParaSupabase(a);
     }
   } catch (e) {
-    console.warn('Check-in: não foi possível buscar da planilha:', e.message);
+    console.warn('Check-in: não foi possível buscar do Supabase:', e.message);
+  }
+}
+
+// Grava (ou reenvia) um assunto no checkin_assuntos da obra ativa.
+async function checkinEnviarAssuntoParaSupabase(item) {
+  try {
+    const { error } = await B3Obras.cliente().from('checkin_assuntos').upsert({
+      id: String(item.id),
+      assunto: item.assunto,
+      descricao: item.desc,
+      criador: item.criador,
+      responsavel: item.resp,
+      setor: item.setor,
+      prioridade: item.prioridade,
+      status: item.status,
+      data_lancamento: item.dataLanc || null,
+      data_termino: item.dataTerm || null,
+      origem: item._origem || null,
+      concluido_em: item.concluidoEm ? new Date(item.concluidoEm).toISOString() : null
+    });
+    if (error) throw error;
+    item._sincronizado = true;
+    checkinS.set('assuntos', checkinAssuntos);
+  } catch (e) {
+    console.warn('Check-in: não consegui salvar no Supabase agora — fica pendente:', e.message);
   }
 }
 
@@ -2076,109 +2116,11 @@ function checkinSincronizarComPauta() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SINCRONIZAÇÃO COM GOOGLE SHEETS (BUILDLy Premium)
-// ═══════════════════════════════════════════════════════════════
-
-async function sincronizarComGoogleSheets() {
-  try {
-    // Sincronizar PAUTA para Google Sheets
-    const assuntosPauta = pautaAssuntos || [];
-    for (const assunto of assuntosPauta) {
-      if (!assunto._sincronizado) {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            path: 'pauta',
-            action: 'criar',
-            id: assunto.id,
-            assunto: assunto.assunto,
-            descricao: assunto.desc,
-            criador: assunto.criador,
-            responsavel: assunto.resp,
-            setor: assunto.setor,
-            prioridade: assunto.prioridade,
-            status: assunto.status,
-            dataLanc: assunto.dataLanc,
-            dataTerm: assunto.dataTerm
-          })
-        });
-        assunto._sincronizado = true;
-      }
-    }
-    // Persiste a marca. Sem isto ela so vivia na memoria: qualquer recarga da
-    // pagina trazia os assuntos de volta sem a marca e o ciclo reenviava tudo.
-    pautaS.set('assuntos', pautaAssuntos);
-
-    // Sincronizar CHECK-IN para Google Sheets
-    const assuntosCheckin = checkinAssuntos || [];
-    for (const assunto of assuntosCheckin) {
-      if (!assunto._sincronizado) {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            path: 'checkin',
-            action: 'salvar',
-            id: assunto.id,
-            assunto: assunto.assunto,
-            descricao: assunto.desc,
-            criador: assunto.criador,
-            responsavel: assunto.resp,
-            setor: assunto.setor,
-            prioridade: assunto.prioridade,
-            status: assunto.status,
-            dataTerm: assunto.dataTerm
-          })
-        });
-        assunto._sincronizado = true;
-      }
-    }
-    // Aqui a persistencia e indispensavel: checkinAssuntos e relido do
-    // localStorage em varios pontos da tela de Check-in, e cada releitura
-    // apagava a marca que so existia na memoria. O resultado era o ciclo de
-    // 2 minutos reenviando todos os assuntos de novo, sem parar.
-    checkinS.set('assuntos', checkinAssuntos);
-
-    // Sincronizar CUSTOS para Google Sheets (via localStorage do iframe)
-    try {
-      const custosStr = localStorage.getItem('custo_notasfiscais');
-      if (custosStr) {
-        const custos = JSON.parse(custosStr);
-        for (const nf of custos) {
-          if (!nf._sincronizado) {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              body: JSON.stringify({
-                path: 'custos',
-                action: 'salvar',
-                numeroNF: nf.numeroNF,
-                serie: nf.serie,
-                data: nf.data,
-                fornecedor: nf.fornecedor,
-                categoria: nf.categoria,
-                responsavel: nf.responsavel,
-                observacoes: nf.observacoes,
-                totalNF: nf.totalNF,
-                itens: nf.itens || []
-              })
-            });
-            nf._sincronizado = true;
-          }
-        }
-        localStorage.setItem('custo_notasfiscais', JSON.stringify(custos));
-      }
-    } catch (e) {
-      console.log('Erro ao sincronizar Custos:', e.message);
-    }
-
-    console.log('✅ Sincronização com Google Sheets concluída');
-  } catch (err) {
-    console.error('❌ Erro ao sincronizar com Google Sheets:', err);
-  }
-}
-
-// Sincronizar a cada 2 minutos
-setInterval(sincronizarComGoogleSheets, 2 * 60 * 1000);
+// PAUTA, CHECK-IN e CUSTOS já migraram para o Supabase: cada uma grava na
+// hora (pautaEnviarParaSupabase/checkinEnviarAssuntoParaSupabase/
+// custosEnviarParaSupabase, este em custos.html) e reenvia quem ficou
+// pendente na próxima busca do servidor. O polling de 2 em 2 minutos que
+// existia só por causa da fragilidade do Apps Script não tem mais função.
 
 function checkinAtualizarContadores() {
   const af = checkinAssuntos.filter(a => a.status === 'afazer').length;
@@ -2318,7 +2260,8 @@ async function checkinCarregarDaPlanilha() {
 function checkinEnviarLinkWhatsapp() {
   const nome = document.getElementById('checkin-whats-lider').value.trim();
   const base = location.href.replace(/[^/]*$/, '') + 'envio-pauta.html';
-  const link = nome ? base + '?lider=' + encodeURIComponent(nome) : base;
+  const obraParam = 'obra=' + encodeURIComponent(B3Obras.atualId());
+  const link = base + '?' + obraParam + (nome ? '&lider=' + encodeURIComponent(nome) : '');
   const texto = (nome ? `Oi ${nome}! ` : 'Oi! ') +
     'Envie por aqui o assunto que você quer levar para a próxima reunião de Check-in: ' + link;
   window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
@@ -2436,6 +2379,10 @@ function checkinSalvarAssunto() {
   checkinRenderKanban();
   checkinAtualizarContadores();
   checkinNotify('Assunto salvo!');
+  const salvo = editId
+    ? checkinAssuntos.find(x => String(x.id) === String(editId))
+    : checkinAssuntos[checkinAssuntos.length - 1];
+  if (salvo) checkinEnviarAssuntoParaSupabase(salvo);
 }
 
 function checkinRemoverAssunto(id) {
@@ -2460,12 +2407,10 @@ function checkinRemoverAssunto(id) {
   checkinAtualizarContadores();
   checkinNotify('Removido', 'var(--red)');
 
-  // Apaga de verdade na planilha — sem isto, a linha continuava lá e a
-  // próxima busca da planilha trazia o assunto de volta como se fosse novo.
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ path: 'checkin', action: 'remover', id })
-  }).catch(e => console.warn('Check-in: não foi possível remover na planilha:', e.message));
+  // Apaga de verdade no Supabase — sem isto, a linha continuava lá e a
+  // próxima busca do servidor trazia o assunto de volta como se fosse novo.
+  B3Obras.cliente().from('checkin_assuntos').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Check-in: não foi possível remover no Supabase:', error.message); });
 }
 
 // Salvar a reunião fecha o dia: os status passam a valer como registrados.
@@ -2489,8 +2434,14 @@ async function checkinSalvarReuniao() {
   checkinS.set('assuntos', checkinAssuntos);
   checkinNotify('Reunião salva!');
 
-  // Leva os status alterados para a planilha, para que ela pare de devolver
-  // o valor antigo. Só sobem os que mudaram aqui e ainda não subiram.
+  B3Obras.cliente().from('checkin_reunioes').insert({
+    data: reuniao.data || hoje,
+    hora: reuniao.hora || null,
+    assuntos_snapshot: reuniao.assuntos
+  }).then(({ error }) => { if (error) console.warn('Check-in: não consegui gravar a ata da reunião no Supabase:', error.message); });
+
+  // Leva os status alterados para a Pauta, para que ela pare de devolver o
+  // valor antigo. Só sobem os que mudaram aqui e ainda não subiram.
   const pendentes = checkinAssuntos.filter(a => a.statusLocalEm && a.id);
   if (!pendentes.length) return;
 
@@ -2502,11 +2453,11 @@ async function checkinSalvarReuniao() {
   checkinS.set('assuntos', checkinAssuntos);
 
   if (enviados === pendentes.length) {
-    checkinNotify('✅ Reunião salva e status gravados na planilha', '#7cb083');
+    checkinNotify('✅ Reunião salva e status gravados na Pauta', '#7cb083');
   } else {
-    // O dado local está seguro (travado); só a planilha ficou para trás.
+    // O dado local está seguro (travado); só a Pauta ficou para trás.
     checkinNotify('⚠️ Reunião salva aqui, mas ' + (pendentes.length - enviados) +
-      ' status não foram para a planilha. Toque em Atualizar quando tiver internet.', '#d9b26a');
+      ' status não foram para a Pauta. Toque em Atualizar quando tiver internet.', '#d9b26a');
   }
 }
 
@@ -2517,18 +2468,14 @@ function checkinDataDeHoje() {
   return new Date(d - tz).toISOString().slice(0, 10);
 }
 
-// Envia um status para a planilha. Devolve true só se a planilha confirmar.
+// Reflete o status decidido no Check-in de volta na Pauta (mesmo id).
+// Devolve true só se o Supabase confirmar.
 async function checkinEnviarStatus(id, status) {
   try {
-    const resp = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ path: 'pauta', action: 'atualizar-status', id: id, status: status })
-    });
-    const data = await resp.json().catch(() => null);
-    return !!(data && data.status === 'ok');
+    const { error } = await B3Obras.cliente().from('pauta_assuntos').update({ status }).eq('id', String(id));
+    return !error;
   } catch (e) {
-    console.warn('Check-in: status não enviado para a planilha:', e.message);
+    console.warn('Check-in: status não enviado à Pauta:', e.message);
     return false;
   }
 }

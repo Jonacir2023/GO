@@ -51,6 +51,8 @@ body{max-width:480px;margin:0 auto;padding:20px 16px 40px}
 .erro-box{display:none;background:#4a3d3a;border:1.5px solid var(--red);border-radius:10px;padding:12px;font-size:13px;color:var(--red);margin-bottom:14px}
 .erro-box.show{display:block}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 
@@ -142,14 +144,11 @@ body{max-width:480px;margin:0 auto;padding:20px 16px 40px}
 </form>
 
 <script>
-/* URL /exec do BUILDLy — a mesma usada pelo resto do app. Não é segredo:
-   fica pública nestes arquivos por convenção do projeto. Se o backend tiver
-   código de acesso ativado (APP_TOKEN), inclua ?token=SEUCODIGO no link
-   enviado a cada líder — sem ele, o backend responde token_invalido. */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
-
+// O link enviado ao líder leva ?obra=<id> — sem ele não dá para saber em
+// qual banco Supabase gravar (o navegador de quem recebe o link não tem a
+// obra ativa salva, é um aparelho diferente do de quem gerencia o app).
 const parametros = new URLSearchParams(location.search);
-const tokenUrl = parametros.get('token') || '';
+const obraParam = parametros.get('obra') || '';
 
 let prioridade = 'media';
 function setPrioridade(p, el) {
@@ -162,6 +161,12 @@ function setPrioridade(p, el) {
   const lider = parametros.get('lider') || '';
   if (lider) document.getElementById('f-lider').value = lider;
   document.getElementById('f-data-lanc').value = new Date().toISOString().slice(0,10);
+  if (!B3Obras.porId(obraParam)) {
+    const erroBox = document.getElementById('erroBox');
+    erroBox.textContent = '❌ Link sem obra válida — peça um link novo a quem gerencia o app.';
+    erroBox.classList.add('show');
+    document.getElementById('btnEnviar').disabled = true;
+  }
 })();
 
 async function enviarAssunto(ev) {
@@ -171,7 +176,6 @@ async function enviarAssunto(ev) {
   erroBox.classList.remove('show');
 
   const dados = {
-    id: 'PAUTA-' + Date.now(),
     assunto: document.getElementById('f-assunto').value.trim(),
     descricao: document.getElementById('f-descricao').value.trim(),
     criador: document.getElementById('f-lider').value.trim(),
@@ -182,7 +186,6 @@ async function enviarAssunto(ev) {
     dataLanc: document.getElementById('f-data-lanc').value,
     dataTerm: document.getElementById('f-data-term').value
   };
-  if (tokenUrl) dados.token = tokenUrl;
 
   if (!dados.assunto || !dados.criador) return false;
 
@@ -190,28 +193,27 @@ async function enviarAssunto(ev) {
   btn.textContent = 'Enviando...';
 
   try {
-    // Grava na Pauta e no Check-in na mesma chamada: assim o assunto já
+    const cli = B3Obras.cliente(obraParam);
+    const id = 'PAUTA-' + Date.now();
+    // Grava na Pauta e no Check-in ao mesmo tempo: assim o assunto já
     // aparece pronto para discussão na próxima reunião, sem depender do
     // navegador de quem gerencia o app sincronizar antes.
     const [rPauta, rCheckin] = await Promise.all([
-      fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify(Object.assign({path:'pauta', action:'criar'}, dados))
+      cli.from('pauta_assuntos').upsert({
+        id, assunto: dados.assunto, descricao: dados.descricao, criador: dados.criador,
+        responsavel: dados.responsavel, setor: dados.setor, prioridade: dados.prioridade,
+        status: dados.status, data_lancamento: dados.dataLanc || null, data_termino: dados.dataTerm || null
       }),
-      fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify(Object.assign({path:'checkin', action:'salvar'}, dados))
+      cli.from('checkin_assuntos').upsert({
+        id, assunto: dados.assunto, descricao: dados.descricao, criador: dados.criador,
+        responsavel: dados.responsavel, setor: dados.setor, prioridade: dados.prioridade,
+        status: dados.status, data_lancamento: dados.dataLanc || null, data_termino: dados.dataTerm || null,
+        origem: 'pauta'
       })
     ]);
-    const jPauta = await rPauta.json().catch(() => null);
-    const jCheckin = await rCheckin.json().catch(() => null);
 
-    if (jPauta && jPauta.codigo === 'token_invalido') {
-      throw new Error('Código de acesso ausente ou incorreto. Peça o link correto a quem gerencia o app.');
-    }
-    if ((jPauta && jPauta.status === 'erro') || (jCheckin && jCheckin.status === 'erro')) {
-      throw new Error((jPauta && jPauta.error) || (jCheckin && jCheckin.error) || 'Erro ao gravar na planilha.');
-    }
+    if (rPauta.error) throw rPauta.error;
+    if (rCheckin.error) throw rCheckin.error;
 
     document.getElementById('confirmBox').classList.add('show');
     const liderAtual = dados.criador;
