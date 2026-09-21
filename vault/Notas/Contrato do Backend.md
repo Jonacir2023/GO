@@ -94,6 +94,7 @@ Supabase — só recebe o contexto já pronto e chama a Anthropic. Detalhes da c
 
 - Modelo: `claude-haiku-4-5-20251001` (constante `MODELO_IA_PERGUNTAS`).
 - Contexto recortado em 3 meses para Diário e Notas Fiscais; Pauta e Check-in vão inteiras.
+- **Rate limit:** 20 perguntas por dia por aparelho (identificador em `localStorage['buildly3::device_id']`). Contador diário em `ScriptProperties` com chave `rate_limit:deviceId:YYYY-MM-DD`. Defesa em profundidade se o código de acesso vazar.
 
 ---
 

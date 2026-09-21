@@ -405,7 +405,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
+<script src="supabase-config.js?v=f48c7213"></script>
 </head>
 <body>
 
@@ -846,6 +846,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
     </div>
 
     <div class="sec">
+      <div class="sec-title">📍 Locais / Frentes de Trabalho</div>
+      <button class="btn btn-outline btn-full" onclick="abrirCadastroLocais()">➕ Gerenciar Locais</button>
+    </div>
+
+    <div class="sec">
       <div class="sec-title">🖼️ Logo da Empresa</div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
         <div id="obra-logo-preview" style="width:64px;height:64px;border-radius:8px;background:#454c59;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;overflow:hidden;flex-shrink:0">LOGO</div>
@@ -865,6 +870,22 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
       <div class="frow"><label>Encerramento sábado</label><input type="time" id="obra-encerramento-sabado" value="16:00"/></div>
       <button class="btn btn-primary btn-full" onclick="obraSalvar()">💾 SALVAR OBRA</button>
     </div>
+  </div>
+</div>
+
+<!-- CADASTRO LOCAIS -->
+<div class="page" id="page-cadastro-locais">
+  <div class="notif" id="notif-cadastro-locais"></div>
+  <header class="hdr" style="position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:101;width:100%;max-width:480px;height:70px">
+    <div class="hdr-top">
+      <button class="btn-admin" onclick="voltarDaCadastroLocais()">← VOLTAR</button>
+      <div class="hdr-logo" style="text-align:center;flex:1">Cadastro de Locais</div>
+      <div style="width:60px"></div>
+    </div>
+  </header>
+  <div style="margin-top:70px;padding:16px">
+    <div id="cadastro-locais-container" style="max-width:480px"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:20px" onclick="salvarCadastroLocais()">💾 SALVAR LOCAIS DE OBRAS</button>
   </div>
 </div>
 
@@ -1021,7 +1042,7 @@ function switchTab(tab, el) {
 
 // ═══════════════════════════════════════════════════════════════
 // OBRA — cada obra é um projeto Supabase independente (banco próprio).
-// obraCompartilhada() (global, ver supabase-config.js) lê um cache
+// obraCompartilhada() (global, ver supabase-config.js?v=f48c7213) lê um cache
 // síncrono da última leitura; obraInit() busca a versão atual no servidor
 // ao abrir a aba. Trocar de obra troca de banco inteiro — nada de Pauta,
 // Check-in, RDO ou Custos é compartilhado entre obras.
@@ -1289,6 +1310,15 @@ async function montarContextoNuvem() {
   return ctx;
 }
 
+function obterOuGerarDeviceId() {
+  const chave = 'buildly3::device_id';
+  let id = localStorage.getItem(chave);
+  if (!id) {
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    try { localStorage.setItem(chave, id); } catch (e) {}
+  }
+  return id;
+}
 async function enviarPergunta() {
   const input = document.getElementById('perguntarInput');
   const pergunta = input.value.trim();
@@ -1316,7 +1346,7 @@ async function enviarPergunta() {
     const resp = await fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ pergunta, contextoLocal })
+      body: JSON.stringify({ pergunta, contextoLocal, deviceId: obterOuGerarDeviceId() })
     });
     const json = await resp.json().catch(() => null);
     respostaBox.textContent = (json && json.resposta) || '❌ Não foi possível obter resposta.';
@@ -1861,7 +1891,7 @@ const checkinS = {
   }
 })();
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvsYYiUd6ygW1WAswWTRL7P0nHDJKoIK_GatyGBKL8NDH_jP-e4jkGEj5kRyRvDY2fQg/exec';
 
 // Puxa direto da Pauta (import inicial) — não escreve em checkin_assuntos;
 // é só como o Check-in descobre assuntos novos que ainda não tem na lista.
@@ -2770,6 +2800,125 @@ function checkinRenderDashboard() {
       `).join('') || '<div class="empty-state"><div class="empty-state-txt">Sem dados</div></div>'}
     </div>
   `;
+}
+
+// ============================================================
+// CADASTRO DE LOCAIS
+// ============================================================
+
+let locaisEditando = {}; // { obraId: [{id, nome, descricao}, ...], ... }
+
+async function abrirCadastroLocais() {
+  const obraId = B3Obras.atualId();
+  if (!obraId) return obraNotify('❌ Selecione uma obra');
+
+  // Carregar locais existentes do Supabase
+  try {
+    const cliente = B3Obras.cliente(obraId);
+    const { data, error } = await cliente.from('rdo_locais').select('*').order('nome');
+    if (error) throw error;
+
+    // Carregar todas as obras
+    const obras = B3Obras.listar();
+    locaisEditando = {};
+
+    for (const o of obras) {
+      const cl = B3Obras.cliente(o.id);
+      const { data: locais } = await cl.from('rdo_locais').select('*').order('nome');
+      locaisEditando[o.id] = locais || [];
+    }
+
+    renderCadastroLocais();
+    abaMudar('cadastro-locais');
+  } catch (err) {
+    console.error('Erro:', err);
+    obraNotify('❌ Erro ao carregar locais: ' + err.message);
+  }
+}
+
+function renderCadastroLocais() {
+  const obras = B3Obras.listar();
+  const cont = document.getElementById('cadastro-locais-container');
+
+  let html = '';
+
+  obras.forEach((obra, idx) => {
+    const locaisObra = locaisEditando[obra.id] || [];
+    html += `
+      <div class="sec">
+        <div class="sec-title">${idx === 0 ? '🏗️ ' : ''}${obra.nome}</div>
+        <div id="locais-${obra.id}">
+          ${locaisObra.map((l, i) => `
+            <div class="frow-2" style="margin-bottom:8px">
+              <div class="frow">
+                <input type="text" placeholder="Nome do local" value="${escapeHtml(l.nome)}"
+                  onchange="locaisEditando['${obra.id}'][${i}].nome = this.value" style="margin-bottom:0"/>
+              </div>
+              <button class="btn btn-red btn-sm" style="padding:9px 8px;flex:0" onclick="removerLocal('${obra.id}',${i})">🗑️</button>
+            </div>
+            <div class="frow" style="margin-bottom:8px">
+              <textarea placeholder="Descrição (opcional)" style="min-height:60px;margin-bottom:0"
+                onchange="locaisEditando['${obra.id}'][${i}].descricao = this.value">${escapeHtml(l.descricao || '')}</textarea>
+            </div>
+          `).join('')}
+          <button class="btn btn-outline btn-full btn-sm" onclick="adicionarLocal('${obra.id}')">➕ Novo Local</button>
+        </div>
+      </div>
+    `;
+  });
+
+  cont.innerHTML = html;
+}
+
+function adicionarLocal(obraId) {
+  if (!locaisEditando[obraId]) locaisEditando[obraId] = [];
+  locaisEditando[obraId].push({
+    id: 'loc-' + Date.now(),
+    nome: '',
+    descricao: ''
+  });
+  renderCadastroLocais();
+}
+
+function removerLocal(obraId, idx) {
+  if (locaisEditando[obraId]) {
+    locaisEditando[obraId].splice(idx, 1);
+    renderCadastroLocais();
+  }
+}
+
+async function salvarCadastroLocais() {
+  try {
+    const obras = B3Obras.listar();
+
+    for (const obra of obras) {
+      const cliente = B3Obras.cliente(obra.id);
+      const locaisDaObra = locaisEditando[obra.id] || [];
+
+      // Deletar todos os antigos
+      await cliente.from('rdo_locais').delete().neq('id', '');
+
+      // Inserir os novos (apenas com nome preenchido)
+      const paraGravar = locaisDaObra.filter(l => l.nome && l.nome.trim());
+      if (paraGravar.length > 0) {
+        const { error } = await cliente.from('rdo_locais').insert(paraGravar);
+        if (error) throw error;
+      }
+    }
+
+    // Limpar cache de locais em rdo.html
+    locaisPorObra = {};
+
+    obraNotify('✅ Locais salvos com sucesso');
+    setTimeout(() => { abaMudar('obra'); }, 500);
+  } catch (err) {
+    console.error('Erro:', err);
+    obraNotify('❌ Erro ao salvar: ' + err.message);
+  }
+}
+
+function voltarDaCadastroLocais() {
+  abaMudar('obra');
 }
 
 document.querySelectorAll('.modal-overlay,.config-modal').forEach(m => {

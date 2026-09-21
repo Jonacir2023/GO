@@ -1257,7 +1257,7 @@
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
+<script src="supabase-config.js?v=f48c7213"></script>
 </head>
 <body>
 
@@ -1303,6 +1303,13 @@
       <span class="dia-semana" id="diaSemana">—</span>
     </div>
     <button class="btn btn-secondary" onclick="copiarUltimoDiario()" style="margin-top:10px;width:100%">📋 Copiar do último diário</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-text">🏗️ Obra</div>
+    </div>
+    <select id="obraAtiva" style="margin-bottom:8px" onchange="atualizarLocaisDaObra()"></select>
   </div>
 
   <div class="section">
@@ -2307,6 +2314,8 @@ const LOCAIS_EXECUCAO = [
 
 const EMPTY_DAY = () => ({
   data: '',
+  obraId: B3Obras.atualId(),
+  localObra: '',
   tempoManha: '',
   chuvaManhaQtd: '',
   tempoTarde: '',
@@ -2889,6 +2898,9 @@ function initCurrentDay(data) {
   preencherCampos();
   renderDiario();
   _atualizarResumoObraNosDiario();
+
+  // Carregar locais da obra após preencher campos
+  _atualizarLocalObraDatalist().catch(err => console.error('Erro ao carregar locais:', err));
 }
 
 function atualizarHeaderEdicao() {
@@ -2933,8 +2945,15 @@ function preencherCampos() {
     const el = document.getElementById(k);
     if (el) el.value = currentDay[k] || '';
   });
+
+  // Preencher dropdown de Obra
+  preencherDropdownObras();
+  const selObra = document.getElementById('obraAtiva');
+  if (selObra && currentDay.obraId) {
+    selObra.value = currentDay.obraId;
+  }
+
   renderApontadorDia();
-  _atualizarLocalObraDatalist();
   // DSS Ministrou
   const dssMin = document.getElementById('dssMinistrou');
   if (dssMin) {
@@ -2963,6 +2982,64 @@ function preencherCampos() {
   renderFotosDia();
 }
 
+// ============================================================
+// GERENCIAR OBRAS E LOCAIS
+// ============================================================
+
+let locaisPorObra = {}; // cache: { obraId: [{id, nome}, ...] }
+
+async function carregarLocaisDaObra(obraId) {
+  if (!obraId) return [];
+  if (locaisPorObra[obraId]) return locaisPorObra[obraId];
+
+  try {
+    const cliente = B3Obras.cliente(obraId);
+    const { data, error } = await cliente.from('rdo_locais').select('id,nome,descricao').order('nome');
+    if (error) {
+      console.error('Erro ao carregar locais:', error);
+      return [];
+    }
+    locaisPorObra[obraId] = data || [];
+    return locaisPorObra[obraId];
+  } catch (err) {
+    console.error('Erro ao buscar locais:', err);
+    return [];
+  }
+}
+
+function preencherDropdownObras() {
+  const sel = document.getElementById('obraAtiva');
+  if (!sel) return;
+
+  const obras = B3Obras.listar();
+  const obraAtualId = B3Obras.atualId();
+
+  sel.innerHTML = obras.map(o =>
+    `<option value="${o.id}" ${o.id === obraAtualId ? 'selected' : ''}>${o.nome}</option>`
+  ).join('');
+
+  // Sincronizar com a obra ativa global
+  sel.value = obraAtualId;
+}
+
+async function atualizarLocaisDaObra() {
+  const selObra = document.getElementById('obraAtiva');
+  const selLocal = document.getElementById('localObra');
+  if (!selObra || !selLocal) return;
+
+  const obraId = selObra.value;
+  const locais = await carregarLocaisDaObra(obraId);
+
+  const valorAtual = selLocal.value;
+  selLocal.innerHTML = '<option value="">— Selecionar local —</option>' +
+    locais.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+
+  // Tenta manter a seleção anterior se ainda existir
+  if (locais.find(l => l.id === valorAtual)) {
+    selLocal.value = valorAtual;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia','descricaoLocal'].forEach(k => {
     const el = document.getElementById(k);
@@ -2971,6 +3048,19 @@ document.addEventListener('DOMContentLoaded', () => {
       salvarDiarioDia(false);
     });
   });
+
+  // Obra
+  const obraSel = document.getElementById('obraAtiva');
+  if (obraSel) {
+    preencherDropdownObras();
+    obraSel.addEventListener('change', async () => {
+      const obraId = obraSel.value;
+      currentDay.obraId = obraId;
+      await atualizarLocaisDaObra();
+      salvarDiarioDia(false);
+    });
+  }
+
   // Local da Obra é <select>: 'change' é o evento próprio dele.
   const localSel = document.getElementById('localObra');
   if (localSel) localSel.addEventListener('change', () => {
@@ -5774,17 +5864,33 @@ function _atualizarResumoObraNosDiario() {
 // Um valor que não está na lista — lançado quando o campo era texto livre, ou
 // vindo de outro aparelho — entra como opção extra já selecionada. Descartar
 // silenciosamente apagaria o local de um RDO que já foi fechado.
-function _atualizarLocalObraDatalist() {
+async function _atualizarLocalObraDatalist() {
   const sel = document.getElementById('localObra');
-  if (!sel) return;
+  const selObra = document.getElementById('obraAtiva');
+  if (!sel || !selObra) return;
+
+  const obraId = selObra.value || B3Obras.atualId();
   const atual = (currentDay && currentDay.localObra) || '';
+
+  // Carregar locais do Supabase
+  let locais = await carregarLocaisDaObra(obraId);
+
+  // Fallback para LOCAIS_EXECUCAO se Supabase retorna vazio (para testes e compatibilidade)
+  if (!locais || locais.length === 0) {
+    locais = LOCAIS_EXECUCAO.map((nome, i) => ({ id: nome, nome }));
+  }
+
   const opcoes = ['<option value="">— Selecionar local —</option>'];
-  LOCAIS_EXECUCAO.forEach(l => {
-    opcoes.push(`<option value="${escapeHtml(l)}"${l === atual ? ' selected' : ''}>${escapeHtml(l)}</option>`);
+  locais.forEach(l => {
+    const val = l.id || l.nome;
+    opcoes.push(`<option value="${escapeHtml(val)}"${val === atual ? ' selected' : ''}>${escapeHtml(l.nome)}</option>`);
   });
-  if (atual && !LOCAIS_EXECUCAO.includes(atual)) {
+
+  // Se houver um local gravado que não está mais na lista, manter como opção (foi deletado)
+  if (atual && !locais.find(l => (l.id || l.nome) === atual)) {
     opcoes.push(`<option value="${escapeHtml(atual)}" selected>${escapeHtml(atual)}</option>`);
   }
+
   sel.innerHTML = opcoes.join('');
   sel.value = atual;
 }
