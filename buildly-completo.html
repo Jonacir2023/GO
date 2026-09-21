@@ -213,6 +213,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .btn-medicao{border-top-color:var(--accent)}
 .btn-docs{border-top-color:var(--accent)}
 .btn-manutencao{border-top-color:var(--accent)}
+.btn-eap{border-top-color:var(--accent)}
+.btn-planejamento{border-top-color:var(--accent)}
+.btn-financeiro{border-top-color:var(--accent)}
+.btn-suprimentos{border-top-color:var(--accent)}
 .home-footer{text-align:center;color:#fff;font-size:10px;padding:4px 16px 0;margin-top:auto}
 .home-footer a{color:var(--ink);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.3)}
 .home-footer a:hover{border-bottom-color:var(--ink)}
@@ -311,7 +315,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
      janela de ~900px, caía abaixo do limite de desktop: o app externo
      virava desktop e o de dentro continuava no formato de celular. */
   #page-rdo, #page-custos, #page-reuniao, #page-resumo-tempo,
-  #page-medicao, #page-documentos, #page-manutencao { padding: 0; }
+  #page-medicao, #page-documentos, #page-manutencao, #page-eap,
+  #page-planejamento, #page-financeiro, #page-suprimentos { padding: 0; }
   /* Kanban do Check-in: as 4 colunas lado a lado em vez de empilhadas */
   #checkin-kanban-checkin { flex-direction: row; align-items: flex-start; gap: 12px; }
   #checkin-kanban-checkin > .kol { flex: 1; min-width: 0; }
@@ -494,6 +499,34 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
         <div class="home-button-icon">🛠️</div>
         <div class="home-button-title">Manutenção</div>
         <div class="home-button-desc">Status e mural da obra</div>
+      </div>
+
+      <!-- 11. EAP -->
+      <div class="home-button btn-eap" onclick="switchTab('eap', this)">
+        <div class="home-button-icon">📊</div>
+        <div class="home-button-title">EAP</div>
+        <div class="home-button-desc">Estrutura analítica</div>
+      </div>
+
+      <!-- 12. Planejamento -->
+      <div class="home-button btn-planejamento" onclick="switchTab('planejamento', this)">
+        <div class="home-button-icon">📅</div>
+        <div class="home-button-title">Planejamento</div>
+        <div class="home-button-desc">Cronogramas e atividades</div>
+      </div>
+
+      <!-- 13. Financeiro -->
+      <div class="home-button btn-financeiro" onclick="switchTab('financeiro', this)">
+        <div class="home-button-icon">💳</div>
+        <div class="home-button-title">Financeiro</div>
+        <div class="home-button-desc">Medições e aprovações</div>
+      </div>
+
+      <!-- 14. Suprimentos -->
+      <div class="home-button btn-suprimentos" onclick="switchTab('suprimentos', this)">
+        <div class="home-button-icon">📦</div>
+        <div class="home-button-title">Suprimentos</div>
+        <div class="home-button-desc">Requisições e pedidos</div>
       </div>
     </div>
 
@@ -797,6 +830,26 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 <!-- MANUTENÇÃO PAGE (painel de status + mural da obra) -->
 <div class="page" id="page-manutencao">
   <iframe id="manutencao-iframe" src="manutencao.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+</div>
+
+<!-- EAP PAGE (Estrutura Analítica do Projeto) -->
+<div class="page" id="page-eap">
+  <iframe id="eap-iframe" src="eap.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+</div>
+
+<!-- PLANEJAMENTO PAGE (Cronogramas e atividades) -->
+<div class="page" id="page-planejamento">
+  <iframe id="planejamento-iframe" src="planejamento.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+</div>
+
+<!-- FINANCEIRO PAGE (Medições, NFs, aprovações) -->
+<div class="page" id="page-financeiro">
+  <iframe id="financeiro-iframe" src="financeiro.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+</div>
+
+<!-- SUPRIMENTOS PAGE (Requisições, cotações, pedidos) -->
+<div class="page" id="page-suprimentos">
+  <iframe id="suprimentos-iframe" src="suprimentos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- OBRA PAGE (cadastro compartilhado entre todos os apps) -->

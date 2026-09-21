@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EAP — BUILDLy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; color: #333; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    h1 { font-size: 28px; color: #1a1a1a; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .btn-primary { background: #007AFF; color: white; }
+    .btn-primary:hover { background: #0051d5; }
+    .btn-secondary { background: #e9ecef; color: #333; }
+    .btn-secondary:hover { background: #dee2e6; }
+    .tree { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .tree-item { padding: 12px 0; padding-left: 20px; border-left: 2px solid #ddd; }
+    .tree-item.level-0 { padding-left: 0; border: none; }
+    .tree-item.level-1 { padding-left: 30px; }
+    .tree-item.level-2 { padding-left: 60px; }
+    .tree-item.level-3 { padding-left: 90px; }
+    .tree-item-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .tree-item-icon { width: 20px; color: #666; }
+    .tree-item-name { font-weight: 500; flex: 1; }
+    .tree-item-code { font-size: 12px; color: #999; margin-left: 10px; }
+    .tree-item-actions { display: none; gap: 8px; }
+    .tree-item:hover .tree-item-actions { display: flex; }
+    .tree-item-actions button { padding: 6px 12px; font-size: 12px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 8px; padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .modal-header { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-card-value { font-size: 28px; font-weight: 700; color: #007AFF; }
+    .stat-card-label { font-size: 14px; color: #666; margin-top: 8px; }
+    @media(prefers-color-scheme: dark) {
+      body { background: #1a1a1a; color: #e0e0e0; }
+      .tree, .stat-card { background: #2a2a2a; }
+      .tree-item-code { color: #888; }
+      .btn-secondary { background: #3a3a3a; color: #e0e0e0; }
+      .btn-secondary:hover { background: #4a4a4a; }
+      .modal-content { background: #2a2a2a; }
+      .form-group input, .form-group select { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📊 EAP — Estrutura Analítica</h1>
+    <button class="btn btn-primary" onclick="abrirNovaEAP()">➕ Nova EAP</button>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-total">0</div>
+      <div class="stat-card-label">Itens totais</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-pacotes">0</div>
+      <div class="stat-card-label">Pacotes de trabalho</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-entregas">0</div>
+      <div class="stat-card-label">Entregas</div>
+    </div>
+  </div>
+
+  <div class="tree" id="tree"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-header">Nova EAP</div>
+    <div class="form-group">
+      <label>Código</label>
+      <input type="text" id="codigo" placeholder="ex: 1, 1.1, 1.1.1">
+    </div>
+    <div class="form-group">
+      <label>Nome</label>
+      <input type="text" id="nome" placeholder="Descrição do item">
+    </div>
+    <div class="form-group">
+      <label>Tipo</label>
+      <select id="tipo">
+        <option value="grupo">Grupo</option>
+        <option value="pacote">Pacote de trabalho</option>
+        <option value="entrega">Entrega</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEAP()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="supabase-config.js?v=f48c7213"></script>
+<script>
+/* BUILDLY_ESPACO_PROPRIO — isolamento de localStorage */
+(function () {
+  var P = 'buildly3::';
+  var real;
+  try { real = window.localStorage; } catch (e) { return; }
+  if (!real || real.__buildly3) return;
+
+  function nossas() {
+    var out = [];
+    for (var i = 0; i < real.length; i++) {
+      var k = real.key(i);
+      if (k && k.indexOf(P) === 0) out.push(k);
+    }
+    return out;
+  }
+
+  var espaco = {
+    __buildly3: true,
+    get length() { return nossas().length; },
+    key: function (i) {
+      var k = nossas()[i];
+      return k === undefined ? null : k.slice(P.length);
+    },
+    getItem: function (k) { return real.getItem(P + k); },
+    setItem: function (k, v) { real.setItem(P + k, v); },
+    removeItem: function (k) { real.removeItem(P + k); },
+    clear: function () { nossas().forEach(function (k) { real.removeItem(k); }); }
+  };
+
+  try {
+    Object.defineProperty(window, 'localStorage', {
+      value: espaco, configurable: true, writable: false
+    });
+  } catch (e) {}
+})();
+</script>
+<script>
+const ESPACO_OBRAS = 'buildly3::eap';
+
+async function carregarEAP() {
+  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
+  const cliente = window.supabaseClient;
+
+  const { data, error } = await cliente
+    .from('eap_itens')
+    .select('*')
+    .eq('obra_id', obraAtiva)
+    .order('codigo');
+
+  if (error) {
+    console.error('Erro ao carregar EAP:', error);
+    return [];
+  }
+  return data || [];
+}
+
+function renderizarEAP(itens) {
+  const tree = document.getElementById('tree');
+  tree.innerHTML = '';
+
+  const nivel = (codigo) => codigo.split('.').length - 1;
+
+  itens.forEach(item => {
+    const div = document.createElement('div');
+    div.className = `tree-item level-${nivel(item.codigo)}`;
+    div.innerHTML = `
+      <div class="tree-item-header">
+        <span class="tree-item-icon"><i class="fas fa-folder"></i></span>
+        <span class="tree-item-name">${item.nome}</span>
+        <span class="tree-item-code">${item.codigo}</span>
+        <div class="tree-item-actions">
+          <button class="btn btn-secondary" onclick="editar('${item.id}')">✎ Editar</button>
+          <button class="btn btn-secondary" onclick="remover('${item.id}')">✕ Remover</button>
+        </div>
+      </div>
+    `;
+    tree.appendChild(div);
+  });
+
+  // Atualizar stats
+  document.getElementById('stat-total').textContent = itens.length;
+  document.getElementById('stat-pacotes').textContent = itens.filter(i => i.tipo === 'pacote').length;
+  document.getElementById('stat-entregas').textContent = itens.filter(i => i.tipo === 'entrega').length;
+}
+
+function abrirNovaEAP() {
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('codigo').focus();
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('active');
+  document.getElementById('codigo').value = '';
+  document.getElementById('nome').value = '';
+}
+
+async function salvarEAP() {
+  const codigo = document.getElementById('codigo').value;
+  const nome = document.getElementById('nome').value;
+  const tipo = document.getElementById('tipo').value;
+
+  if (!codigo || !nome) {
+    alert('Preencha código e nome');
+    return;
+  }
+
+  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
+  const cliente = window.supabaseClient;
+
+  const { error } = await cliente
+    .from('eap_itens')
+    .insert([{ obra_id: obraAtiva, codigo, nome, tipo }]);
+
+  if (error) {
+    alert('Erro: ' + error.message);
+    return;
+  }
+
+  fecharModal();
+  const itens = await carregarEAP();
+  renderizarEAP(itens);
+}
+
+async function remover(id) {
+  if (!confirm('Remover este item?')) return;
+
+  const cliente = window.supabaseClient;
+  const { error } = await cliente.from('eap_itens').delete().eq('id', id);
+
+  if (error) {
+    alert('Erro: ' + error.message);
+    return;
+  }
+
+  const itens = await carregarEAP();
+  renderizarEAP(itens);
+}
+
+function editar(id) {
+  alert('Editar ainda não implementado: ' + id);
+}
+
+// Inicializar
+(async () => {
+  const itens = await carregarEAP();
+  renderizarEAP(itens);
+})();
+</script>
+</body>
+</html>

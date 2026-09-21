@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Suprimentos — BUILDLy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; color: #333; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    h1 { font-size: 28px; color: #1a1a1a; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .btn-primary { background: #007AFF; color: white; }
+    .btn-primary:hover { background: #0051d5; }
+    .btn-secondary { background: #e9ecef; color: #333; }
+    .btn-secondary:hover { background: #dee2e6; }
+    .btn-danger { background: #ff3b30; color: white; }
+    .btn-danger:hover { background: #cc2f26; }
+    .btn-success { background: #34c759; color: white; }
+    .btn-success:hover { background: #2ab745; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; overflow-x: auto; }
+    .tab { padding: 12px 20px; cursor: pointer; border: none; background: none; font-size: 14px; border-bottom: 3px solid transparent; white-space: nowrap; }
+    .tab.active { border-bottom-color: #007AFF; color: #007AFF; font-weight: 600; }
+    .content { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; border-bottom: 2px solid #e0e0e0; }
+    .table td { padding: 12px; border-bottom: 1px solid #e0e0e0; }
+    .table tr:hover { background: #f9f9f9; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .status-rascunho { background: #e9ecef; color: #495057; }
+    .status-em_cotacao { background: #fff3e0; color: #f57c00; }
+    .status-em_aprovacao { background: #e3f2fd; color: #1976d2; }
+    .status-pedido_emitido { background: #e8f5e9; color: #388e3c; }
+    .status-cancelada { background: #ffebee; color: #c62828; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 8px; padding: 30px; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow-y: auto; max-height: 90vh; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; }
+    .empty-state { text-align: center; padding: 40px; color: #999; }
+    .empty-state i { font-size: 48px; display: block; margin-bottom: 15px; }
+    @media(prefers-color-scheme: dark) {
+      body { background: #1a1a1a; color: #e0e0e0; }
+      .content { background: #2a2a2a; }
+      .table th { background: #333; }
+      .table tr:hover { background: #323232; }
+      .btn-secondary { background: #3a3a3a; color: #e0e0e0; }
+      .btn-secondary:hover { background: #4a4a4a; }
+      .modal-content { background: #2a2a2a; }
+      .form-group input, .form-group select, .form-group textarea { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
+      .tabs { border-bottom-color: #3a3a3a; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🛒 Suprimentos</h1>
+    <button class="btn btn-primary" onclick="abrirNovaRequisicao()">➕ Nova Requisição</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="mudarAba('rascunho')">Rascunho (0)</button>
+    <button class="tab" onclick="mudarAba('em_cotacao')">Cotação (0)</button>
+    <button class="tab" onclick="mudarAba('em_aprovacao')">Aprovação (0)</button>
+    <button class="tab" onclick="mudarAba('pedido_emitido')">Pedidos Emitidos (0)</button>
+    <button class="tab" onclick="mudarAba('cancelada')">Canceladas (0)</button>
+  </div>
+
+  <div class="content">
+    <div id="rascunho-aba" class="aba-content">
+      <table class="table" id="rascunho-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Descrição</th>
+            <th>Quantidade</th>
+            <th>Valor Est.</th>
+            <th>Necessário</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="rascunho-tbody">
+          <tr><td colspan="6" class="empty-state"><i class="fas fa-inbox"></i>Nenhuma requisição</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="em_cotacao-aba" class="aba-content" style="display: none;">
+      <table class="table" id="em_cotacao-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Descrição</th>
+            <th>Valor Est.</th>
+            <th>Data Cotação</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="em_cotacao-tbody">
+          <tr><td colspan="5" class="empty-state">Nenhuma em cotação</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="em_aprovacao-aba" class="aba-content" style="display: none;">
+      <table class="table" id="em_aprovacao-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Solicitante</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="em_aprovacao-tbody">
+          <tr><td colspan="5" class="empty-state">Nenhuma aguardando aprovação</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="pedido_emitido-aba" class="aba-content" style="display: none;">
+      <table class="table" id="pedido_emitido-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Fornecedor</th>
+            <th>Valor Pedido</th>
+            <th>Data Emissão</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="pedido_emitido-tbody">
+          <tr><td colspan="5" class="empty-state">Nenhum pedido emitido</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="cancelada-aba" class="aba-content" style="display: none;">
+      <table class="table" id="cancelada-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Descrição</th>
+            <th>Motivo Cancelamento</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="cancelada-tbody">
+          <tr><td colspan="4" class="empty-state">Nenhuma cancelada</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-header" style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Nova Requisição de Compra</div>
+    <div class="form-group">
+      <label>Descrição do Item</label>
+      <input type="text" id="descricao" placeholder="Ex: Cimento Portland 50kg">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quantidade</label>
+        <input type="number" id="quantidade" placeholder="0" step="0.001">
+      </div>
+      <div class="form-group">
+        <label>Unidade</label>
+        <select id="unidade">
+          <option>un</option>
+          <option>kg</option>
+          <option>m</option>
+          <option>m²</option>
+          <option>m³</option>
+          <option>l</option>
+          <option>cx</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Valor Estimado (R$)</label>
+      <input type="number" id="valor_estimado" placeholder="0.00" step="0.01">
+    </div>
+    <div class="form-group">
+      <label>Data Necessária</label>
+      <input type="date" id="necessidade_em">
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="observacoes" placeholder="Notas adicionais..." rows="3"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarRequisicao()">Salvar Requisição</button>
+    </div>
+  </div>
+</div>
+
+<script src="supabase-config.js?v=f48c7213"></script>
+<script>
+/* BUILDLY_ESPACO_PROPRIO — isolamento de localStorage */
+(function () {
+  var P = 'buildly3::';
+  var real;
+  try { real = window.localStorage; } catch (e) { return; }
+  if (!real || real.__buildly3) return;
+
+  function nossas() {
+    var out = [];
+    for (var i = 0; i < real.length; i++) {
+      var k = real.key(i);
+      if (k && k.indexOf(P) === 0) out.push(k);
+    }
+    return out;
+  }
+
+  var espaco = {
+    __buildly3: true,
+    get length() { return nossas().length; },
+    key: function (i) {
+      var k = nossas()[i];
+      return k === undefined ? null : k.slice(P.length);
+    },
+    getItem: function (k) { return real.getItem(P + k); },
+    setItem: function (k, v) { real.setItem(P + k, v); },
+    removeItem: function (k) { real.removeItem(P + k); },
+    clear: function () { nossas().forEach(function (k) { real.removeItem(k); }); }
+  };
+
+  try {
+    Object.defineProperty(window, 'localStorage', {
+      value: espaco, configurable: true, writable: false
+    });
+  } catch (e) {}
+})();
+</script>
+<script>
+const ESPACO_SUPRIMENTOS = 'buildly3::suprimentos';
+
+function mudarAba(status) {
+  document.querySelectorAll('.aba-content').forEach(el => el.style.display = 'none');
+  document.getElementById(status + '-aba').style.display = 'block';
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function abrirNovaRequisicao() {
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('descricao').focus();
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+async function salvarRequisicao() {
+  const descricao = document.getElementById('descricao').value;
+  const quantidade = parseFloat(document.getElementById('quantidade').value) || 0;
+  const unidade = document.getElementById('unidade').value;
+  const valor_estimado = parseFloat(document.getElementById('valor_estimado').value) || 0;
+  const necessidade_em = document.getElementById('necessidade_em').value;
+
+  if (!descricao || !quantidade) {
+    alert('Preencha descrição e quantidade');
+    return;
+  }
+
+  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
+  const cliente = window.supabaseClient;
+
+  // Gerar número sequencial
+  const { data: ultimoReg } = await cliente
+    .from('requisicoes_compra')
+    .select('numero')
+    .eq('obra_id', obraAtiva)
+    .order('numero', { ascending: false })
+    .limit(1);
+
+  const proximoNum = ultimoReg && ultimoReg.length ?
+    String(parseInt(ultimoReg[0].numero) + 1).padStart(4, '0') : '0001';
+
+  const { error } = await cliente
+    .from('requisicoes_compra')
+    .insert([{
+      obra_id: obraAtiva,
+      numero: proximoNum,
+      eap_id: null, // TODO: selecionar EAP
+      cbs_id: null, // TODO: selecionar CBS
+      descricao,
+      quantidade,
+      unidade,
+      valor_estimado,
+      necessidade_em,
+      status: 'rascunho'
+    }]);
+
+  if (error) {
+    alert('Erro: ' + error.message);
+    return;
+  }
+
+  fecharModal();
+  document.getElementById('descricao').value = '';
+  document.getElementById('quantidade').value = '';
+  document.getElementById('valor_estimado').value = '';
+  await carregarRequisicoes();
+}
+
+async function carregarRequisicoes() {
+  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
+  const cliente = window.supabaseClient;
+
+  const { data, error } = await cliente
+    .from('requisicoes_compra')
+    .select('*')
+    .eq('obra_id', obraAtiva)
+    .order('criado_em', { ascending: false });
+
+  if (error) {
+    console.error('Erro:', error);
+    return;
+  }
+
+  const requisicoes = data || [];
+
+  // Agrupar por status
+  const porStatus = {};
+  requisicoes.forEach(r => {
+    if (!porStatus[r.status]) porStatus[r.status] = [];
+    porStatus[r.status].push(r);
+  });
+
+  // Atualizar contadores nos tabs
+  ['rascunho', 'em_cotacao', 'em_aprovacao', 'pedido_emitido', 'cancelada'].forEach(status => {
+    const count = porStatus[status] ? porStatus[status].length : 0;
+    const tab = Array.from(document.querySelectorAll('.tab')).find(t => t.textContent.includes(status));
+    if (tab) tab.textContent = tab.textContent.replace(/\(\d+\)/, `(${count})`);
+  });
+
+  // Renderizar tabelas
+  if (porStatus['rascunho']) {
+    document.getElementById('rascunho-tbody').innerHTML = porStatus['rascunho'].map(r => `
+      <tr>
+        <td>${r.numero}</td>
+        <td>${r.descricao}</td>
+        <td>${r.quantidade} ${r.unidade}</td>
+        <td>R$ ${r.valor_estimado.toFixed(2)}</td>
+        <td>${r.necessidade_em || '-'}</td>
+        <td><button class="btn btn-secondary" onclick="alert('Editar: ${r.id}')">✎</button></td>
+      </tr>
+    `).join('');
+  }
+}
+
+// Inicializar
+(async () => {
+  await carregarRequisicoes();
+})();
+</script>
+</body>
+</html>

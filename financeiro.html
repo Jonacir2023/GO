@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Financeiro — BUILDLy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; color: #333; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    h1 { font-size: 28px; color: #1a1a1a; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .btn-primary { background: #007AFF; color: white; }
+    .btn-primary:hover { background: #0051d5; }
+    .btn-secondary { background: #e9ecef; color: #333; }
+    .btn-secondary:hover { background: #dee2e6; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-card-label { font-size: 13px; color: #666; font-weight: 500; margin-bottom: 8px; }
+    .stat-card-value { font-size: 32px; font-weight: 700; color: #007AFF; }
+    .stat-card-change { font-size: 12px; color: #999; margin-top: 8px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+    .tab { padding: 12px 20px; cursor: pointer; border: none; background: none; font-size: 14px; border-bottom: 3px solid transparent; }
+    .tab.active { border-bottom-color: #007AFF; color: #007AFF; font-weight: 600; }
+    .content { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; border-bottom: 2px solid #e0e0e0; }
+    .table td { padding: 12px; border-bottom: 1px solid #e0e0e0; }
+    .table tr:hover { background: #f9f9f9; }
+    .status { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .status.rascunho { background: #e9ecef; color: #495057; }
+    .status.em_aprovacao { background: #fff3e0; color: #f57c00; }
+    .status.aprovada { background: #e8f5e9; color: #388e3c; }
+    .status.rejeitada { background: #ffebee; color: #c62828; }
+    .valor { font-weight: 600; color: #1a1a1a; }
+    .empty-state { text-align: center; padding: 40px; color: #999; }
+    @media(prefers-color-scheme: dark) {
+      body { background: #1a1a1a; color: #e0e0e0; }
+      .content, .stat-card { background: #2a2a2a; }
+      .table th { background: #333; }
+      .table tr:hover { background: #323232; }
+      .btn-secondary { background: #3a3a3a; color: #e0e0e0; }
+      .btn-secondary:hover { background: #4a4a4a; }
+      .tabs { border-bottom-color: #3a3a3a; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>💰 Financeiro</h1>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-card-label">Orçado</div>
+      <div class="stat-card-value" id="stat-orcado">R$ 0</div>
+      <div class="stat-card-change">Custos da obra</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Gasto</div>
+      <div class="stat-card-value" id="stat-gasto">R$ 0</div>
+      <div class="stat-card-change">Notas fiscais aprovadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Faturado</div>
+      <div class="stat-card-value" id="stat-faturado">R$ 0</div>
+      <div class="stat-card-change">Medições aprovadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Saldo</div>
+      <div class="stat-card-value" id="stat-saldo">R$ 0</div>
+      <div class="stat-card-change">Orçado - Gasto</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="mudarAba('medicoes')">Medições</button>
+    <button class="tab" onclick="mudarAba('notas-fiscais')">Notas Fiscais</button>
+    <button class="tab" onclick="mudarAba('aprovacoes')">Aprovações Pendentes</button>
+  </div>
+
+  <div class="content">
+    <div id="medicoes-aba" class="aba-content">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Período</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="medicoes-tbody">
+          <tr><td colspan="6" class="empty-state"><i class="fas fa-chart-line"></i>Nenhuma medição</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="notas-fiscais-aba" class="aba-content" style="display: none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>NF</th>
+            <th>Fornecedor</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Data Emissão</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="notas-fiscais-tbody">
+          <tr><td colspan="6" class="empty-state"><i class="fas fa-receipt"></i>Nenhuma nota fiscal</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="aprovacoes-aba" class="aba-content" style="display: none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Solicitante</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="aprovacoes-tbody">
+          <tr><td colspan="6" class="empty-state"><i class="fas fa-hourglass-end"></i>Nada aguardando aprovação</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="supabase-config.js?v=f48c7213"></script>
+<script>
+/* BUILDLY_ESPACO_PROPRIO — isolamento de localStorage */
+(function () {
+  var P = 'buildly3::';
+  var real;
+  try { real = window.localStorage; } catch (e) { return; }
+  if (!real || real.__buildly3) return;
+
+  function nossas() {
+    var out = [];
+    for (var i = 0; i < real.length; i++) {
+      var k = real.key(i);
+      if (k && k.indexOf(P) === 0) out.push(k);
+    }
+    return out;
+  }
+
+  var espaco = {
+    __buildly3: true,
+    get length() { return nossas().length; },
+    key: function (i) {
+      var k = nossas()[i];
+      return k === undefined ? null : k.slice(P.length);
+    },
+    getItem: function (k) { return real.getItem(P + k); },
+    setItem: function (k, v) { real.setItem(P + k, v); },
+    removeItem: function (k) { real.removeItem(P + k); },
+    clear: function () { nossas().forEach(function (k) { real.removeItem(k); }); }
+  };
+
+  try {
+    Object.defineProperty(window, 'localStorage', {
+      value: espaco, configurable: true, writable: false
+    });
+  } catch (e) {}
+})();
+</script>
+<script>
+const ESPACO_FINANCEIRO = 'buildly3::financeiro';
+
+function mudarAba(aba) {
+  document.querySelectorAll('.aba-content').forEach(el => el.style.display = 'none');
+  document.getElementById(aba + '-aba').style.display = 'block';
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+async function carregarDados() {
+  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
+  const cliente = window.supabaseClient;
+
+  // Carregar custos para calcular orçado
+  const { data: custos } = await cliente
+    .from('custos_categorias')
+    .select('valor_total')
+    .eq('obra_id', obraAtiva);
+
+  const orcado = (custos || []).reduce((sum, c) => sum + (c.valor_total || 0), 0);
+
+  // Carregar medições
+  const { data: medicoes } = await cliente
+    .from('medicoes')
+    .select('*')
+    .eq('obra_id', obraAtiva)
+    .eq('status', 'aprovada');
+
+  const faturado = (medicoes || []).reduce((sum, m) => sum + (m.valor_total || 0), 0);
+
+  // Carregar notas fiscais
+  const { data: nfs } = await cliente
+    .from('custos_notas_fiscais')
+    .select('*')
+    .eq('obra_id', obraAtiva)
+    .eq('status', 'aprovada');
+
+  const gasto = (nfs || []).reduce((sum, n) => sum + (n.valor || 0), 0);
+
+  // Atualizar stats
+  document.getElementById('stat-orcado').textContent = `R$ ${(orcado/1000).toFixed(1)}mi`;
+  document.getElementById('stat-gasto').textContent = `R$ ${(gasto/1000).toFixed(1)}mi`;
+  document.getElementById('stat-faturado').textContent = `R$ ${(faturado/1000).toFixed(1)}mi`;
+  document.getElementById('stat-saldo').textContent = `R$ ${((orcado-gasto)/1000).toFixed(1)}mi`;
+}
+
+// Inicializar
+(async () => {
+  await carregarDados();
+})();
+</script>
+</body>
+</html>
