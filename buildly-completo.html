@@ -1310,6 +1310,16 @@ async function montarContextoNuvem() {
   return ctx;
 }
 
+function obterOuGerarDeviceId() {
+  const chave = 'buildly3::device_id';
+  let id = localStorage.getItem(chave);
+  if (!id) {
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    try { localStorage.setItem(chave, id); } catch (e) {}
+  }
+  return id;
+}
+
 async function enviarPergunta() {
   const input = document.getElementById('perguntarInput');
   const pergunta = input.value.trim();
@@ -1337,7 +1347,7 @@ async function enviarPergunta() {
     const resp = await fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ pergunta, contextoLocal })
+      body: JSON.stringify({ pergunta, contextoLocal, deviceId: obterOuGerarDeviceId() })
     });
     const json = await resp.json().catch(() => null);
     respostaBox.textContent = (json && json.resposta) || '❌ Não foi possível obter resposta.';

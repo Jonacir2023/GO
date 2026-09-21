@@ -1009,6 +1009,9 @@ function perguntarIA(body) {
   var pergunta = String(body.pergunta || '').trim();
   if (!pergunta) return errorResponse('Pergunta vazia');
 
+  var deviceId = String(body.deviceId || '').trim();
+  if (!deviceId) return errorResponse('Identificador do aparelho não informado');
+
   var apiKey = PropertiesService.getScriptProperties().getProperty('ANTHROPIC_API_KEY');
   if (!apiKey) {
     return successResponse({
@@ -1016,6 +1019,11 @@ function perguntarIA(body) {
       resposta: '⚠️ A chave de API da Anthropic ainda não foi configurada neste Apps Script. ' +
         'Vá em Configurações do projeto → Propriedades do script e adicione ANTHROPIC_API_KEY.'
     });
+  }
+
+  var rateLimitError = verificarRateLimit(deviceId);
+  if (rateLimitError) {
+    return successResponse({ ok: false, resposta: rateLimitError });
   }
 
   try {
@@ -1029,6 +1037,22 @@ function perguntarIA(body) {
   } catch (err) {
     return successResponse({ ok: false, resposta: '❌ Erro ao consultar: ' + err.message });
   }
+}
+
+function verificarRateLimit(deviceId) {
+  var LIMIT_DIARIO = 20;
+  var props = PropertiesService.getScriptProperties();
+  var agora = new Date();
+  var chaveData = Utilities.formatDate(agora, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var chaveRateLimit = 'rate_limit:' + deviceId + ':' + chaveData;
+
+  var contador = parseInt(props.getProperty(chaveRateLimit) || '0');
+  if (contador >= LIMIT_DIARIO) {
+    return '⚠️ Limite de ' + LIMIT_DIARIO + ' perguntas por dia atingido. Tente novamente amanhã.';
+  }
+
+  props.setProperty(chaveRateLimit, String(contador + 1));
+  return null;
 }
 
 // Monta um resumo em JSON de tudo que existe na aba Diário (fonte oficial e mais atual),
