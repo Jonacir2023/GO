@@ -19,7 +19,11 @@ import sys
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 # O que é do BUILDLy, e só dele.
-EXEC_BUILDLY = 'AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA'
+# EXEC_BUILDLY pode ser a versão antiga ou nova (redeployed com OAuth scopes para Anthropic)
+EXEC_BUILDLY_ANTIGAS = [
+    'AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA',
+    'AKfycbyvsYYiUd6ygW1WAswWTRL7P0nHDJKoIK_GatyGBKL8NDH_jP-e4jkGEj5kRyRvDY2fQg',
+]
 PLANILHA_BUILDLY = '19SDuzU_CLzDRfbNZWJZQzchLDCeQYHgiSC_FxDSdhOw'
 
 # O que é de outro projeto e nunca pode aparecer aqui.
@@ -56,7 +60,7 @@ def main():
     for arq in arquivos_do_app():
         texto = arq.read_text(encoding='utf-8', errors='ignore')
         for achado in set(re.findall(r'script\.google\.com/macros/s/([A-Za-z0-9_-]+)', texto)):
-            if achado != EXEC_BUILDLY:
+            if achado not in EXEC_BUILDLY_ANTIGAS:
                 falhas.append(f'{arq.name}: chama um Apps Script que não é o do BUILDLy ({achado[:28]}…)')
 
     # ---- 3. o backend só abre a planilha do BUILDLy ----
