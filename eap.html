@@ -8,47 +8,71 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; color: #333; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; grid-column: 1 / -1; }
     h1 { font-size: 28px; color: #1a1a1a; }
     .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
     .btn-primary { background: #007AFF; color: white; }
     .btn-primary:hover { background: #0051d5; }
     .btn-secondary { background: #e9ecef; color: #333; }
     .btn-secondary:hover { background: #dee2e6; }
-    .tree { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .tree-item { padding: 12px 0; padding-left: 20px; border-left: 2px solid #ddd; }
-    .tree-item.level-0 { padding-left: 0; border: none; }
-    .tree-item.level-1 { padding-left: 30px; }
-    .tree-item.level-2 { padding-left: 60px; }
-    .tree-item.level-3 { padding-left: 90px; }
-    .tree-item-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-    .tree-item-icon { width: 20px; color: #666; }
+    .btn-danger { background: #ff3b30; color: white; }
+    .btn-danger:hover { background: #cc2f26; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; grid-column: 1 / -1; }
+    .stat-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-card-value { font-size: 24px; font-weight: 700; color: #007AFF; }
+    .stat-card-label { font-size: 12px; color: #666; margin-top: 5px; }
+    .filters { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .filter-group { display: flex; gap: 8px; align-items: center; }
+    .filter-group label { font-size: 12px; font-weight: 500; }
+    .filter-group select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+    .tree-container { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .tree-item { padding: 12px; margin: 8px 0; border-left: 3px solid #ddd; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+    .tree-item:hover { background: #f5f5f5; border-left-color: #007AFF; }
+    .tree-item.level-1 { margin-left: 0; }
+    .tree-item.level-2 { margin-left: 30px; }
+    .tree-item.level-3 { margin-left: 60px; }
+    .tree-item.level-4 { margin-left: 90px; }
+    .tree-item-header { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .tree-item-icon { width: 20px; text-align: center; color: #666; }
     .tree-item-name { font-weight: 500; flex: 1; }
-    .tree-item-code { font-size: 12px; color: #999; margin-left: 10px; }
-    .tree-item-actions { display: none; gap: 8px; }
+    .tree-item-code { font-size: 11px; color: #999; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; }
+    .tree-item-status { font-size: 10px; padding: 2px 8px; border-radius: 3px; font-weight: 500; }
+    .status-planejado { background: #e3f2fd; color: #1976d2; }
+    .status-em_execucao { background: #fff3e0; color: #f57c00; }
+    .status-concluido { background: #e8f5e9; color: #388e3c; }
+    .status-atrasado { background: #ffebee; color: #c62828; }
+    .status-suspenso { background: #f3e5f5; color: #7b1fa2; }
+    .tree-item-progress { width: 100%; height: 4px; background: #eee; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .tree-item-progress-bar { height: 100%; background: #4caf50; transition: width 0.3s; }
+    .tree-item-actions { display: none; gap: 6px; flex-shrink: 0; }
     .tree-item:hover .tree-item-actions { display: flex; }
-    .tree-item-actions button { padding: 6px 12px; font-size: 12px; }
+    .sidebar { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: fit-content; position: sticky; top: 20px; }
+    .sidebar-empty { text-align: center; color: #999; padding: 40px 20px; }
+    .sidebar-empty i { font-size: 32px; display: block; margin-bottom: 10px; }
+    .sidebar-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; }
+    .sidebar-field { margin-bottom: 15px; }
+    .sidebar-label { font-size: 12px; font-weight: 500; color: #666; margin-bottom: 5px; }
+    .sidebar-value { font-size: 14px; padding: 8px; background: #f5f5f5; border-radius: 4px; }
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
     .modal.active { display: flex; }
-    .modal-content { background: white; border-radius: 8px; padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .modal-content { background: white; border-radius: 8px; padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow-y: auto; max-height: 90vh; }
     .modal-header { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
-    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .stat-card-value { font-size: 28px; font-weight: 700; color: #007AFF; }
-    .stat-card-label { font-size: 14px; color: #666; margin-top: 8px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
     @media(prefers-color-scheme: dark) {
       body { background: #1a1a1a; color: #e0e0e0; }
-      .tree, .stat-card { background: #2a2a2a; }
-      .tree-item-code { color: #888; }
-      .btn-secondary { background: #3a3a3a; color: #e0e0e0; }
-      .btn-secondary:hover { background: #4a4a4a; }
-      .modal-content { background: #2a2a2a; }
-      .form-group input, .form-group select { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
+      .tree-container, .stat-card, .filters, .sidebar, .modal-content { background: #2a2a2a; }
+      .filter-group select { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
+      .tree-item { border-left-color: #444; }
+      .tree-item:hover { background: #323232; }
+      .tree-item-code { background: #3a3a3a; color: #aaa; }
+      .form-group input, .form-group select, .form-group textarea { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
+      .sidebar-value { background: #3a3a3a; }
     }
   </style>
 </head>
@@ -65,16 +89,44 @@
       <div class="stat-card-label">Itens totais</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-value" id="stat-pacotes">0</div>
-      <div class="stat-card-label">Pacotes de trabalho</div>
+      <div class="stat-card-value" id="stat-concluido">0%</div>
+      <div class="stat-card-label">Projeto concluído</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-value" id="stat-entregas">0</div>
-      <div class="stat-card-label">Entregas</div>
+      <div class="stat-card-value" id="stat-atrasado">0</div>
+      <div class="stat-card-label">Itens atrasados</div>
     </div>
   </div>
 
-  <div class="tree" id="tree"></div>
+  <div class="filters">
+    <div class="filter-group">
+      <label>Status:</label>
+      <select id="filtro-status" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option value="planejado">Planejado</option>
+        <option value="em_execucao">Em execução</option>
+        <option value="concluido">Concluído</option>
+        <option value="atrasado">Atrasado</option>
+        <option value="suspenso">Suspenso</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Responsável:</label>
+      <select id="filtro-responsavel" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="limparFiltros()">✕ Limpar</button>
+  </div>
+
+  <div class="tree-container" id="tree"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-empty">
+      <i class="fas fa-cursor"></i>
+      <p>Selecione um item para ver detalhes</p>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="modal">
@@ -97,6 +149,40 @@
         <option value="entrega">Entrega</option>
         <option value="outro">Outro</option>
       </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Responsável</label>
+        <input type="text" id="responsavel" placeholder="Nome ou iniciais">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="status">
+          <option value="planejado">Planejado</option>
+          <option value="em_execucao">Em execução</option>
+          <option value="concluido">Concluído</option>
+          <option value="atrasado">Atrasado</option>
+          <option value="suspenso">Suspenso</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data Início</label>
+        <input type="date" id="data_inicio">
+      </div>
+      <div class="form-group">
+        <label>Data Fim</label>
+        <input type="date" id="data_fim">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Progresso (%)</label>
+      <input type="number" id="percentual_completo" min="0" max="100" value="0">
+    </div>
+    <div class="form-group">
+      <label>Descrição</label>
+      <textarea id="descricao" placeholder="Detalhes do item..." rows="3"></textarea>
     </div>
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
@@ -144,7 +230,8 @@
 })();
 </script>
 <script>
-const ESPACO_OBRAS = 'buildly3::eap';
+let todosItens = [];
+let itemSelecionado = null;
 
 async function carregarEAP() {
   try {
@@ -174,30 +261,163 @@ async function carregarEAP() {
 function renderizarEAP(itens) {
   const tree = document.getElementById('tree');
   tree.innerHTML = '';
+  todosItens = itens;
 
   const nivel = (codigo) => codigo.split('.').length - 1;
+  
+  const iconePorTipo = {
+    'grupo': 'fa-folder',
+    'pacote': 'fa-tasks',
+    'entrega': 'fa-check-circle',
+    'outro': 'fa-file'
+  };
+
+  const corProgresso = (perc) => {
+    if (perc === 100) return '#4caf50';
+    if (perc >= 75) return '#8bc34a';
+    if (perc >= 50) return '#ffc107';
+    if (perc >= 25) return '#ff9800';
+    return '#f44336';
+  };
 
   itens.forEach(item => {
     const div = document.createElement('div');
     div.className = `tree-item level-${nivel(item.codigo)}`;
+    div.dataset.itemId = item.id;
+    
+    const progCor = corProgresso(item.percentual_completo || 0);
+    const responsavelAbbr = item.responsavel ? item.responsavel.substring(0, 1).toUpperCase() : '—';
+    
     div.innerHTML = `
-      <div class="tree-item-header">
-        <span class="tree-item-icon"><i class="fas fa-folder"></i></span>
+      <div class="tree-item-header" onclick="selecionarItem(event, '${item.id}')">
+        <span class="tree-item-icon"><i class="fas ${iconePorTipo[item.tipo] || 'fa-file'}"></i></span>
         <span class="tree-item-name">${item.nome}</span>
         <span class="tree-item-code">${item.codigo}</span>
-        <div class="tree-item-actions">
-          <button class="btn btn-secondary" onclick="editar('${item.id}')">✎ Editar</button>
-          <button class="btn btn-secondary" onclick="remover('${item.id}')">✕ Remover</button>
+        ${item.status ? `<span class="tree-item-status status-${item.status}">${item.status.replace('_', ' ')}</span>` : ''}
+        ${item.responsavel ? `<span style="font-size: 10px; background: #007AFF; color: white; padding: 3px 6px; border-radius: 3px; font-weight: 500;">${responsavelAbbr}</span>` : ''}
+        <div class="tree-item-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-secondary btn-sm" onclick="editarItem('${item.id}')">✎</button>
+          <button class="btn btn-danger btn-sm" onclick="removerItem('${item.id}')">✕</button>
         </div>
       </div>
+      ${item.percentual_completo ? `
+        <div class="tree-item-progress">
+          <div class="tree-item-progress-bar" style="width: ${item.percentual_completo}%; background: ${progCor};"></div>
+        </div>
+      ` : ''}
     `;
     tree.appendChild(div);
   });
 
-  // Atualizar stats
+  atualizarStats(itens);
+  atualizarFiltros(itens);
+}
+
+function atualizarStats(itens) {
   document.getElementById('stat-total').textContent = itens.length;
-  document.getElementById('stat-pacotes').textContent = itens.filter(i => i.tipo === 'pacote').length;
-  document.getElementById('stat-entregas').textContent = itens.filter(i => i.tipo === 'entrega').length;
+  
+  const atrasados = itens.filter(i => i.status === 'atrasado').length;
+  document.getElementById('stat-atrasado').textContent = atrasados;
+  
+  const somaPerc = itens.reduce((sum, i) => sum + (i.percentual_completo || 0), 0);
+  const mediaPerc = itens.length > 0 ? Math.round(somaPerc / itens.length) : 0;
+  document.getElementById('stat-concluido').textContent = mediaPerc + '%';
+}
+
+function atualizarFiltros(itens) {
+  const responsaveis = [...new Set(itens.filter(i => i.responsavel).map(i => i.responsavel))];
+  const select = document.getElementById('filtro-responsavel');
+  const valorAtual = select.value;
+  select.innerHTML = '<option value="">Todos</option>';
+  responsaveis.sort().forEach(r => {
+    select.innerHTML += `<option value="${r}">${r}</option>`;
+  });
+  select.value = valorAtual;
+}
+
+function aplicarFiltros() {
+  const statusFiltro = document.getElementById('filtro-status').value;
+  const responsavelFiltro = document.getElementById('filtro-responsavel').value;
+  
+  const itensFiltrados = todosItens.filter(i => {
+    const statusOk = !statusFiltro || i.status === statusFiltro;
+    const respOk = !responsavelFiltro || i.responsavel === responsavelFiltro;
+    return statusOk && respOk;
+  });
+  
+  renderizarEAP(itensFiltrados);
+}
+
+function limparFiltros() {
+  document.getElementById('filtro-status').value = '';
+  document.getElementById('filtro-responsavel').value = '';
+  renderizarEAP(todosItens);
+}
+
+function selecionarItem(event, itemId) {
+  const item = todosItens.find(i => i.id === itemId);
+  if (!item) return;
+  
+  itemSelecionado = item;
+  
+  const sidebar = document.getElementById('sidebar');
+  const diasRestantes = item.data_fim ? Math.ceil((new Date(item.data_fim) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  
+  sidebar.innerHTML = `
+    <div class="sidebar-title">${item.nome}</div>
+    <div class="sidebar-field">
+      <div class="sidebar-label">Código</div>
+      <div class="sidebar-value">${item.codigo}</div>
+    </div>
+    <div class="sidebar-field">
+      <div class="sidebar-label">Tipo</div>
+      <div class="sidebar-value">${item.tipo}</div>
+    </div>
+    ${item.responsavel ? `
+    <div class="sidebar-field">
+      <div class="sidebar-label">Responsável</div>
+      <div class="sidebar-value">${item.responsavel}</div>
+    </div>
+    ` : ''}
+    <div class="sidebar-field">
+      <div class="sidebar-label">Status</div>
+      <div class="sidebar-value"><span class="tree-item-status status-${item.status || 'planejado'}">${(item.status || 'planejado').replace('_', ' ')}</span></div>
+    </div>
+    ${item.percentual_completo ? `
+    <div class="sidebar-field">
+      <div class="sidebar-label">Progresso</div>
+      <div style="background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden;">
+        <div style="width: ${item.percentual_completo}%; height: 100%; background: ${item.percentual_completo === 100 ? '#4caf50' : '#ffc107'};"></div>
+      </div>
+      <div style="text-align: right; font-size: 11px; margin-top: 4px;">${item.percentual_completo}%</div>
+    </div>
+    ` : ''}
+    ${item.data_inicio ? `
+    <div class="sidebar-field">
+      <div class="sidebar-label">Início</div>
+      <div class="sidebar-value">${new Date(item.data_inicio).toLocaleDateString('pt-BR')}</div>
+    </div>
+    ` : ''}
+    ${item.data_fim ? `
+    <div class="sidebar-field">
+      <div class="sidebar-label">Fim previsto</div>
+      <div class="sidebar-value">${new Date(item.data_fim).toLocaleDateString('pt-BR')} ${diasRestantes !== null ? `(${diasRestantes > 0 ? diasRestantes + 'd' : 'Vencido'})` : ''}</div>
+    </div>
+    ` : ''}
+    ${item.descricao ? `
+    <div class="sidebar-field">
+      <div class="sidebar-label">Descrição</div>
+      <div class="sidebar-value" style="white-space: pre-wrap; line-height: 1.4;">${item.descricao}</div>
+    </div>
+    ` : ''}
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="editarItem('${item.id}')">✎ Editar</button>
+      <button class="btn btn-danger btn-sm" style="flex: 1;" onclick="removerItem('${item.id}')">✕ Remover</button>
+    </div>
+  `;
+  
+  document.querySelectorAll('.tree-item').forEach(el => el.style.opacity = '1');
+  document.querySelector(`[data-item-id="${itemId}"]`).style.opacity = '1';
 }
 
 function abrirNovaEAP() {
@@ -209,6 +429,13 @@ function fecharModal() {
   document.getElementById('modal').classList.remove('active');
   document.getElementById('codigo').value = '';
   document.getElementById('nome').value = '';
+  document.getElementById('tipo').value = 'pacote';
+  document.getElementById('responsavel').value = '';
+  document.getElementById('status').value = 'planejado';
+  document.getElementById('data_inicio').value = '';
+  document.getElementById('data_fim').value = '';
+  document.getElementById('percentual_completo').value = '0';
+  document.getElementById('descricao').value = '';
   document.getElementById('id_edicao').value = '';
   document.getElementById('modal-header').textContent = 'Nova EAP';
 }
@@ -217,6 +444,12 @@ async function salvarEAP() {
   const codigo = document.getElementById('codigo').value;
   const nome = document.getElementById('nome').value;
   const tipo = document.getElementById('tipo').value;
+  const responsavel = document.getElementById('responsavel').value;
+  const status = document.getElementById('status').value;
+  const data_inicio = document.getElementById('data_inicio').value;
+  const data_fim = document.getElementById('data_fim').value;
+  const percentual_completo = parseInt(document.getElementById('percentual_completo').value) || 0;
+  const descricao = document.getElementById('descricao').value;
   const idEdicao = document.getElementById('id_edicao').value;
 
   if (!codigo || !nome) {
@@ -236,13 +469,13 @@ async function salvarEAP() {
     if (idEdicao) {
       resp = await cliente
         .from('eap_itens')
-        .update({ codigo, nome, tipo, atualizado_em: new Date().toISOString() })
+        .update({ codigo, nome, tipo, responsavel, status, data_inicio, data_fim, percentual_completo, descricao, atualizado_em: new Date().toISOString() })
         .eq('id', idEdicao)
         .eq('obra_id', obraId);
     } else {
       resp = await cliente
         .from('eap_itens')
-        .insert([{ obra_id: obraId, codigo, nome, tipo }]);
+        .insert([{ obra_id: obraId, codigo, nome, tipo, responsavel, status, data_inicio, data_fim, percentual_completo, descricao }]);
     }
 
     if (resp.error) {
@@ -258,7 +491,7 @@ async function salvarEAP() {
   }
 }
 
-async function remover(id) {
+async function removerItem(id) {
   if (!confirm('Remover este item?')) return;
 
   try {
@@ -274,6 +507,8 @@ async function remover(id) {
       return;
     }
 
+    itemSelecionado = null;
+    document.getElementById('sidebar').innerHTML = '<div class="sidebar-empty"><i class="fas fa-cursor"></i><p>Selecione um item para ver detalhes</p></div>';
     const itens = await carregarEAP();
     renderizarEAP(itens);
   } catch (e) {
@@ -281,7 +516,7 @@ async function remover(id) {
   }
 }
 
-async function editar(id) {
+async function editarItem(id) {
   try {
     if (!window.B3Obras || !window.B3Obras.cliente) {
       alert('Sistema não inicializado');
@@ -306,6 +541,12 @@ async function editar(id) {
     document.getElementById('codigo').value = data.codigo || '';
     document.getElementById('nome').value = data.nome || '';
     document.getElementById('tipo').value = data.tipo || 'pacote';
+    document.getElementById('responsavel').value = data.responsavel || '';
+    document.getElementById('status').value = data.status || 'planejado';
+    document.getElementById('data_inicio').value = data.data_inicio || '';
+    document.getElementById('data_fim').value = data.data_fim || '';
+    document.getElementById('percentual_completo').value = data.percentual_completo || '0';
+    document.getElementById('descricao').value = data.descricao || '';
     document.getElementById('modal-header').textContent = 'Editar EAP';
     document.getElementById('modal').classList.add('active');
     document.getElementById('codigo').focus();
@@ -314,7 +555,6 @@ async function editar(id) {
   }
 }
 
-// Inicializar quando DOM estiver pronto e B3Obras disponível
 window.addEventListener('DOMContentLoaded', () => {
   if (window.B3Obras) {
     (async () => {
