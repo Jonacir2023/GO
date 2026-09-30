@@ -273,14 +273,14 @@ async function salvarRequisicao() {
     return;
   }
 
-  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
-  const cliente = window.supabaseClient;
+  const cliente = B3Obras.cliente();
+  const obraId = B3Obras.atualId();
 
   // Gerar número sequencial
   const { data: ultimoReg } = await cliente
     .from('requisicoes_compra')
     .select('numero')
-    .eq('obra_id', obraAtiva)
+    .eq('obra_id', obraId)
     .order('numero', { ascending: false })
     .limit(1);
 
@@ -290,7 +290,7 @@ async function salvarRequisicao() {
   const { error } = await cliente
     .from('requisicoes_compra')
     .insert([{
-      obra_id: obraAtiva,
+      obra_id: obraId,
       numero: proximoNum,
       eap_id: null, // TODO: selecionar EAP
       cbs_id: null, // TODO: selecionar CBS
@@ -315,13 +315,17 @@ async function salvarRequisicao() {
 }
 
 async function carregarRequisicoes() {
-  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
-  const cliente = window.supabaseClient;
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
 
-  const { data, error } = await cliente
-    .from('requisicoes_compra')
-    .select('*')
-    .eq('obra_id', obraAtiva)
+    const { data, error } = await cliente
+      .from('requisicoes_compra')
+      .select('*')
+      .eq('obra_id', obraId)
     .order('criado_em', { ascending: false });
 
   if (error) {
@@ -358,12 +362,20 @@ async function carregarRequisicoes() {
       </tr>
     `).join('');
   }
+  } catch (e) {
+    console.error('Erro ao carregar requisicoes:', e);
+    return;
+  }
 }
 
-// Inicializar
-(async () => {
-  await carregarRequisicoes();
-})();
+// Inicializar quando DOM estiver pronto e B3Obras disponível
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.B3Obras) {
+    (async () => {
+      await carregarRequisicoes();
+    })();
+  }
+});
 </script>
 </body>
 </html>
