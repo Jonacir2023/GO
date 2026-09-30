@@ -1,4 +1,6 @@
 -- BUILDLy GO — Migration: Financeiro (Workflows de aprovação para Medições e NFs)
+-- Nota: Adiciona colunas de workflow aos módulos existentes, sem criar novas tabelas
+-- Cada obra já tem seu próprio banco isolado
 
 -- Adicionar colunas de workflow às medições (se não existirem)
 alter table public.medicoes add column if not exists status text not null default 'rascunho';

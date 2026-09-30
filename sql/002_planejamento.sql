@@ -2,7 +2,7 @@
 
 create table if not exists public.planejamento_cronogramas (
   id uuid primary key default gen_random_uuid(),
-  obra_id uuid not null references public.obras(id) on delete restrict,
+  obra_id uuid not null,
   nome text not null,
   tipo text not null default 'controle',
   data_status date,
@@ -20,7 +20,7 @@ create table if not exists public.planejamento_cronogramas (
 
 create table if not exists public.planejamento_atividades (
   id uuid primary key default gen_random_uuid(),
-  obra_id uuid not null references public.obras(id) on delete restrict,
+  obra_id uuid not null,
   cronograma_id uuid not null,
   eap_id uuid,
   codigo text,
@@ -53,7 +53,7 @@ create table if not exists public.planejamento_atividades (
 
 create table if not exists public.planejamento_restricoes (
   id uuid primary key default gen_random_uuid(),
-  obra_id uuid not null references public.obras(id) on delete restrict,
+  obra_id uuid not null,
   eap_id uuid,
   descricao text not null,
   responsavel text,

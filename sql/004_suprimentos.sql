@@ -37,10 +37,6 @@ create table if not exists public.requisicoes_compra (
   constraint requisicoes_compra_status_check
     check (status in ('rascunho','em_cotacao','em_aprovacao','pedido_emitido','cancelada')),
 
-  constraint requisicoes_compra_obra_fkey
-    foreign key (obra_id)
-    references public.obras(id)
-    on delete restrict,
 
   constraint requisicoes_compra_eap_obra_fkey
     foreign key (eap_id, obra_id)
@@ -60,10 +56,6 @@ create table if not exists public.suprimentos_cotacoes (
   recebido_em timestamptz,
   criado_em timestamptz not null default now(),
 
-  constraint suprimentos_cotacoes_obra_fkey
-    foreign key (obra_id)
-    references public.obras(id)
-    on delete restrict,
 
   constraint suprimentos_cotacoes_requisicao_fkey
     foreign key (requisicao_id, obra_id)
@@ -93,10 +85,6 @@ create table if not exists public.suprimentos_pedidos (
   constraint suprimentos_pedidos_status_check
     check (status in ('emitido','em_transito','recebido','cancelado')),
 
-  constraint suprimentos_pedidos_obra_fkey
-    foreign key (obra_id)
-    references public.obras(id)
-    on delete restrict,
 
   constraint suprimentos_pedidos_requisicao_fkey
     foreign key (requisicao_id, obra_id)

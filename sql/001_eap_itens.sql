@@ -13,10 +13,6 @@ create table if not exists public.eap_itens (
   criado_em timestamptz not null default now(),
   atualizado_em timestamptz not null default now(),
 
-  constraint eap_itens_obra_fkey
-    foreign key (obra_id)
-    references public.obras(id)
-    on delete restrict,
 
   constraint eap_tipo_check
     check (tipo in ('grupo','pacote','entrega','outro')),
