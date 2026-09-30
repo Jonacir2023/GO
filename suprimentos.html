@@ -387,9 +387,66 @@ async function carregarRequisicoes() {
         <td>${r.quantidade} ${r.unidade}</td>
         <td>R$ ${r.valor_estimado.toFixed(2)}</td>
         <td>${r.necessidade_em || '-'}</td>
-        <td><button class="btn btn-secondary" onclick="editarRequisicao('${r.id}')">✎</button></td>
+        <td><button class="btn btn-secondary" onclick="editarRequisicao('${r.id}')">✎</button> <button class="btn btn-primary" onclick="mudarStatus('${r.id}', 'em_cotacao')">→ Cotação</button></td>
       </tr>
     `).join('');
+  } else {
+    document.getElementById('rascunho-tbody').innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-inbox"></i>Nenhuma requisição</td></tr>';
+  }
+
+  if (porStatus['em_cotacao']) {
+    document.getElementById('em_cotacao-tbody').innerHTML = porStatus['em_cotacao'].map(r => `
+      <tr>
+        <td>${r.numero}</td>
+        <td>${r.descricao}</td>
+        <td>R$ ${r.valor_estimado.toFixed(2)}</td>
+        <td>${r.necessidade_em || '-'}</td>
+        <td><button class="btn btn-primary" onclick="mudarStatus('${r.id}', 'em_aprovacao')">→ Aprovação</button> <button class="btn btn-danger" onclick="mudarStatus('${r.id}', 'cancelada')">✕ Cancelar</button></td>
+      </tr>
+    `).join('');
+  } else {
+    document.getElementById('em_cotacao-tbody').innerHTML = '<tr><td colspan="5" class="empty-state">Nenhuma em cotação</td></tr>';
+  }
+
+  if (porStatus['em_aprovacao']) {
+    document.getElementById('em_aprovacao-tbody').innerHTML = porStatus['em_aprovacao'].map(r => `
+      <tr>
+        <td>${r.numero}</td>
+        <td>${r.descricao}</td>
+        <td>R$ ${r.valor_estimado.toFixed(2)}</td>
+        <td>${r.observacoes ? r.observacoes.substring(0, 20) + '...' : '-'}</td>
+        <td><button class="btn btn-success" onclick="mudarStatus('${r.id}', 'pedido_emitido')">✓ Aprovar</button> <button class="btn btn-danger" onclick="mudarStatus('${r.id}', 'cancelada')">✕</button></td>
+      </tr>
+    `).join('');
+  } else {
+    document.getElementById('em_aprovacao-tbody').innerHTML = '<tr><td colspan="5" class="empty-state">Nenhuma aguardando aprovação</td></tr>';
+  }
+
+  if (porStatus['pedido_emitido']) {
+    document.getElementById('pedido_emitido-tbody').innerHTML = porStatus['pedido_emitido'].map(r => `
+      <tr>
+        <td>${r.numero}</td>
+        <td>${r.descricao}</td>
+        <td>R$ ${r.valor_estimado.toFixed(2)}</td>
+        <td>${new Date(r.criado_em).toLocaleDateString('pt-BR')}</td>
+        <td><button class="btn btn-secondary" onclick="editarRequisicao('${r.id}')">✎</button> <button class="btn btn-danger" onclick="mudarStatus('${r.id}', 'cancelada')">✕</button></td>
+      </tr>
+    `).join('');
+  } else {
+    document.getElementById('pedido_emitido-tbody').innerHTML = '<tr><td colspan="5" class="empty-state">Nenhum pedido emitido</td></tr>';
+  }
+
+  if (porStatus['cancelada']) {
+    document.getElementById('cancelada-tbody').innerHTML = porStatus['cancelada'].map(r => `
+      <tr>
+        <td>${r.numero}</td>
+        <td>${r.descricao}</td>
+        <td>${r.observacoes ? r.observacoes.substring(0, 25) : 'Sem motivo'}</td>
+        <td>${new Date(r.atualizado_em).toLocaleDateString('pt-BR')}</td>
+      </tr>
+    `).join('');
+  } else {
+    document.getElementById('cancelada-tbody').innerHTML = '<tr><td colspan="4" class="empty-state">Nenhuma cancelada</td></tr>';
   }
   } catch (e) {
     console.error('Erro ao carregar requisicoes:', e);
@@ -430,6 +487,32 @@ async function editarRequisicao(id) {
     document.getElementById('descricao').focus();
   } catch (e) {
     alert('Erro ao editar: ' + e.message);
+  }
+}
+
+async function mudarStatus(id, novoStatus) {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { error } = await cliente
+      .from('requisicoes_compra')
+      .update({ status: novoStatus, atualizado_em: new Date().toISOString() })
+      .eq('id', id)
+      .eq('obra_id', obraId);
+
+    if (error) {
+      alert('Erro ao atualizar status: ' + error.message);
+      return;
+    }
+
+    await carregarRequisicoes();
+  } catch (e) {
+    alert('Erro ao mudar status: ' + e.message);
   }
 }
 
