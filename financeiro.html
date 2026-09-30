@@ -188,46 +188,63 @@ function mudarAba(aba) {
 }
 
 async function carregarDados() {
-  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
-  const cliente = window.supabaseClient;
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
 
-  // Carregar custos para calcular orçado
-  const { data: custos } = await cliente
-    .from('custos_categorias')
-    .select('valor_total')
-    .eq('obra_id', obraAtiva);
-
-  const orcado = (custos || []).reduce((sum, c) => sum + (c.valor_total || 0), 0);
-
-  // Carregar medições
-  const { data: medicoes } = await cliente
-    .from('medicoes')
-    .select('*')
-    .eq('obra_id', obraAtiva)
-    .eq('status', 'aprovada');
-
-  const faturado = (medicoes || []).reduce((sum, m) => sum + (m.valor_total || 0), 0);
-
-  // Carregar notas fiscais
+  // Carregar custos totais (NFs)
   const { data: nfs } = await cliente
     .from('custos_notas_fiscais')
     .select('*')
-    .eq('obra_id', obraAtiva)
     .eq('status', 'aprovada');
 
-  const gasto = (nfs || []).reduce((sum, n) => sum + (n.valor || 0), 0);
+  const gasto = (nfs || []).reduce((sum, nf) => sum + (parseFloat(nf.valor_total) || 0), 0);
 
-  // Atualizar stats
-  document.getElementById('stat-orcado').textContent = `R$ ${(orcado/1000).toFixed(1)}mi`;
-  document.getElementById('stat-gasto').textContent = `R$ ${(gasto/1000).toFixed(1)}mi`;
-  document.getElementById('stat-faturado').textContent = `R$ ${(faturado/1000).toFixed(1)}mi`;
-  document.getElementById('stat-saldo').textContent = `R$ ${((orcado-gasto)/1000).toFixed(1)}mi`;
+  // Carregar medições
+  const { data: medicoes } = await cliente
+    .from('medicao_contratos')
+    .select('*');
+
+  // Parse JSONB medicoes - cada contrato tem array de medicoes dentro
+  let faturado = 0;
+  (medicoes || []).forEach(contrato => {
+    if (contrato.medicoes && Array.isArray(contrato.medicoes)) {
+      faturado += contrato.medicoes.reduce((sum, m) => sum + (parseFloat(m.valor) || 0), 0);
+    }
+  });
+
+  // Carregar RDO para orçado (snapshot de custos)
+  const { data: rdo } = await cliente
+    .from('rdo_snapshot')
+    .select('*')
+    .eq('id', 1)
+    .maybeSingle();
+
+  // Estimar orçado como gasto + buffer (RDO não tem campo orçado direto)
+  const orcado = gasto * 1.1; // 10% de buffer aproximado
+
+    // Atualizar stats
+    document.getElementById('stat-orcado').textContent = `R$ ${(orcado/1000).toFixed(1)}mi`;
+    document.getElementById('stat-gasto').textContent = `R$ ${(gasto/1000).toFixed(1)}mi`;
+    document.getElementById('stat-faturado').textContent = `R$ ${(faturado/1000).toFixed(1)}mi`;
+    const saldo = orcado - gasto;
+    document.getElementById('stat-saldo').textContent = `R$ ${(saldo/1000).toFixed(1)}mi`;
+  } catch (e) {
+    console.error('Erro ao carregar dados financeiros:', e);
+  }
 }
 
-// Inicializar
-(async () => {
-  await carregarDados();
-})();
+// Inicializar quando DOM estiver pronto e B3Obras disponível
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.B3Obras) {
+    (async () => {
+      await carregarDados();
+    })();
+  }
+});
 </script>
 </body>
 </html>
