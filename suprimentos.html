@@ -162,7 +162,8 @@
 
 <div class="modal" id="modal">
   <div class="modal-content">
-    <div class="modal-header" style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Nova Requisição de Compra</div>
+    <div class="modal-header" id="modal-header" style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Nova Requisição de Compra</div>
+    <input type="hidden" id="id_edicao">
     <div class="form-group">
       <label>Descrição do Item</label>
       <input type="text" id="descricao" placeholder="Ex: Cimento Portland 50kg">
@@ -259,6 +260,13 @@ function abrirNovaRequisicao() {
 
 function fecharModal() {
   document.getElementById('modal').classList.remove('active');
+  document.getElementById('descricao').value = '';
+  document.getElementById('quantidade').value = '';
+  document.getElementById('valor_estimado').value = '';
+  document.getElementById('necessidade_em').value = '';
+  document.getElementById('observacoes').value = '';
+  document.getElementById('id_edicao').value = '';
+  document.getElementById('modal-header').textContent = 'Nova Requisição de Compra';
 }
 
 async function salvarRequisicao() {
@@ -267,51 +275,72 @@ async function salvarRequisicao() {
   const unidade = document.getElementById('unidade').value;
   const valor_estimado = parseFloat(document.getElementById('valor_estimado').value) || 0;
   const necessidade_em = document.getElementById('necessidade_em').value;
+  const observacoes = document.getElementById('observacoes').value;
+  const idEdicao = document.getElementById('id_edicao').value;
 
   if (!descricao || !quantidade) {
     alert('Preencha descrição e quantidade');
     return;
   }
 
-  const cliente = B3Obras.cliente();
-  const obraId = B3Obras.atualId();
+  try {
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
 
-  // Gerar número sequencial
-  const { data: ultimoReg } = await cliente
-    .from('requisicoes_compra')
-    .select('numero')
-    .eq('obra_id', obraId)
-    .order('numero', { ascending: false })
-    .limit(1);
+    let resp;
+    if (idEdicao) {
+      resp = await cliente
+        .from('requisicoes_compra')
+        .update({
+          descricao,
+          quantidade,
+          unidade,
+          valor_estimado,
+          necessidade_em,
+          observacoes,
+          atualizado_em: new Date().toISOString()
+        })
+        .eq('id', idEdicao)
+        .eq('obra_id', obraId);
+    } else {
+      // Gerar número sequencial apenas na criação
+      const { data: ultimoReg } = await cliente
+        .from('requisicoes_compra')
+        .select('numero')
+        .eq('obra_id', obraId)
+        .order('numero', { ascending: false })
+        .limit(1);
 
-  const proximoNum = ultimoReg && ultimoReg.length ?
-    String(parseInt(ultimoReg[0].numero) + 1).padStart(4, '0') : '0001';
+      const proximoNum = ultimoReg && ultimoReg.length ?
+        String(parseInt(ultimoReg[0].numero) + 1).padStart(4, '0') : '0001';
 
-  const { error } = await cliente
-    .from('requisicoes_compra')
-    .insert([{
-      obra_id: obraId,
-      numero: proximoNum,
-      eap_id: null, // TODO: selecionar EAP
-      cbs_id: null, // TODO: selecionar CBS
-      descricao,
-      quantidade,
-      unidade,
-      valor_estimado,
-      necessidade_em,
-      status: 'rascunho'
-    }]);
+      resp = await cliente
+        .from('requisicoes_compra')
+        .insert([{
+          obra_id: obraId,
+          numero: proximoNum,
+          eap_id: null,
+          cbs_id: null,
+          descricao,
+          quantidade,
+          unidade,
+          valor_estimado,
+          necessidade_em,
+          observacoes,
+          status: 'rascunho'
+        }]);
+    }
 
-  if (error) {
-    alert('Erro: ' + error.message);
-    return;
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModal();
+    await carregarRequisicoes();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
   }
-
-  fecharModal();
-  document.getElementById('descricao').value = '';
-  document.getElementById('quantidade').value = '';
-  document.getElementById('valor_estimado').value = '';
-  await carregarRequisicoes();
 }
 
 async function carregarRequisicoes() {
@@ -358,13 +387,49 @@ async function carregarRequisicoes() {
         <td>${r.quantidade} ${r.unidade}</td>
         <td>R$ ${r.valor_estimado.toFixed(2)}</td>
         <td>${r.necessidade_em || '-'}</td>
-        <td><button class="btn btn-secondary" onclick="alert('Editar: ${r.id}')">✎</button></td>
+        <td><button class="btn btn-secondary" onclick="editarRequisicao('${r.id}')">✎</button></td>
       </tr>
     `).join('');
   }
   } catch (e) {
     console.error('Erro ao carregar requisicoes:', e);
     return;
+  }
+}
+
+async function editarRequisicao(id) {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data, error } = await cliente
+      .from('requisicoes_compra')
+      .select('*')
+      .eq('id', id)
+      .eq('obra_id', obraId)
+      .maybeSingle();
+
+    if (error || !data) {
+      alert('Erro ao carregar requisição: ' + (error ? error.message : 'não encontrada'));
+      return;
+    }
+
+    document.getElementById('id_edicao').value = id;
+    document.getElementById('descricao').value = data.descricao || '';
+    document.getElementById('quantidade').value = data.quantidade || '';
+    document.getElementById('unidade').value = data.unidade || 'un';
+    document.getElementById('valor_estimado').value = data.valor_estimado || '';
+    document.getElementById('necessidade_em').value = data.necessidade_em || '';
+    document.getElementById('observacoes').value = data.observacoes || '';
+    document.getElementById('modal-header').textContent = 'Editar Requisição #' + data.numero;
+    document.getElementById('modal').classList.add('active');
+    document.getElementById('descricao').focus();
+  } catch (e) {
+    alert('Erro ao editar: ' + e.message);
   }
 }
 

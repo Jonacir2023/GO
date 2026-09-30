@@ -123,7 +123,8 @@
 
 <div class="modal" id="modal">
   <div class="modal-content">
-    <div class="modal-header">Novo Cronograma</div>
+    <div class="modal-header" id="modal-header">Novo Cronograma</div>
+    <input type="hidden" id="id_edicao">
     <div class="form-group">
       <label>Nome do Cronograma</label>
       <input type="text" id="nome" placeholder="ex: Baseline, Reprogramação 01">
@@ -200,32 +201,51 @@ function abrirNovoCronograma() {
 
 function fecharModal() {
   document.getElementById('modal').classList.remove('active');
+  document.getElementById('nome').value = '';
+  document.getElementById('tipo').value = 'baseline';
+  document.getElementById('data_status').value = '';
+  document.getElementById('id_edicao').value = '';
+  document.getElementById('modal-header').textContent = 'Novo Cronograma';
 }
 
 async function salvarCronograma() {
   const nome = document.getElementById('nome').value;
   const tipo = document.getElementById('tipo').value;
   const data_status = document.getElementById('data_status').value;
+  const idEdicao = document.getElementById('id_edicao').value;
 
   if (!nome) {
     alert('Preencha o nome do cronograma');
     return;
   }
 
-  const cliente = B3Obras.cliente();
-  const obraId = B3Obras.atualId();
+  try {
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
 
-  const { error } = await cliente
-    .from('planejamento_cronogramas')
-    .insert([{ obra_id: obraId, nome, tipo, data_status }]);
+    let resp;
+    if (idEdicao) {
+      resp = await cliente
+        .from('planejamento_cronogramas')
+        .update({ nome, tipo, data_status, atualizado_em: new Date().toISOString() })
+        .eq('id', idEdicao)
+        .eq('obra_id', obraId);
+    } else {
+      resp = await cliente
+        .from('planejamento_cronogramas')
+        .insert([{ obra_id: obraId, nome, tipo, data_status }]);
+    }
 
-  if (error) {
-    alert('Erro: ' + error.message);
-    return;
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModal();
+    carregarCronogramas();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
   }
-
-  fecharModal();
-  carregarCronogramas();
 }
 
 async function carregarCronogramas() {
@@ -256,11 +276,44 @@ async function carregarCronogramas() {
         <td>${c.tipo}</td>
         <td>${c.data_status || '-'}</td>
         <td><span class="status planejado">Ativo</span></td>
-        <td><button class="btn btn-secondary" onclick="alert('Editar: ${c.id}')">✎ Editar</button></td>
+        <td><button class="btn btn-secondary" onclick="editarCronograma('${c.id}')">✎ Editar</button></td>
       </tr>
     `).join('');
   } catch (e) {
     console.error('Erro ao carregar cronogramas:', e);
+  }
+}
+
+async function editarCronograma(id) {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data, error } = await cliente
+      .from('planejamento_cronogramas')
+      .select('*')
+      .eq('id', id)
+      .eq('obra_id', obraId)
+      .maybeSingle();
+
+    if (error || !data) {
+      alert('Erro ao carregar cronograma: ' + (error ? error.message : 'não encontrado'));
+      return;
+    }
+
+    document.getElementById('id_edicao').value = id;
+    document.getElementById('nome').value = data.nome || '';
+    document.getElementById('tipo').value = data.tipo || 'baseline';
+    document.getElementById('data_status').value = data.data_status || '';
+    document.getElementById('modal-header').textContent = 'Editar Cronograma';
+    document.getElementById('modal').classList.add('active');
+    document.getElementById('nome').focus();
+  } catch (e) {
+    alert('Erro ao editar: ' + e.message);
   }
 }
 

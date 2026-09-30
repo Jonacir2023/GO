@@ -79,7 +79,8 @@
 
 <div class="modal" id="modal">
   <div class="modal-content">
-    <div class="modal-header">Nova EAP</div>
+    <div class="modal-header" id="modal-header">Nova EAP</div>
+    <input type="hidden" id="id_edicao">
     <div class="form-group">
       <label>Código</label>
       <input type="text" id="codigo" placeholder="ex: 1, 1.1, 1.1.1">
@@ -208,12 +209,15 @@ function fecharModal() {
   document.getElementById('modal').classList.remove('active');
   document.getElementById('codigo').value = '';
   document.getElementById('nome').value = '';
+  document.getElementById('id_edicao').value = '';
+  document.getElementById('modal-header').textContent = 'Nova EAP';
 }
 
 async function salvarEAP() {
   const codigo = document.getElementById('codigo').value;
   const nome = document.getElementById('nome').value;
   const tipo = document.getElementById('tipo').value;
+  const idEdicao = document.getElementById('id_edicao').value;
 
   if (!codigo || !nome) {
     alert('Preencha código e nome');
@@ -228,12 +232,21 @@ async function salvarEAP() {
     const cliente = B3Obras.cliente();
     const obraId = B3Obras.atualId();
 
-    const { error } = await cliente
-      .from('eap_itens')
-      .insert([{ obra_id: obraId, codigo, nome, tipo }]);
+    let resp;
+    if (idEdicao) {
+      resp = await cliente
+        .from('eap_itens')
+        .update({ codigo, nome, tipo, atualizado_em: new Date().toISOString() })
+        .eq('id', idEdicao)
+        .eq('obra_id', obraId);
+    } else {
+      resp = await cliente
+        .from('eap_itens')
+        .insert([{ obra_id: obraId, codigo, nome, tipo }]);
+    }
 
-    if (error) {
-      alert('Erro: ' + error.message);
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
       return;
     }
 
@@ -268,8 +281,37 @@ async function remover(id) {
   }
 }
 
-function editar(id) {
-  alert('Editar ainda não implementado: ' + id);
+async function editar(id) {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data, error } = await cliente
+      .from('eap_itens')
+      .select('*')
+      .eq('id', id)
+      .eq('obra_id', obraId)
+      .maybeSingle();
+
+    if (error || !data) {
+      alert('Erro ao carregar item: ' + (error ? error.message : 'não encontrado'));
+      return;
+    }
+
+    document.getElementById('id_edicao').value = id;
+    document.getElementById('codigo').value = data.codigo || '';
+    document.getElementById('nome').value = data.nome || '';
+    document.getElementById('tipo').value = data.tipo || 'pacote';
+    document.getElementById('modal-header').textContent = 'Editar EAP';
+    document.getElementById('modal').classList.add('active');
+    document.getElementById('codigo').focus();
+  } catch (e) {
+    alert('Erro ao editar: ' + e.message);
+  }
 }
 
 // Inicializar quando DOM estiver pronto e B3Obras disponível
