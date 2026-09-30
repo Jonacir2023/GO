@@ -212,12 +212,12 @@ async function salvarCronograma() {
     return;
   }
 
-  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
-  const cliente = window.supabaseClient;
+  const cliente = B3Obras.cliente();
+  const obraId = B3Obras.atualId();
 
   const { error } = await cliente
     .from('planejamento_cronogramas')
-    .insert([{ obra_id: obraAtiva, nome, tipo, data_status }]);
+    .insert([{ obra_id: obraId, nome, tipo, data_status }]);
 
   if (error) {
     alert('Erro: ' + error.message);
@@ -229,38 +229,49 @@ async function salvarCronograma() {
 }
 
 async function carregarCronogramas() {
-  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
-  const cliente = window.supabaseClient;
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
 
-  const { data, error } = await cliente
-    .from('planejamento_cronogramas')
-    .select('*')
-    .eq('obra_id', obraAtiva)
-    .order('criado_em', { ascending: false });
+    const { data, error } = await cliente
+      .from('planejamento_cronogramas')
+      .select('*')
+      .eq('obra_id', obraId)
+      .order('criado_em', { ascending: false });
 
-  if (error) console.error('Erro:', error);
+    if (error) console.error('Erro:', error);
 
-  const tbody = document.getElementById('cronogramas-tbody');
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-chart-gantt"></i>Nenhum cronograma</td></tr>';
-    return;
+    const tbody = document.getElementById('cronogramas-tbody');
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-chart-gantt"></i>Nenhum cronograma</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td>${c.nome}</td>
+        <td>${c.tipo}</td>
+        <td>${c.data_status || '-'}</td>
+        <td><span class="status planejado">Ativo</span></td>
+        <td><button class="btn btn-secondary" onclick="alert('Editar: ${c.id}')">✎ Editar</button></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    console.error('Erro ao carregar cronogramas:', e);
   }
-
-  tbody.innerHTML = data.map(c => `
-    <tr>
-      <td>${c.nome}</td>
-      <td>${c.tipo}</td>
-      <td>${c.data_status || '-'}</td>
-      <td><span class="status planejado">Ativo</span></td>
-      <td><button class="btn btn-secondary" onclick="alert('Editar: ${c.id}')">✎ Editar</button></td>
-    </tr>
-  `).join('');
 }
 
-// Inicializar
-(async () => {
-  await carregarCronogramas();
-})();
+// Inicializar quando DOM estiver pronto e B3Obras disponível
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.B3Obras) {
+    (async () => {
+      await carregarCronogramas();
+    })();
+  }
+});
 </script>
 </body>
 </html>

@@ -146,20 +146,28 @@
 const ESPACO_OBRAS = 'buildly3::eap';
 
 async function carregarEAP() {
-  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
-  const cliente = window.supabaseClient;
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      return [];
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
 
-  const { data, error } = await cliente
-    .from('eap_itens')
-    .select('*')
-    .eq('obra_id', obraAtiva)
-    .order('codigo');
+    const { data, error } = await cliente
+      .from('eap_itens')
+      .select('*')
+      .eq('obra_id', obraId)
+      .order('codigo');
 
-  if (error) {
-    console.error('Erro ao carregar EAP:', error);
+    if (error) {
+      console.error('Erro ao carregar EAP:', error);
+      return [];
+    }
+    return data || [];
+  } catch (e) {
+    console.error('Erro ao conectar ao Supabase:', e);
     return [];
   }
-  return data || [];
 }
 
 function renderizarEAP(itens) {
@@ -212,47 +220,71 @@ async function salvarEAP() {
     return;
   }
 
-  const obraAtiva = localStorage.getItem('buildly3::obra_ativa') || '1';
-  const cliente = window.supabaseClient;
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
 
-  const { error } = await cliente
-    .from('eap_itens')
-    .insert([{ obra_id: obraAtiva, codigo, nome, tipo }]);
+    const { error } = await cliente
+      .from('eap_itens')
+      .insert([{ obra_id: obraId, codigo, nome, tipo }]);
 
-  if (error) {
-    alert('Erro: ' + error.message);
-    return;
+    if (error) {
+      alert('Erro: ' + error.message);
+      return;
+    }
+
+    fecharModal();
+    const itens = await carregarEAP();
+    renderizarEAP(itens);
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
   }
-
-  fecharModal();
-  const itens = await carregarEAP();
-  renderizarEAP(itens);
 }
 
 async function remover(id) {
   if (!confirm('Remover este item?')) return;
 
-  const cliente = window.supabaseClient;
-  const { error } = await cliente.from('eap_itens').delete().eq('id', id);
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+    const cliente = B3Obras.cliente();
+    const { error } = await cliente.from('eap_itens').delete().eq('id', id);
 
-  if (error) {
-    alert('Erro: ' + error.message);
-    return;
+    if (error) {
+      alert('Erro: ' + error.message);
+      return;
+    }
+
+    const itens = await carregarEAP();
+    renderizarEAP(itens);
+  } catch (e) {
+    alert('Erro ao remover: ' + e.message);
   }
-
-  const itens = await carregarEAP();
-  renderizarEAP(itens);
 }
 
 function editar(id) {
   alert('Editar ainda não implementado: ' + id);
 }
 
-// Inicializar
-(async () => {
-  const itens = await carregarEAP();
-  renderizarEAP(itens);
-})();
+// Inicializar quando DOM estiver pronto e B3Obras disponível
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.B3Obras) {
+    (async () => {
+      try {
+        const itens = await carregarEAP();
+        renderizarEAP(itens);
+      } catch (e) {
+        console.error('Erro ao carregar EAP:', e);
+      }
+    })();
+  }
+});
 </script>
 </body>
 </html>
