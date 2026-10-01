@@ -1315,6 +1315,7 @@
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">📍 Local da Obra</div>
+      <button onclick="abrirEditarLocais()" style="padding:4px 10px;background:var(--accent);color:var(--bg-dark);border:none;border-radius:4px;font-weight:600;font-size:12px;cursor:pointer">✏️ Editar</button>
     </div>
     <select id="localObra" style="margin-bottom:8px"></select>
     <textarea id="descricaoLocal" placeholder="Descrição do local onde os trabalhos foram executados..." style="min-height:72px;resize:vertical"></textarea>
@@ -1950,6 +1951,31 @@
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-ghost" onclick="fecharModal('modalAtivExtra')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarAtivExtra()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Editar Locais de Trabalho -->
+<div class="modal-overlay" id="modalEditarLocais">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title">📍 Gerenciar Locais de Trabalho</div>
+    <div style="margin-bottom:12px;padding:10px;background:var(--bg-mid);border-radius:6px;border-left:3px solid var(--accent)">
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px">Obra Ativa:</div>
+      <div id="modalLocaisObraNome" style="font-weight:600"></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Novo Local</label>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="modalNovoLocalNome" placeholder="Ex.: Filtro 1, ETA, Casa de Bombas..." style="flex:1">
+        <button onclick="adicionarNovoLocal()" style="padding:9px 14px;background:var(--green);color:var(--bg-dark);border:none;border-radius:4px;font-weight:600;cursor:pointer">✓ Adicionar</button>
+      </div>
+    </div>
+    <div style="border-top:1.5px solid var(--line);padding-top:12px">
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;font-weight:600;text-transform:uppercase">Locais Cadastrados</div>
+      <div id="modalLocaisList" style="max-height:300px;overflow-y:auto"></div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="fecharModal('modalEditarLocais')">Fechar</button>
     </div>
   </div>
 </div>
@@ -3038,6 +3064,113 @@ async function atualizarLocaisDaObra() {
   if (locais.find(l => l.id === valorAtual)) {
     selLocal.value = valorAtual;
   }
+}
+
+// ============================================================
+// GERENCIAR LOCAIS DE TRABALHO
+// ============================================================
+
+async function abrirEditarLocais() {
+  const selObra = document.getElementById('obraAtiva');
+  if (!selObra) return;
+
+  const obraId = selObra.value || B3Obras.atualId();
+  const obras = B3Obras.listar();
+  const obraAtual = obras.find(o => o.id === obraId);
+
+  if (obraAtual) {
+    document.getElementById('modalLocaisObraNome').textContent = obraAtual.nome;
+  }
+
+  abrirModal('modalEditarLocais');
+  await carregarLocaisNoModal(obraId);
+  document.getElementById('modalNovoLocalNome').value = '';
+  document.getElementById('modalNovoLocalNome').focus();
+}
+
+async function carregarLocaisNoModal(obraId) {
+  const locais = await carregarLocaisDaObra(obraId);
+  const container = document.getElementById('modalLocaisList');
+
+  if (!locais || locais.length === 0) {
+    container.innerHTML = '<div style="color:var(--ink-soft);text-align:center;padding:20px">Nenhum local cadastrado</div>';
+    return;
+  }
+
+  container.innerHTML = locais.map(l => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-card);border-radius:4px;margin-bottom:6px">
+      <div style="flex:1">
+        <div style="font-weight:600">${escapeHtml(l.nome)}</div>
+        ${l.descricao ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(l.descricao)}</div>` : ''}
+      </div>
+      <button onclick="removerLocal('${l.id}', '${escapeHtml(l.nome)}')" style="padding:6px 10px;background:var(--red);color:white;border:none;border-radius:3px;font-size:11px;cursor:pointer;font-weight:600">🗑️ Remover</button>
+    </div>
+  `).join('');
+}
+
+async function adicionarNovoLocal() {
+  const nome = document.getElementById('modalNovoLocalNome').value.trim();
+  if (!nome) {
+    toast('Digite o nome do local');
+    return;
+  }
+
+  const selObra = document.getElementById('obraAtiva');
+  const obraId = selObra.value || B3Obras.atualId();
+
+  try {
+    const cliente = B3Obras.cliente(obraId);
+    const { data, error } = await cliente.from('rdo_locais').insert([
+      { obra_id: obraId, nome }
+    ]).select();
+
+    if (error) {
+      console.error('Erro ao adicionar local:', error);
+      if (error.message.includes('unique')) {
+        toast('Este local já existe nesta obra');
+      } else {
+        toast('Erro ao adicionar local');
+      }
+      return;
+    }
+
+    // Invalidar cache e recarregar
+    delete locaisPorObra[obraId];
+    await carregarLocaisNoModal(obraId);
+    await _atualizarLocalObraDatalist();
+    document.getElementById('modalNovoLocalNome').value = '';
+    toast('Local adicionado');
+  } catch (err) {
+    console.error('Erro:', err);
+    toast('Erro ao adicionar local');
+  }
+}
+
+async function removerLocal(localId, localNome) {
+  confirmar(`Remover local "${localNome}"?`, async () => {
+    const selObra = document.getElementById('obraAtiva');
+    const obraId = selObra.value || B3Obras.atualId();
+
+    try {
+      const cliente = B3Obras.cliente(obraId);
+      const { error } = await cliente.from('rdo_locais').delete().eq('id', localId);
+
+      if (error) {
+        console.error('Erro ao remover local:', error);
+        toast('Erro ao remover local');
+        return;
+      }
+
+      // Invalidar cache e recarregar
+      delete locaisPorObra[obraId];
+      await carregarLocaisNoModal(obraId);
+      await _atualizarLocalObraDatalist();
+      toast('Local removido');
+    } catch (err) {
+      console.error('Erro:', err);
+      toast('Erro ao remover local');
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
