@@ -1331,6 +1331,7 @@
       <div class="section-title-text">🏗️ Obra</div>
     </div>
     <select id="obraAtiva" style="margin-bottom:8px" onchange="atualizarLocaisDaObra()"></select>
+    <div id="obraAtivaInfo" style="padding:10px 12px;background:var(--bg-dark);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px"></div>
   </div>
 
   <div class="section">
@@ -3011,6 +3012,7 @@ function preencherCampos() {
   if (selObra && currentDay.obraId) {
     selObra.value = currentDay.obraId;
   }
+  atualizarInfoObraAtiva();
 
   renderApontadorDia();
   // DSS Ministrou
@@ -3094,6 +3096,35 @@ function preencherDropdownObras() {
 
   // Sincronizar com a obra ativa global
   sel.value = obraAtualId;
+}
+
+function _dataBr(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+}
+
+async function atualizarInfoObraAtiva() {
+  const sel = document.getElementById('obraAtiva');
+  const box = document.getElementById('obraAtivaInfo');
+  if (!sel || !box || !window.B3Obras) return;
+  const id = sel.value || B3Obras.atualId();
+  const pintar = c => {
+    c = c || {};
+    const reg = B3Obras.porId(id) || {};
+    const nome = c.nome || reg.nome || '';
+    const linha = (rot, val) => val
+      ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px"><b style="color:var(--ink)">${rot}:</b> ${escapeHtml(val)}</div>` : '';
+    const periodo = [_dataBr(c.dataInicio), _dataBr(c.dataTermino)].filter(Boolean).join(' a ');
+    box.innerHTML =
+      `<div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1.2">${escapeHtml(nome || 'Obra sem nome — configure em Obras')}</div>` +
+      linha('Empresa', c.empresa) + linha('Contrato', c.contrato) + linha('Cliente', c.cliente) +
+      linha('Gestor', c.gestor) + linha('Período', periodo);
+  };
+  pintar(B3Obras.config(id));
+  try {
+    const c = await B3Obras.configCarregar(id);
+    if ((sel.value || B3Obras.atualId()) === id) pintar(c);
+  } catch (e) { /* mantém o último dado salvo */ }
 }
 
 async function atualizarLocaisDaObra() {
@@ -3259,6 +3290,7 @@ document.addEventListener('DOMContentLoaded', () => {
     obraSel.addEventListener('change', async () => {
       const obraId = obraSel.value;
       currentDay.obraId = obraId;
+      atualizarInfoObraAtiva();
       await atualizarLocaisDaObra();
       salvarDiarioDia(false);
     });
