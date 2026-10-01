@@ -68,6 +68,10 @@ horário e detalhe; há também "+ Registrar evento avulso" para o que não est�
   aceita). Desmarcar esconde os campos e tira o transporte de PDF/WhatsApp, mas **não apaga** o
   digitado. `textoTransporteEvento(ev)` monta "Placa X · Volume Y m³ · Peso Z t" para os relatórios.
   As unidades m³ e t são fixas no rótulo; se a obra precisar de kg, mudar o rótulo e o texto.
+- **Fornecedor e valor da carga:** campos `fornecedor` e `valorCarga` em todo evento (não dependem
+  da caixinha de transporte). `valorCarga` é texto como digitado; `textoCargaEvento(ev)` acrescenta
+  "R$ " se o usuário não digitou. Não há soma nem conversão numérica — se um dia for preciso totalizar
+  o valor das cargas, será preciso normalizar (vírgula/ponto) antes.
 - Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
 
 ## Duas chaves são strings parecidas: data e `data#apontador`

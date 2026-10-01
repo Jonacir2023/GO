@@ -147,6 +147,42 @@ with sync_playwright() as p:
     check(ev["tipo"] == "Entrada de brita" and ev["transporte"] is True and ev["placa"] == "XYZ9K88"
           and ev["volume"] == "8" and ev["peso"] == "13,2", f"avulso grava o transporte ({ev})")
 
+    # ---- fornecedor e valor da carga (independem do transporte) ----
+    page.click('.tab[data-view="diario"]')
+    linha = page.locator("#eventosDiaList .item-row").nth(0)
+    linha.locator("input[placeholder='Fornecedor']").fill("Votorantim Cimentos")
+    linha.locator("input[placeholder='Valor da carga (R$)']").fill("4.850,00")
+    ev = page.evaluate("currentDay.eventosDia[0]")
+    check(ev["fornecedor"] == "Votorantim Cimentos" and ev["valorCarga"] == "4.850,00",
+          f"fornecedor e valor da carga gravados ({ev})")
+    wa = page.evaluate("buildRelatorio(currentDay)")
+    check("🏭 Fornecedor Votorantim Cimentos · Valor R$ 4.850,00" in wa, "WhatsApp traz fornecedor e valor")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(500)
+    pdf = page.inner_text("#pdfOverlay")
+    check("Votorantim Cimentos" in pdf and "R$ 4.850,00" in pdf, "PDF traz fornecedor e valor")
+    page.evaluate("fecharPdfRDO()")
+    page.evaluate("currentDay.eventosDia[0].valorCarga = 'R$ 100'")
+    check("Valor R$ 100" in page.evaluate("textoCargaEvento(currentDay.eventosDia[0])")
+          and "R$ R$" not in page.evaluate("textoCargaEvento(currentDay.eventosDia[0])"),
+          "se o usuário já digitou R$, não duplica o prefixo")
+    page.evaluate("currentDay.eventosDia[0].valorCarga = '4.850,00'")
+
+    page.click('.tab[data-view="config"]')
+    page.click('.subtab[data-pane="eventosdia"]')
+    check(page.locator("#configEventosDiaList input[placeholder='Fornecedor']").count() >= 1,
+          "painel do Cadastro tem fornecedor e valor")
+    page.click('.tab[data-view="diario"]')
+
+    page.evaluate("abrirModalEventoDoDiaAvulso()")
+    page.fill("#modalEvDiaAvulsoTipo", "Compra emergencial")
+    page.fill("#modalEvDiaAvulsoFornecedor", "Casa do Construtor")
+    page.fill("#modalEvDiaAvulsoValor", "980")
+    page.evaluate("salvarEventoDoDiaAvulso()")
+    ev = page.evaluate("currentDay.eventosDia[currentDay.eventosDia.length - 1]")
+    check(ev["fornecedor"] == "Casa do Construtor" and ev["valorCarga"] == "980" and ev["transporte"] is False,
+          f"avulso grava fornecedor e valor sem exigir transporte ({ev})")
+
     # ---- dado antigo: observacoesDia vira eventos "Observação" ----
     leg = page.evaluate("""() => {
         const dia = {data: '2026-05-05', observacoesDia: 'Chuva forte * Visita do cliente', eventosDia: []};
