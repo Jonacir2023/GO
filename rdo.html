@@ -1462,9 +1462,11 @@
 
   <div class="section">
     <div class="section-title">
-      <div class="section-title-text">📝 Observações do Dia</div>
+      <div class="section-title-text">📌 Eventos do Dia</div>
+      <button class="btn-circular-add" onclick="abrirAbaEventosDia()" title="Selecionar eventos">+</button>
     </div>
-    <textarea id="observacoesDia" placeholder="Registre aqui informações importantes do dia: ocorrências, decisões, visitas, pendências, condições especiais... Use * para separar cada observação em uma linha." style="min-height:140px;resize:vertical"></textarea>
+    <div id="eventosDiaList"></div>
+    <button class="add-btn-full" onclick="abrirModalEventoDoDiaAvulso()"><span style="color:var(--accent-soft)">+</span> Registrar evento avulso</button>
   </div>
 
   <div class="section">
@@ -1616,6 +1618,7 @@
     <button class="subtab" data-pane="atividades">🛠️ Ativ.</button>
   </div>
   <div class="subtabs">
+    <button class="subtab" data-pane="eventosdia">📌 Eventos</button>
     <button class="subtab" data-pane="seguranca">🦺 Seg.</button>
     <button class="subtab" data-pane="meio_ambiente">🌱 M.A.</button>
     <button class="subtab" data-pane="backup">💾 Backup</button>
@@ -1735,6 +1738,20 @@
     </div>
   </div>
   
+  <!-- EVENTOS DO DIA -->
+  <div class="config-pane" id="pane-eventosdia">
+    <div class="section">
+      <div class="section-title"><div class="section-title-text">📌 Eventos do Dia</div></div>
+      <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+        Marque os que aconteceram hoje — o horário e o detalhe aparecem logo abaixo do item. Use ✏️/🗑️ para editar ou remover do cadastro.
+      </p>
+      <button class="add-btn-full" onclick="abrirModalEventoCadastro('eventosDia')"><span style="color:var(--accent-soft)">+</span> Adicionar Tipo de Evento</button>
+      <hr class="divider">
+      <div id="configEventosDiaList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEventosDoDia()">💾 Salvar Eventos do Dia</button>
+    </div>
+  </div>
+
   <!-- SEGURANÇA -->
   <div class="config-pane" id="pane-seguranca">
     <div class="section">
@@ -1963,6 +1980,22 @@
 </div>
 
 <!-- Atividade avulsa -->
+<div class="modal-overlay" id="modalEventoDoDiaAvulso">
+  <div class="modal">
+    <div class="modal-title">Evento Avulso do Dia</div>
+    <label>Evento</label>
+    <input type="text" id="modalEvDiaAvulsoTipo" placeholder="Ex.: Visita da fiscalização">
+    <label>Horário</label>
+    <input type="time" id="modalEvDiaAvulsoHora">
+    <label>Detalhe</label>
+    <textarea id="modalEvDiaAvulsoDetalhe" rows="3" placeholder="Opcional"></textarea>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="fecharModal('modalEventoDoDiaAvulso')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEventoDoDiaAvulso()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalAtivExtra">
   <div class="modal">
     <div class="modal-title">Atividade Avulsa do Dia</div>
@@ -2338,6 +2371,12 @@ const DEFAULT_DATA = {
     { id: 'a5', desc: 'Acompanhamento de fiscalização', local: '', unidade: '' }
   ],
   veiculosFrota: [],
+  eventosDia: [
+    { id: 'ed1', desc: 'Chegada de material' },
+    { id: 'ed2', desc: 'Chegada de equipamentos' },
+    { id: 'ed3', desc: 'Quebra de equipamento' },
+    { id: 'ed4', desc: 'Mudança de estratégia' }
+  ],
   seguranca: [
     { id: 's1', desc: 'Acidente sem afastamento' },
     { id: 's2', desc: 'Quase-acidente' },
@@ -2380,6 +2419,7 @@ const EMPTY_DAY = () => ({
   atividadesMarcadas: {},
   atividadesQtd: {},  // id -> quantidade executada
   atividadesAvulsas: [],
+  eventosDia: [],  // [{id, tipoId, tipo, detalhe, hora, custom}] — tipo é cópia do nome
   efetivo: {},
   equipamentos: {},  // id -> {ativo, operadorMat, operadorNome, status, horimetro}
   veiculosLeves: [],  // [{id, desc, placa, motorista}]
@@ -2933,6 +2973,10 @@ function initCurrentDay(data) {
     currentDay.data = data;
     currentDay.encerramento = jornadaPadraoPorDia(data);
   }
+  // Observações do Dia virou Eventos do Dia: o texto antigo entra como eventos
+  // avulsos "Observação" (uma por linha separada por *) e o campo é zerado.
+  currentDay.eventosDia = eventosDoDia(currentDay);
+  currentDay.observacoesDia = '';
   editingDate = (data === todayISO()) ? null : data;
   atualizarHeaderEdicao();
   preencherCampos();
@@ -2980,7 +3024,7 @@ function preencherCampos() {
   // localObra sai do laço genérico: é um <select>, e atribuir .value antes de
   // as opções existirem não seleciona nada — o campo apareceria em branco num
   // dia que tem local gravado. _atualizarLocalObraDatalist() monta e seleciona.
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia','descricaoLocal'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','descricaoLocal'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.value = currentDay[k] || '';
   });
@@ -3235,7 +3279,7 @@ async function removerLocal(localId, localNome) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia','descricaoLocal'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','descricaoLocal'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.addEventListener('input', () => {
       currentDay[k] = el.value;
@@ -3994,11 +4038,12 @@ function gerarPdfRDO() {
             ${linhasOp}
         </table>
 
-        ${day.observacoesDia && day.observacoesDia.trim() ? `
-        <div class="section-title" style="page-break-before: auto;">OBSERVAÇÕES DO DIA</div>
-        <div style="background: #fdfdfd; padding: 12px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 9pt; min-height: 60px;">
-            ${day.observacoesDia.split('*').map(s => s.trim()).filter(Boolean).map(escHtml).join('<br>')}
-        </div>` : ''}
+        ${eventosDoDia(day).length ? `
+        <div class="section-title" style="page-break-before: auto;">EVENTOS DO DIA</div>
+        <table class="data-table">
+            <tr><th style="width: 12%;">Hora</th><th style="width: 30%;">Evento</th><th>Detalhe</th></tr>
+            ${eventosDoDia(day).map(ev => `<tr><td>${escHtml(ev.hora || '—')}</td><td>${escHtml(ev.tipo)}</td><td>${escHtml(ev.detalhe || '')}</td></tr>`).join('')}
+        </table>` : ''}
 
         ${blocoFotos}
 
@@ -4505,7 +4550,7 @@ function salvarDiarioDia(notificar) {
     if (notificar) avisarFaltaResponsavel();
     return;
   }
-  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempoManha || currentDay.tempoTarde ||
+  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || (currentDay.eventosDia || []).length > 0 || currentDay.tempoManha || currentDay.tempoTarde ||
     Object.keys(currentDay.efetivo).length > 0 ||
     Object.keys(currentDay.atividadesMarcadas).length > 0 ||
     Object.keys(currentDay.atividadesQtd || {}).length > 0 ||
@@ -4557,6 +4602,7 @@ function renderDiario() {
   renderVeiculosParados();
   renderEventosDia('seguranca');
   renderEventosDia('meio_ambiente');
+  renderEventosDoDia();
   renderApontadorDia();
 }
 
@@ -4671,6 +4717,177 @@ function salvarAtivExtra() {
   fecharModal('modalAtivExtra');
   renderAtividadesDia();
   toast('Atividade adicionada');
+}
+
+// ============================================================
+// EVENTOS DO DIA — chegada de material, quebra de equipamento, mudança de estratégia…
+// Catálogo em state.eventosDia (editado em Cadastro → Eventos). O dia guarda uma
+// CÓPIA do nome (tipo) em currentDay.eventosDia; remover ou renomear o tipo no
+// cadastro nunca mexe num dia já registrado.
+// ============================================================
+function eventosDoDia(day) {
+  const lista = ((day && day.eventosDia) || []).slice();
+  String((day && day.observacoesDia) || '').split('*').map(t => t.trim()).filter(Boolean).forEach(t => {
+    lista.push({ id: uid('ev'), tipoId: null, tipo: 'Observação', detalhe: t, hora: '', custom: true });
+  });
+  return lista;
+}
+
+function renderEventosDoDia() {
+  const cont = document.getElementById('eventosDiaList');
+  if (!cont) return;
+  const lista = currentDay.eventosDia || [];
+  if (lista.length === 0) {
+    cont.innerHTML = '<div class="empty">Nenhum evento registrado. Clique ➕ para adicionar.</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  lista.forEach((ev, idx) => {
+    const row = document.createElement('div');
+    row.className = 'item-row checked';
+    row.style.alignItems = 'flex-start';
+    row.innerHTML = `
+      <div class="checkbox" style="margin-top:2px"></div>
+      <div class="item-info">
+        <div class="item-name">${escapeHtml(ev.tipo)}</div>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:flex-start">
+          <input type="time" value="${escAttr(ev.hora || '')}" title="Horário"
+            style="width:96px;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)"
+            onchange="salvarCampoEventoDoDia(${idx},'hora',this.value)">
+          <textarea rows="2" placeholder="Detalhe (ex.: fornecedor, NF, quantidade, motivo)"
+            style="flex:1;min-width:0;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink);resize:vertical"
+            oninput="salvarCampoEventoDoDia(${idx},'detalhe',this.value)">${escapeHtml(ev.detalhe || '')}</textarea>
+        </div>
+      </div>
+      <div class="item-actions"><button class="icon-btn" onclick="removerEventoDoDia(${idx})" title="Remover">🗑️</button></div>
+    `;
+    cont.appendChild(row);
+  });
+}
+
+function salvarCampoEventoDoDia(idx, campo, valor) {
+  const ev = (currentDay.eventosDia || [])[idx];
+  if (!ev) return;
+  ev[campo] = valor;
+  salvarDiarioDia(false);
+}
+
+function removerEventoDoDia(idx) {
+  confirmar('Remover este evento do dia?', () => {
+    currentDay.eventosDia.splice(idx, 1);
+    salvarDiarioDia(false);
+    renderEventosDoDia();
+    renderConfigEventosDia();
+  });
+}
+
+function abrirAbaEventosDia() {
+  const t = document.querySelector('.tab[data-view="config"]');
+  if (t) t.click();
+  setTimeout(() => {
+    const st = document.querySelector('.subtab[data-pane="eventosdia"]');
+    if (st) st.click();
+  }, 200);
+}
+
+function renderConfigEventosDia() {
+  const cont = document.getElementById('configEventosDiaList');
+  if (!cont) return;
+  cont.innerHTML = '';
+  if (state.eventosDia.length === 0) {
+    cont.innerHTML = '<div class="empty">Nenhum tipo de evento. Use "Adicionar Tipo de Evento".</div>';
+    return;
+  }
+  const doDia = (currentDay && currentDay.eventosDia) || [];
+  state.eventosDia.forEach(t => {
+    const idx = doDia.findIndex(e => e.tipoId === t.id);
+    const marcado = idx >= 0;
+    const wrap = document.createElement('div');
+    wrap.className = 'ativ-item-wrap';
+
+    const row = document.createElement('div');
+    row.className = 'item-row' + (marcado ? ' checked' : '');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = marcado;
+    cb.style.marginRight = '10px';
+    cb.style.cursor = 'pointer';
+    cb.addEventListener('change', () => {
+      if (!currentDay.eventosDia) currentDay.eventosDia = [];
+      if (cb.checked) currentDay.eventosDia.push({ id: uid('ev'), tipoId: t.id, tipo: t.desc, detalhe: '', hora: '', custom: false });
+      else currentDay.eventosDia = currentDay.eventosDia.filter(e => e.tipoId !== t.id);
+      salvarDiarioDia(false);
+      renderConfigEventosDia();
+      renderEventosDoDia();
+    });
+    const info = document.createElement('div');
+    info.className = 'item-info';
+    const nome = document.createElement('div');
+    nome.className = 'item-name';
+    nome.textContent = t.desc;
+    info.appendChild(nome);
+    const acts = document.createElement('div');
+    acts.className = 'item-actions';
+    const bE = document.createElement('button');
+    bE.className = 'icon-btn'; bE.textContent = '✏️';
+    bE.addEventListener('click', e => { e.stopPropagation(); editarEventoCadastro('eventosDia', t.id); });
+    const bD = document.createElement('button');
+    bD.className = 'icon-btn'; bD.textContent = '🗑️';
+    bD.addEventListener('click', e => { e.stopPropagation(); removerEventoCadastro('eventosDia', t.id); });
+    acts.appendChild(bE); acts.appendChild(bD);
+    row.appendChild(cb); row.appendChild(info); row.appendChild(acts);
+    wrap.appendChild(row);
+
+    if (marcado) {
+      const ev = doDia[idx];
+      const det = document.createElement('div');
+      det.className = 'ativ-detalhe-dia';
+      det.innerHTML = `
+        <div>
+          <label>Horário</label>
+          <input type="time" value="${escAttr(ev.hora || '')}" onchange="salvarCampoEventoDoDia(${idx},'hora',this.value);renderEventosDoDia()">
+        </div>
+        <div>
+          <label>Detalhe</label>
+          <input type="text" value="${escAttr(ev.detalhe || '')}" placeholder="Ex.: fornecedor, NF, quantidade"
+            onchange="salvarCampoEventoDoDia(${idx},'detalhe',this.value);renderEventosDoDia()">
+        </div>`;
+      wrap.appendChild(det);
+    }
+    cont.appendChild(wrap);
+  });
+}
+
+function salvarEventosDoDia() {
+  salvarDiarioDia();
+  renderDiario();
+  toast('✓ Eventos salvos e adicionados ao Diário!');
+  setTimeout(() => {
+    const t = document.querySelector('.tab[data-view="diario"]');
+    if (t) t.click();
+  }, 300);
+}
+
+function abrirModalEventoDoDiaAvulso() {
+  document.getElementById('modalEvDiaAvulsoTipo').value = '';
+  document.getElementById('modalEvDiaAvulsoHora').value = '';
+  document.getElementById('modalEvDiaAvulsoDetalhe').value = '';
+  abrirModal('modalEventoDoDiaAvulso');
+}
+function salvarEventoDoDiaAvulso() {
+  const tipo = document.getElementById('modalEvDiaAvulsoTipo').value.trim();
+  if (!tipo) { toast('Informe o evento'); return; }
+  if (!currentDay.eventosDia) currentDay.eventosDia = [];
+  currentDay.eventosDia.push({
+    id: uid('ev'), tipoId: null, tipo,
+    detalhe: document.getElementById('modalEvDiaAvulsoDetalhe').value.trim(),
+    hora: document.getElementById('modalEvDiaAvulsoHora').value,
+    custom: true
+  });
+  salvarDiarioDia(false);
+  fecharModal('modalEventoDoDiaAvulso');
+  renderEventosDoDia();
+  toast('Evento adicionado');
 }
 
 function renderEfetivoDia() {
@@ -5476,6 +5693,7 @@ function renderConfig() {
   renderConfigEquip();
   renderConfigVL();
   renderConfigAtiv();
+  renderConfigEventosDia();
   renderConfigEventos('seguranca');
   renderConfigEventos('meio_ambiente');
   document.getElementById('histCount').textContent = datasDoHistorico().length;
@@ -5787,6 +6005,7 @@ function renderConfigAtiv() {
 }
 
 function renderConfigEventos(tipo) {
+  if (tipo === 'eventosDia') return renderConfigEventosDia();
   const cont = document.getElementById(tipo === 'seguranca' ? 'configSegList' : 'configAmbList');
   cont.innerHTML = '';
   const lista = state[tipo];
@@ -6617,11 +6836,12 @@ function buildRelatorio(day) {
     day.fotos.forEach((f, i) => { txt += `${legendaFoto(f, i)}\n`; });
   }
 
-  // Observações do Dia
-  if (day.observacoesDia && day.observacoesDia.trim()) {
+  // Eventos do Dia
+  const _evsDia = eventosDoDia(day);
+  if (_evsDia.length > 0) {
     txt += `\n${divisor}\n\n`;
-    txt += `*📝 Observações do Dia*\n`;
-    day.observacoesDia.split('*').map(s => s.trim()).filter(Boolean).forEach(o => txt += `• ${o}\n`);
+    txt += `*📌 Eventos do Dia — ${_evsDia.length}*\n`;
+    _evsDia.forEach(ev => txt += `• ${ev.hora ? ev.hora + ' — ' : ''}${ev.tipo}${ev.detalhe ? ': ' + ev.detalhe : ''}\n`);
   }
 
   // Resumos acumulados — semana, mês e ano do dia do relatório (não de "hoje"),

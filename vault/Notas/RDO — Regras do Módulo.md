@@ -46,6 +46,24 @@ não pode reescrever RDO que já existe.
 > `.value` num `<select>` antes de as `<option>` existirem não seleciona nada — e o campo abre
 > vazio num RDO que estava preenchido.
 
+## Eventos do Dia (substituiu Observações do Dia, 01/10/2026)
+
+Mesma estrutura de Atividades do Dia: catálogo em `state.eventosDia` (padrão: Chegada de material,
+Chegada de equipamentos, Quebra de equipamento, Mudança de estratégia), editado em
+Cadastro → 📌 Eventos; o "+" do Diário abre esse painel, onde se marca o que aconteceu e se informa
+horário e detalhe; há também "+ Registrar evento avulso" para o que não está no catálogo.
+
+- O dia guarda uma **cópia do nome** em `currentDay.eventosDia` (`{id, tipoId, tipo, detalhe, hora, custom}`).
+  Remover ou renomear o tipo no cadastro **não** altera dia já registrado (regra de baixa lógica).
+- O painel do Cadastro lê e grava direto em `currentDay.eventosDia` — não há rascunho separado em
+  `S` como em `ativDia_<data>`.
+- **Dado antigo:** o campo `observacoesDia` não tem mais tela. `eventosDoDia(day)` devolve os eventos
+  do dia mais cada trecho de `observacoesDia` (separado por `*`) como evento avulso "Observação";
+  PDF e WhatsApp usam essa função, então RDO antigo continua imprimindo o texto. Ao abrir um dia
+  para editar (`initCurrentDay`) o texto é migrado para `eventosDia` e `observacoesDia` é zerado.
+  O campo continua existindo nos dados salvos (os testes de sincronização o usam como marcador).
+- Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
+
 ## Duas chaves são strings parecidas: data e `data#apontador`
 
 Ver [[Decisões/2026-08-25 Um RDO por apontador no mesmo dia]]. `history` é indexado pela chave
