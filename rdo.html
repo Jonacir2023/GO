@@ -3170,7 +3170,7 @@ async function adicionarNovoLocal() {
   try {
     const cliente = B3Obras.cliente(obraId);
     const { data, error } = await cliente.from('rdo_locais').insert([
-      { obra_id: obraId, nome }
+      { nome }
     ]).select();
 
     if (error) {
