@@ -3111,10 +3111,10 @@ async function atualizarLocaisDaObra() {
 
   const valorAtual = selLocal.value;
   selLocal.innerHTML = '<option value="">— Selecionar local —</option>' +
-    locais.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+    locais.map(l => `<option value="${escapeHtml(l.nome)}">${escapeHtml(l.nome)}</option>`).join('');
 
   // Tenta manter a seleção anterior se ainda existir
-  if (locais.find(l => l.id === valorAtual)) {
+  if (locais.find(l => l.nome === valorAtual)) {
     selLocal.value = valorAtual;
   }
 }
@@ -6088,12 +6088,12 @@ async function _atualizarLocalObraDatalist() {
 
   const opcoes = ['<option value="">— Selecionar local —</option>'];
   locais.forEach(l => {
-    const val = l.id || l.nome;
+    const val = l.nome;
     opcoes.push(`<option value="${escapeHtml(val)}"${val === atual ? ' selected' : ''}>${escapeHtml(l.nome)}</option>`);
   });
 
   // Se houver um local gravado que não está mais na lista, manter como opção (foi deletado)
-  if (atual && !locais.find(l => (l.id || l.nome) === atual)) {
+  if (atual && !locais.find(l => l.nome === atual)) {
     opcoes.push(`<option value="${escapeHtml(atual)}" selected>${escapeHtml(atual)}</option>`);
   }
 
