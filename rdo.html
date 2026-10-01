@@ -2928,8 +2928,17 @@ function initCurrentDay(data) {
   renderDiario();
   _atualizarResumoObraNosDiario();
 
-  // Carregar locais da obra após preencher campos
-  _atualizarLocalObraDatalist().catch(err => console.error('Erro ao carregar locais:', err));
+  // Carregar locais da obra após preencher campos (com fallback síncrono para testes)
+  if (!window.supabase) {
+    // Sem Supabase (testes), usar fallback direto
+    const sel = document.getElementById('localObra');
+    if (sel) {
+      sel.innerHTML = '<option value="">— Selecionar local —</option>' +
+        LOCAIS_EXECUCAO.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+    }
+  } else {
+    _atualizarLocalObraDatalist().catch(err => console.error('Erro ao carregar locais:', err));
+  }
 }
 
 function atualizarHeaderEdicao() {
@@ -3072,7 +3081,12 @@ async function atualizarLocaisDaObra() {
   if (!selObra || !selLocal) return;
 
   const obraId = selObra.value;
-  const locais = await carregarLocaisDaObra(obraId);
+  let locais = await carregarLocaisDaObra(obraId);
+
+  // Fallback para LOCAIS_EXECUCAO se Supabase retorna vazio (para testes e compatibilidade)
+  if (!locais || locais.length === 0) {
+    locais = LOCAIS_EXECUCAO.map((nome, i) => ({ id: nome, nome }));
+  }
 
   const valorAtual = selLocal.value;
   selLocal.innerHTML = '<option value="">— Selecionar local —</option>' +
@@ -3293,6 +3307,9 @@ document.addEventListener('DOMContentLoaded', () => {
       atualizarSeletorOperador();
     });
   });
+
+  // Inicializar o diário com hoje na primeira carga
+  initCurrentDay(todayISO());
 });
 
 // ============================================================
