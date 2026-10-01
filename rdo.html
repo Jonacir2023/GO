@@ -1263,6 +1263,8 @@
      as três bordas se alinham na mesma coluna, e é isso que dá a
      sensação de peça inteira em vez de blocos soltos no meio da tela. */
   .view.active > * { max-width: none; }
+  /* Cartões lado a lado na mesma linha têm sempre a mesma altura */
+  .view.active > .section { align-self: stretch; }
   /* O campo de digitação é que ganha limite, não o cartão: texto muito
      largo cansa a leitura e a mão viaja demais até o fim da linha.
      Em duas colunas o campo já é menor que isso, então nada muda lá. */
