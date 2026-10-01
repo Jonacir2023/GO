@@ -689,7 +689,26 @@
   .btn-whatsapp { background: #25D366; color: white; }
   .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .btn-stack > * + * { margin-top: 8px; }
-  
+  .btn-circular-add {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .btn-circular-add:active { transform: scale(0.95); }
+
   /* MODAL */
   .modal-overlay {
     position: fixed; inset: 0;
@@ -1315,7 +1334,7 @@
   <div class="section">
     <div class="section-title" style="justify-content:space-between;align-items:center">
       <div class="section-title-text">📍 Local da Obra</div>
-      <button onclick="abrirEditarLocais()" style="padding:6px 12px;background:#FFA500;color:white;border:none;border-radius:50%;width:40px;height:40px;font-weight:700;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
+      <button class="btn-circular-add" onclick="abrirEditarLocais()">+</button>
     </div>
     <select id="localObra" style="margin-bottom:8px"></select>
     <textarea id="descricaoLocal" placeholder="Descrição do local onde os trabalhos foram executados..." style="min-height:72px;resize:vertical"></textarea>
@@ -1966,7 +1985,7 @@
         <label style="display:block;margin-bottom:8px;font-weight:600;font-size:12px;text-transform:uppercase;color:var(--ink-soft)">Adicionar novo local</label>
         <div style="display:flex;gap:6px">
           <input type="text" id="modalNovoLocalNome" placeholder="Nome do local (ex.: Filtro 1, ETA...)" style="flex:1;padding:9px 10px;border:1.5px solid var(--line);border-radius:4px;background:var(--bg-dark);font-family:var(--sans);font-size:14px;color:var(--ink)">
-          <button onclick="adicionarNovoLocal()" style="padding:9px 14px;background:#FFA500;color:white;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:13px">+ Adicionar</button>
+          <button onclick="adicionarNovoLocal()" style="padding:9px 14px;background:var(--accent);color:white;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:13px">+ Adicionar</button>
         </div>
       </div>
 
