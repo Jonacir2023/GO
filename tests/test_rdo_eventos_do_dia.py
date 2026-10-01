@@ -90,6 +90,63 @@ with sync_playwright() as p:
           "PDF traz a tabela de eventos do dia")
     page.evaluate("fecharPdfRDO()")
 
+    # ---- transporte de material: placa, volume e peso ----
+    page.click('.tab[data-view="diario"]')
+    linha = page.locator("#eventosDiaList .item-row").nth(0)
+    check(linha.locator("input[placeholder='Placa']").count() == 0,
+          "sem marcar transporte, os campos de placa/volume/peso ficam escondidos")
+    linha.locator("input[type=checkbox]").check()
+    linha = page.locator("#eventosDiaList .item-row").nth(0)
+    linha.locator("input[placeholder='Placa']").fill("abc1d23")
+    linha.locator("input[placeholder='Volume (m³)']").fill("12,5")
+    linha.locator("input[placeholder='Peso (t)']").fill("18")
+    ev = page.evaluate("currentDay.eventosDia[0]")
+    check(ev["transporte"] is True and ev["placa"] == "ABC1D23" and ev["volume"] == "12,5" and ev["peso"] == "18",
+          f"transporte grava placa (maiúscula), volume e peso ({ev})")
+    wa = page.evaluate("buildRelatorio(currentDay)")
+    check("🚛 Placa ABC1D23 · Volume 12,5 m³ · Peso 18 t" in wa, "WhatsApp traz a linha de transporte")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(500)
+    pdf = page.inner_text("#pdfOverlay")
+    check("ABC1D23" in pdf and "12,5 m³" in pdf and "18 t" in pdf, "PDF traz placa, volume e peso")
+    page.evaluate("fecharPdfRDO()")
+
+    # painel do Cadastro tem o mesmo marcador (tipo que ainda está no catálogo)
+    page.click('.tab[data-view="config"]')
+    page.click('.subtab[data-pane="eventosdia"]')
+    page.locator("#configEventosDiaList .ativ-item-wrap").first.locator("input[type=checkbox]").first.check()
+    wrap = page.locator("#configEventosDiaList .ativ-item-wrap").first
+    check(wrap.locator("input[placeholder='Placa']").count() == 0, "painel: transporte começa desmarcado")
+    wrap.locator("input[type=checkbox]").nth(1).check()
+    wrap = page.locator("#configEventosDiaList .ativ-item-wrap").first
+    wrap.locator("input[placeholder='Placa']").fill("pqr1s23")
+    ev = page.evaluate("currentDay.eventosDia.find(e => e.tipoId === 'ed2')")
+    check(ev and ev["transporte"] is True and ev["placa"] == "PQR1S23",
+          f"painel do Cadastro grava o transporte do evento ({ev})")
+    page.click('.tab[data-view="diario"]')
+
+    # desmarcar esconde e tira dos relatórios, sem apagar o digitado
+    page.locator("#eventosDiaList .item-row").nth(0).locator("input[type=checkbox]").uncheck()
+    ev = page.evaluate("currentDay.eventosDia[0]")
+    check(ev["transporte"] is False and ev["placa"] == "ABC1D23", "desmarcar mantém o digitado guardado")
+    wa = page.evaluate("buildRelatorio(currentDay)")
+    check("ABC1D23" not in wa, "sem transporte marcado, WhatsApp não traz placa")
+    page.locator("#eventosDiaList .item-row").nth(0).locator("input[type=checkbox]").check()
+
+    # avulso com transporte
+    page.evaluate("abrirModalEventoDoDiaAvulso()")
+    check(not page.is_visible("#modalEvDiaAvulsoPlaca"), "modal do avulso abre sem os campos de transporte")
+    page.fill("#modalEvDiaAvulsoTipo", "Entrada de brita")
+    page.check("#modalEvDiaAvulsoTransp")
+    check(page.is_visible("#modalEvDiaAvulsoPlaca"), "marcar transporte no avulso mostra os campos")
+    page.fill("#modalEvDiaAvulsoPlaca", "xyz9k88")
+    page.fill("#modalEvDiaAvulsoVolume", "8")
+    page.fill("#modalEvDiaAvulsoPeso", "13,2")
+    page.evaluate("salvarEventoDoDiaAvulso()")
+    ev = page.evaluate("currentDay.eventosDia[currentDay.eventosDia.length - 1]")
+    check(ev["tipo"] == "Entrada de brita" and ev["transporte"] is True and ev["placa"] == "XYZ9K88"
+          and ev["volume"] == "8" and ev["peso"] == "13,2", f"avulso grava o transporte ({ev})")
+
     # ---- dado antigo: observacoesDia vira eventos "Observação" ----
     leg = page.evaluate("""() => {
         const dia = {data: '2026-05-05', observacoesDia: 'Chuva forte * Visita do cliente', eventosDia: []};

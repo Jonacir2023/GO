@@ -62,6 +62,12 @@ horário e detalhe; há também "+ Registrar evento avulso" para o que não est�
   PDF e WhatsApp usam essa função, então RDO antigo continua imprimindo o texto. Ao abrir um dia
   para editar (`initCurrentDay`) o texto é migrado para `eventosDia` e `observacoesDia` é zerado.
   O campo continua existindo nos dados salvos (os testes de sincronização o usam como marcador).
+- **Transporte de material:** cada evento tem uma caixinha "🚛 Transporte de material" que mostra
+  Placa (maiúscula), Volume (m³) e Peso (t) — no Diário, no painel do Cadastro e no avulso.
+  Campos `transporte`, `placa`, `volume`, `peso` no evento (strings como digitadas, vírgula decimal
+  aceita). Desmarcar esconde os campos e tira o transporte de PDF/WhatsApp, mas **não apaga** o
+  digitado. `textoTransporteEvento(ev)` monta "Placa X · Volume Y m³ · Peso Z t" para os relatórios.
+  As unidades m³ e t são fixas no rótulo; se a obra precisar de kg, mudar o rótulo e o texto.
 - Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
 
 ## Duas chaves são strings parecidas: data e `data#apontador`

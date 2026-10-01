@@ -1989,6 +1989,19 @@
     <input type="time" id="modalEvDiaAvulsoHora">
     <label>Detalhe</label>
     <textarea id="modalEvDiaAvulsoDetalhe" rows="3" placeholder="Opcional"></textarea>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0">
+      <input type="checkbox" id="modalEvDiaAvulsoTransp" style="width:18px;height:18px;margin:0;flex:none"
+        onchange="document.getElementById('modalEvDiaAvulsoTranspCampos').style.display = this.checked ? 'block' : 'none'">
+      🚛 Transporte de material
+    </label>
+    <div id="modalEvDiaAvulsoTranspCampos" style="display:none">
+      <label>Placa</label>
+      <input type="text" id="modalEvDiaAvulsoPlaca" maxlength="8" placeholder="Ex.: ABC1D23" style="text-transform:uppercase">
+      <label>Volume (m³)</label>
+      <input type="text" inputmode="decimal" id="modalEvDiaAvulsoVolume" placeholder="Ex.: 12">
+      <label>Peso (t)</label>
+      <input type="text" inputmode="decimal" id="modalEvDiaAvulsoPeso" placeholder="Ex.: 18">
+    </div>
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-ghost" onclick="fecharModal('modalEventoDoDiaAvulso')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarEventoDoDiaAvulso()">Salvar</button>
@@ -4042,7 +4055,7 @@ function gerarPdfRDO() {
         <div class="section-title" style="page-break-before: auto;">EVENTOS DO DIA</div>
         <table class="data-table">
             <tr><th style="width: 12%;">Hora</th><th style="width: 30%;">Evento</th><th>Detalhe</th></tr>
-            ${eventosDoDia(day).map(ev => `<tr><td>${escHtml(ev.hora || '—')}</td><td>${escHtml(ev.tipo)}</td><td>${escHtml(ev.detalhe || '')}</td></tr>`).join('')}
+            ${eventosDoDia(day).map(ev => `<tr><td>${escHtml(ev.hora || '—')}</td><td>${escHtml(ev.tipo)}</td><td>${escHtml(ev.detalhe || '')}${textoTransporteEvento(ev) ? `${ev.detalhe ? '<br>' : ''}<b>Transporte:</b> ${escHtml(textoTransporteEvento(ev))}` : ''}</td></tr>`).join('')}
         </table>` : ''}
 
         ${blocoFotos}
@@ -4733,6 +4746,46 @@ function eventosDoDia(day) {
   return lista;
 }
 
+// Transporte de material: o evento ganha placa, volume (m³) e peso (t).
+// Desmarcar a caixinha esconde os campos e tira o transporte dos relatórios,
+// mas não apaga o que foi digitado (clique sem querer não perde dado).
+function textoTransporteEvento(ev) {
+  if (!ev || !ev.transporte) return '';
+  const partes = [];
+  if (ev.placa) partes.push(`Placa ${ev.placa}`);
+  if (ev.volume) partes.push(`Volume ${ev.volume} m³`);
+  if (ev.peso) partes.push(`Peso ${ev.peso} t`);
+  return partes.join(' · ');
+}
+
+function htmlTransporteEvento(idx, ev) {
+  const campo = 'min-width:0;width:100%;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)';
+  return `
+    <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--ink)">
+      <input type="checkbox" ${ev.transporte ? 'checked' : ''} style="width:18px;height:18px;margin:0;flex:none"
+        onchange="alternarTransporteEventoDoDia(${idx}, this.checked)">
+      🚛 Transporte de material
+    </label>
+    ${ev.transporte ? `
+    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin-top:8px">
+      <input type="text" placeholder="Placa" value="${escAttr(ev.placa || '')}" maxlength="8" style="${campo};text-transform:uppercase"
+        oninput="salvarCampoEventoDoDia(${idx},'placa',this.value)">
+      <input type="text" inputmode="decimal" placeholder="Volume (m³)" value="${escAttr(ev.volume || '')}" style="${campo}"
+        oninput="salvarCampoEventoDoDia(${idx},'volume',this.value)">
+      <input type="text" inputmode="decimal" placeholder="Peso (t)" value="${escAttr(ev.peso || '')}" style="${campo}"
+        oninput="salvarCampoEventoDoDia(${idx},'peso',this.value)">
+    </div>` : ''}`;
+}
+
+function alternarTransporteEventoDoDia(idx, marcado) {
+  const ev = (currentDay.eventosDia || [])[idx];
+  if (!ev) return;
+  ev.transporte = !!marcado;
+  salvarDiarioDia(false);
+  renderEventosDoDia();
+  renderConfigEventosDia();
+}
+
 function renderEventosDoDia() {
   const cont = document.getElementById('eventosDiaList');
   if (!cont) return;
@@ -4758,6 +4811,7 @@ function renderEventosDoDia() {
             style="flex:1;min-width:0;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink);resize:vertical"
             oninput="salvarCampoEventoDoDia(${idx},'detalhe',this.value)">${escapeHtml(ev.detalhe || '')}</textarea>
         </div>
+        ${htmlTransporteEvento(idx, ev)}
       </div>
       <div class="item-actions"><button class="icon-btn" onclick="removerEventoDoDia(${idx})" title="Remover">🗑️</button></div>
     `;
@@ -4768,7 +4822,7 @@ function renderEventosDoDia() {
 function salvarCampoEventoDoDia(idx, campo, valor) {
   const ev = (currentDay.eventosDia || [])[idx];
   if (!ev) return;
-  ev[campo] = valor;
+  ev[campo] = (campo === 'placa') ? String(valor).toUpperCase().trim() : valor;
   salvarDiarioDia(false);
 }
 
@@ -4814,7 +4868,7 @@ function renderConfigEventosDia() {
     cb.style.cursor = 'pointer';
     cb.addEventListener('change', () => {
       if (!currentDay.eventosDia) currentDay.eventosDia = [];
-      if (cb.checked) currentDay.eventosDia.push({ id: uid('ev'), tipoId: t.id, tipo: t.desc, detalhe: '', hora: '', custom: false });
+      if (cb.checked) currentDay.eventosDia.push({ id: uid('ev'), tipoId: t.id, tipo: t.desc, detalhe: '', hora: '', custom: false, transporte: false, placa: '', volume: '', peso: '' });
       else currentDay.eventosDia = currentDay.eventosDia.filter(e => e.tipoId !== t.id);
       salvarDiarioDia(false);
       renderConfigEventosDia();
@@ -4853,6 +4907,10 @@ function renderConfigEventosDia() {
             onchange="salvarCampoEventoDoDia(${idx},'detalhe',this.value);renderEventosDoDia()">
         </div>`;
       wrap.appendChild(det);
+      const tr = document.createElement('div');
+      tr.style.padding = '0 12px 12px';
+      tr.innerHTML = htmlTransporteEvento(idx, ev);
+      wrap.appendChild(tr);
     }
     cont.appendChild(wrap);
   });
@@ -4872,6 +4930,9 @@ function abrirModalEventoDoDiaAvulso() {
   document.getElementById('modalEvDiaAvulsoTipo').value = '';
   document.getElementById('modalEvDiaAvulsoHora').value = '';
   document.getElementById('modalEvDiaAvulsoDetalhe').value = '';
+  document.getElementById('modalEvDiaAvulsoTransp').checked = false;
+  document.getElementById('modalEvDiaAvulsoTranspCampos').style.display = 'none';
+  ['Placa', 'Volume', 'Peso'].forEach(k => document.getElementById('modalEvDiaAvulso' + k).value = '');
   abrirModal('modalEventoDoDiaAvulso');
 }
 function salvarEventoDoDiaAvulso() {
@@ -4882,7 +4943,11 @@ function salvarEventoDoDiaAvulso() {
     id: uid('ev'), tipoId: null, tipo,
     detalhe: document.getElementById('modalEvDiaAvulsoDetalhe').value.trim(),
     hora: document.getElementById('modalEvDiaAvulsoHora').value,
-    custom: true
+    custom: true,
+    transporte: document.getElementById('modalEvDiaAvulsoTransp').checked,
+    placa: document.getElementById('modalEvDiaAvulsoPlaca').value.toUpperCase().trim(),
+    volume: document.getElementById('modalEvDiaAvulsoVolume').value.trim(),
+    peso: document.getElementById('modalEvDiaAvulsoPeso').value.trim()
   });
   salvarDiarioDia(false);
   fecharModal('modalEventoDoDiaAvulso');
@@ -6841,7 +6906,10 @@ function buildRelatorio(day) {
   if (_evsDia.length > 0) {
     txt += `\n${divisor}\n\n`;
     txt += `*📌 Eventos do Dia — ${_evsDia.length}*\n`;
-    _evsDia.forEach(ev => txt += `• ${ev.hora ? ev.hora + ' — ' : ''}${ev.tipo}${ev.detalhe ? ': ' + ev.detalhe : ''}\n`);
+    _evsDia.forEach(ev => {
+      txt += `• ${ev.hora ? ev.hora + ' — ' : ''}${ev.tipo}${ev.detalhe ? ': ' + ev.detalhe : ''}\n`;
+      if (textoTransporteEvento(ev)) txt += `   🚛 ${textoTransporteEvento(ev)}\n`;
+    });
   }
 
   // Resumos acumulados — semana, mês e ano do dia do relatório (não de "hoje"),
