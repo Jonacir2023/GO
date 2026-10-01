@@ -1,9 +1,8 @@
 -- BUILDLy GO — Migration: Locais de Trabalho (frentes de obra)
--- Tabela para gerenciar os locais específicos de cada obra
+-- Cada projeto Supabase é dedicado a uma obra, portanto não há coluna obra_id
 
 create table if not exists public.rdo_locais (
   id uuid primary key default gen_random_uuid(),
-  obra_id uuid not null,
   nome text not null,
   descricao text,
   ativo boolean not null default true,
@@ -13,9 +12,8 @@ create table if not exists public.rdo_locais (
   constraint local_nome_nao_vazio
     check (btrim(nome) <> ''),
 
-  constraint local_obra_nome_uq
-    unique (obra_id, nome)
+  constraint local_nome_uq
+    unique (nome)
 );
 
-create index if not exists idx_rdo_locais_obra on public.rdo_locais(obra_id);
 create index if not exists idx_rdo_locais_ativo on public.rdo_locais(ativo);

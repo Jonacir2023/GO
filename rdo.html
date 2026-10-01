@@ -3019,8 +3019,23 @@ async function carregarLocaisDaObra(obraId) {
   if (locaisPorObra[obraId]) return locaisPorObra[obraId];
 
   try {
+    // Aguardar supabase estar pronto (máximo 3 segundos)
+    let tentativas = 0;
+    while (!window.supabase && tentativas < 30) {
+      await new Promise(r => setTimeout(r, 100));
+      tentativas++;
+    }
+
+    if (!window.B3Obras) {
+      console.warn('B3Obras não carregado ainda');
+      return [];
+    }
     const cliente = B3Obras.cliente(obraId);
-    const { data, error } = await cliente.from('rdo_locais').select('id,nome,descricao').order('nome');
+    if (!cliente) {
+      console.warn('Cliente não disponível para obra:', obraId);
+      return [];
+    }
+    const { data, error } = await cliente.from('rdo_locais').select('id,nome,descricao').eq('ativo', true).order('nome');
     if (error) {
       console.error('Erro ao carregar locais:', error);
       return [];
@@ -3072,9 +3087,17 @@ async function atualizarLocaisDaObra() {
 
 async function abrirEditarLocais() {
   const selObra = document.getElementById('obraAtiva');
-  if (!selObra) return;
+  if (!selObra) {
+    toast('Nenhuma obra selecionada');
+    return;
+  }
 
   const obraId = selObra.value || B3Obras.atualId();
+  if (!obraId) {
+    toast('Erro ao determinar obra ativa');
+    return;
+  }
+
   const obras = B3Obras.listar();
   const obraAtual = obras.find(o => o.id === obraId);
 
@@ -3083,12 +3106,21 @@ async function abrirEditarLocais() {
   }
 
   abrirModal('modalEditarLocais');
-  await carregarLocaisNoModal(obraId);
+
+  try {
+    await carregarLocaisNoModal(obraId);
+  } catch (err) {
+    console.error('Erro ao carregar locais:', err);
+    toast('Erro ao carregar locais');
+  }
+
   document.getElementById('modalNovoLocalNome').value = '';
   document.getElementById('modalNovoLocalNome').focus();
 }
 
 async function carregarLocaisNoModal(obraId) {
+  // Invalidar cache para forçar recarga do Supabase
+  delete locaisPorObra[obraId];
   const locais = await carregarLocaisDaObra(obraId);
   const container = document.getElementById('modalLocaisList');
 
