@@ -27,9 +27,17 @@ A lista de responsáveis é filtrada por papel — `_ehResponsavelValido()` acei
 
 ## Local da obra é lista fechada
 
-`LOCAIS_EXECUCAO` — 13 opções (`Filtro 1`…`Filtro 10`, `ETA`, `Casa de Bombas`,
-`Canal do Reservatório`) num `<select>`. Texto livre gerava "Filtro 9", "filtro 9", "F9" e
-"Filtros ETA" para o mesmo lugar, e relatório por local virava contagem de erros de digitação.
+Os locais vêm do cadastro da obra (tabela `rdo_locais` no Supabase da obra, editada pelo botão
+"+" do cartão Local da Obra, ou por Obras → Gerenciar Locais, que abre o mesmo modal) num
+`<select>`. Texto livre gerava "Filtro 9", "filtro 9", "F9" e "Filtros ETA" para o mesmo lugar, e
+relatório por local virava contagem de erros de digitação. O valor gravado no diário é o **nome**
+do local (único por obra), não o id.
+
+**Não existe lista padrão.** Até 01/10/2026 havia uma constante `LOCAIS_EXECUCAO` (Filtro 1…10, ETA,
+Casa de Bombas, Canal do Reservatório — de outro projeto) usada como fallback quando o Supabase
+voltava vazio ou falhava; ela aparecia no seletor de uma obra nova. Foi removida. Obra sem locais
+cadastrados mostra "Nenhum local cadastrado" no seletor. O teste semeia `locaisPorObra` para simular
+o cadastro.
 
 **Valor antigo fora da lista sobrevive:** entra como opção extra já selecionada. Fechar a lista
 não pode reescrever RDO que já existe.

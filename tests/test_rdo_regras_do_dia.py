@@ -24,13 +24,26 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/rdo.html")
     page.wait_for_timeout(1000)
 
-    # ---- Item 5: lista fechada de locais ----
+    # ---- Item 5: lista fechada de locais, vinda do cadastro da obra ----
     check(page.eval_on_selector("#localObra", "e => e.tagName") == "SELECT",
           "Local da Obra virou <select>")
+
+    # sem locais cadastrados na obra, não pode aparecer lista nenhuma (nem de outro projeto)
+    page.evaluate("locaisPorObra[B3Obras.atualId()] = []; _atualizarLocalObraDatalist();")
+    page.wait_for_timeout(200)
+    vazio = page.eval_on_selector_all("#localObra option", "es => es.map(e => e.value)")
+    check(vazio == [""], f"obra sem locais cadastrados: só o placeholder (obtido: {vazio})")
+
+    # com locais cadastrados (rdo_locais), o seletor mostra exatamente eles
+    page.evaluate("""() => {
+        locaisPorObra[B3Obras.atualId()] = ['Acesso 1', 'Base Aerogerador 1', 'Base Aerogerador 2']
+          .map((nome, i) => ({ id: 'id-' + i, nome }));
+        _atualizarLocalObraDatalist();
+    }""")
+    page.wait_for_timeout(200)
     opts = page.eval_on_selector_all("#localObra option", "es => es.map(e => e.value)")
-    check(len(opts) == 14 and opts[0] == "" and "Filtro 10" in opts and "ETA" in opts
-          and "Canal do Reservatório" in opts,
-          f"13 locais + placeholder (obtido: {len(opts)} opções)")
+    check(opts == ["", "Acesso 1", "Base Aerogerador 1", "Base Aerogerador 2"],
+          f"seletor mostra só os locais cadastrados da obra (obtido: {opts})")
 
     # valor antigo fora da lista tem que sobreviver
     page.evaluate("currentDay.localObra = 'Filtros ETA (grafia antiga)'; _atualizarLocalObraDatalist();")

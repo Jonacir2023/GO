@@ -1330,7 +1330,7 @@
     <div class="section-title">
       <div class="section-title-text">🏗️ Obra</div>
     </div>
-    <select id="obraAtiva" style="margin-bottom:8px" onchange="atualizarLocaisDaObra()"></select>
+    <select id="obraAtiva" style="margin-bottom:8px"></select>
     <div id="obraAtivaInfo" style="padding:10px 12px;background:var(--bg-dark);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px"></div>
   </div>
 
@@ -2000,7 +2000,7 @@
     </div>
 
     <div class="btn-row" style="margin-top:14px;border-top:1.5px solid var(--line);padding-top:12px">
-      <button class="btn btn-ghost" onclick="fecharModal('modalEditarLocais')">Fechar</button>
+      <button class="btn btn-ghost" onclick="fecharModal('modalEditarLocais');_atualizarLocalObraDatalist()">Fechar</button>
     </div>
   </div>
 </div>
@@ -2351,17 +2351,6 @@ const DEFAULT_DATA = {
     { id: 'm4', desc: 'Ruído acima do permitido' }
   ]
 };
-
-// Locais de execução da obra — lista fechada.
-//
-// Era texto livre, e o mesmo lugar aparecia escrito de várias formas
-// ("Filtros ETA", "filtro eta", "ETA"), o que estragava qualquer acumulado por
-// local. Editar esta lista é o que muda as opções do campo.
-const LOCAIS_EXECUCAO = [
-  'Filtro 1', 'Filtro 2', 'Filtro 3', 'Filtro 4', 'Filtro 5',
-  'Filtro 6', 'Filtro 7', 'Filtro 8', 'Filtro 9', 'Filtro 10',
-  'ETA', 'Casa de Bombas', 'Canal do Reservatório'
-];
 
 const EMPTY_DAY = () => ({
   data: '',
@@ -2950,17 +2939,7 @@ function initCurrentDay(data) {
   renderDiario();
   _atualizarResumoObraNosDiario();
 
-  // Carregar locais da obra após preencher campos (com fallback síncrono para testes)
-  if (!window.supabase) {
-    // Sem Supabase (testes), usar fallback direto
-    const sel = document.getElementById('localObra');
-    if (sel) {
-      sel.innerHTML = '<option value="">— Selecionar local —</option>' +
-        LOCAIS_EXECUCAO.map(nome => `<option value="${nome}">${nome}</option>`).join('');
-    }
-  } else {
-    _atualizarLocalObraDatalist().catch(err => console.error('Erro ao carregar locais:', err));
-  }
+  _atualizarLocalObraDatalist().catch(err => console.error('Erro ao carregar locais:', err));
 }
 
 function atualizarHeaderEdicao() {
@@ -3128,26 +3107,7 @@ async function atualizarInfoObraAtiva() {
 }
 
 async function atualizarLocaisDaObra() {
-  const selObra = document.getElementById('obraAtiva');
-  const selLocal = document.getElementById('localObra');
-  if (!selObra || !selLocal) return;
-
-  const obraId = selObra.value;
-  let locais = await carregarLocaisDaObra(obraId);
-
-  // Fallback para LOCAIS_EXECUCAO se Supabase retorna vazio (para testes e compatibilidade)
-  if (!locais || locais.length === 0) {
-    locais = LOCAIS_EXECUCAO.map((nome, i) => ({ id: nome, nome }));
-  }
-
-  const valorAtual = selLocal.value;
-  selLocal.innerHTML = '<option value="">— Selecionar local —</option>' +
-    locais.map(l => `<option value="${escapeHtml(l.nome)}">${escapeHtml(l.nome)}</option>`).join('');
-
-  // Tenta manter a seleção anterior se ainda existir
-  if (locais.find(l => l.nome === valorAtual)) {
-    selLocal.value = valorAtual;
-  }
+  await _atualizarLocalObraDatalist();
 }
 
 // ============================================================
@@ -3290,8 +3250,9 @@ document.addEventListener('DOMContentLoaded', () => {
     obraSel.addEventListener('change', async () => {
       const obraId = obraSel.value;
       currentDay.obraId = obraId;
+      currentDay.localObra = '';
       atualizarInfoObraAtiva();
-      await atualizarLocaisDaObra();
+      await _atualizarLocalObraDatalist();
       salvarDiarioDia(false);
     });
   }
@@ -6097,7 +6058,9 @@ function _atualizarResumoObraNosDiario() {
   }
 }
 
-// Monta o <select> do Local da Obra a partir de LOCAIS_EXECUCAO.
+// Monta o <select> do Local da Obra só com os locais cadastrados na obra
+// escolhida (rdo_locais, editados no botão "+"). Não existe lista padrão: uma
+// lista fixa mostraria locais de outro projeto numa obra nova.
 //
 // Um valor que não está na lista — lançado quando o campo era texto livre, ou
 // vindo de outro aparelho — entra como opção extra já selecionada. Descartar
@@ -6113,12 +6076,9 @@ async function _atualizarLocalObraDatalist() {
   // Carregar locais do Supabase
   let locais = await carregarLocaisDaObra(obraId);
 
-  // Fallback para LOCAIS_EXECUCAO se Supabase retorna vazio (para testes e compatibilidade)
-  if (!locais || locais.length === 0) {
-    locais = LOCAIS_EXECUCAO.map((nome, i) => ({ id: nome, nome }));
-  }
+  locais = locais || [];
 
-  const opcoes = ['<option value="">— Selecionar local —</option>'];
+  const opcoes = [`<option value="">${locais.length ? '— Selecionar local —' : '— Nenhum local cadastrado (use o + ) —'}</option>`];
   locais.forEach(l => {
     const val = l.nome;
     opcoes.push(`<option value="${escapeHtml(val)}"${val === atual ? ' selected' : ''}>${escapeHtml(l.nome)}</option>`);
