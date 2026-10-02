@@ -183,6 +183,70 @@ with sync_playwright() as p:
     check(ev["fornecedor"] == "Casa do Construtor" and ev["valorCarga"] == "980" and ev["transporte"] is False,
           f"avulso grava fornecedor e valor sem exigir transporte ({ev})")
 
+    # ---- resumos de semana / mês / ano somam atividades e eventos ----
+    seed = page.evaluate("""(ap) => {
+        const ativ = state.atividades[0];
+        const mk = (data, qtd, eventos) => {
+          const d = Object.assign(EMPTY_DAY(), {data, apontador: ap, eventosDia: eventos});
+          d.atividadesMarcadas[ativ.id] = true; d.atividadesQtd[ativ.id] = qtd;
+          history[chaveDiario(data, ap)] = d;
+        };
+        const cim = (vol, peso, valor) => ({id: uid('ev'), tipoId: 'ed1', tipo: 'Chegada de material', hora: '', detalhe: '',
+          fornecedor: 'X', valorCarga: valor, transporte: true, placa: 'AAA1A11', volume: vol, peso: peso, custom: false});
+        const quebra = () => ({id: uid('ev'), tipoId: 'ed3', tipo: 'Quebra de equipamento', hora: '', detalhe: '',
+          fornecedor: '', valorCarga: '', transporte: false, placa: '', volume: '', peso: '', custom: false});
+        // semana de 11/03 a 16/03/2024 (referência: quarta 13/03; 2024 = ano sem outros dados do teste)
+        mk('2024-03-11', 10, [cim('12,5', '18', '4.850,00')]);
+        mk('2024-03-13', 20, [cim('10', '15,5', 'R$ 1.000'), quebra()]);
+        // mesmo mês, outra semana
+        mk('2024-03-20', 5, [cim('8', '12', '980')]);
+        // mesmo ano, outro mês
+        mk('2024-02-10', 7, [cim('20', '30', '2.000,50')]);
+        // outro ano: não pode entrar em nada
+        mk('2023-12-30', 100, [cim('999', '999', '999999')]);
+        return {unid: ativ.unidade, id: ativ.id};
+    }""", APONTADOR)
+
+    def soma(ini, fim):
+        return page.evaluate("(a) => { const r = calcResumoPeriodoPDF(a[0], a[1]); return {atv: r.acum[a[2]] || 0, ev: r.eventos, tot: r.totalEventos}; }",
+                             [ini, fim, seed["id"]])
+
+    sem = soma("2024-03-11", "2024-03-16")
+    check(sem["atv"] == 30, f"semana: atividade soma 10+20 = 30 ({sem['atv']})")
+    t = sem["tot"]
+    check(t["ocorrencias"] == 3 and t["cargas"] == 2 and abs(t["volume"] - 22.5) < 1e-9
+          and abs(t["peso"] - 33.5) < 1e-9 and abs(t["valor"] - 5850) < 1e-9,
+          f"semana: 3 ocorrências, 2 cargas, 22,5 m³, 33,5 t, R$ 5.850 ({t})")
+    check(sem["ev"]["Chegada de material"]["cargas"] == 2 and sem["ev"]["Quebra de equipamento"]["cargas"] == 0,
+          "semana: quebra de equipamento conta como ocorrência, sem carga")
+    mes = soma("2024-03-01", "2024-03-31")["tot"]
+    check(mes["cargas"] == 3 and abs(mes["volume"] - 30.5) < 1e-9 and abs(mes["peso"] - 45.5) < 1e-9
+          and abs(mes["valor"] - 6830) < 1e-9, f"mês: 3 cargas, 30,5 m³, 45,5 t, R$ 6.830 ({mes})")
+    ano = soma("2024-01-01", "2024-12-31")
+    check(ano["atv"] == 42 and ano["tot"]["cargas"] == 4 and abs(ano["tot"]["valor"] - 8830.5) < 1e-9
+          and abs(ano["tot"]["volume"] - 50.5) < 1e-9, f"ano: atividade 42, 4 cargas, R$ 8.830,50 ({ano['atv']}, {ano['tot']})")
+    check(page.evaluate("[numeroBR('4.850,00'), numeroBR('4.850'), numeroBR('12.5'), numeroBR('12,5'), numeroBR('R$ 980'), numeroBR('18 t'), numeroBR('')]")
+          == [4850, 4850, 12.5, 12.5, 980, 18, 0], "leitura de números em pt-BR (milhar, vírgula, R$, unidade)")
+
+    # relatórios do dia 11/03 trazem os três resumos
+    page.evaluate("""(ap) => { currentDay = JSON.parse(JSON.stringify(history[chaveDiario('2024-03-13', ap)])); }""", APONTADOR)
+    wa = page.evaluate("buildRelatorio(currentDay)")
+    check("Resumo da Semana" in wa and "Resumo do Mês" in wa and "Resumo do Ano" in wa, "WhatsApp traz semana, mês e ano")
+    check("• Chegada de material: *2x* — 2 cargas · 22,5 m³ · 33,5 t · R$ 5.850,00" in wa,
+          "WhatsApp (semana): evento somado com cargas, volume, peso e valor")
+    check("• *Total:* *3x* — 2 cargas · 22,5 m³ · 33,5 t · R$ 5.850,00" in wa, "WhatsApp (semana): linha de total")
+    check("3 cargas · 30,5 m³ · 45,5 t · R$ 6.830,00" in wa, "WhatsApp (mês): totais do mês")
+    check("4 cargas · 50,5 m³ · 75,5 t · R$ 8.830,50" in wa, "WhatsApp (ano): totais do ano")
+    check("999" not in wa, "WhatsApp: dia de outro ano não entra")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(600)
+    pdf = page.inner_text("#pdfOverlay")
+    check("RESUMO DA SEMANA" in pdf and "RESUMO DO MÊS" in pdf and "RESUMO DO ANO" in pdf, "PDF traz semana, mês e ano")
+    check(pdf.count("R$ 5.850,00") >= 1 and pdf.count("R$ 6.830,00") >= 1 and pdf.count("R$ 8.830,50") >= 1,
+          "PDF traz o valor somado de semana, mês e ano")
+    check(pdf.count("TOTAL") >= 3, "PDF traz a linha TOTAL de eventos em cada resumo")
+    page.evaluate("fecharPdfRDO()")
+
     # ---- dado antigo: observacoesDia vira eventos "Observação" ----
     leg = page.evaluate("""() => {
         const dia = {data: '2026-05-05', observacoesDia: 'Chuva forte * Visita do cliente', eventosDia: []};

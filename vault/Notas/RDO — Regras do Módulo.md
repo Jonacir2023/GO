@@ -72,6 +72,16 @@ horário e detalhe; há também "+ Registrar evento avulso" para o que não est�
   da caixinha de transporte). `valorCarga` é texto como digitado; `textoCargaEvento(ev)` acrescenta
   "R$ " se o usuário não digitou. Não há soma nem conversão numérica — se um dia for preciso totalizar
   o valor das cargas, será preciso normalizar (vírgula/ponto) antes.
+- **Resumos de semana, mês e ano (PDF e WhatsApp):** `calcResumoPeriodoPDF` soma, além das atividades,
+  os eventos por tipo: ocorrências, cargas (só eventos com transporte marcado), volume (m³), peso (t) e
+  valor (R$, de qualquer evento com valor). Tabela "Evento / Ocorr. / Cargas / Volume / Peso / Valor" com
+  linha TOTAL no PDF; bloco "Eventos acumulados" no WhatsApp. O PDF passou a ter também o RESUMO DO ANO
+  (antes só semana e mês). Soma todos os RDOs do período, de todos os apontadores. Só conta
+  `eventosDia` — o texto antigo de Observações do Dia não entra na soma.
+- **Leitura de números:** `numeroBR()` aceita "12,5", "4.850,00", "R$ 980", "18 t". Ponto sozinho é
+  milhar só no padrão 1.234 / 12.345.678; "12.5" é decimal. Se alguém digitar "1.5" para 1,5 m³ está
+  certo; "1.500" vira 1500 (milhar).
+- A aba Resumo (tela) ainda mostra só atividades; os eventos somados estão só nos relatórios.
 - Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
 
 ## Duas chaves são strings parecidas: data e `data#apontador`

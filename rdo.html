@@ -3700,12 +3700,39 @@ function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Lê número digitado em pt-BR: "12,5", "4.850,00", "R$ 980", "18 t".
+// Ponto sozinho só é milhar quando segue o padrão 1.234 / 12.345.678.
+function numeroBR(v) {
+  let t = String(v == null ? '' : v).replace(/R\$|\s|[a-zA-Z³²]/g, '');
+  if (!t) return 0;
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+  const n = parseFloat(t);
+  return isNaN(n) ? 0 : n;
+}
+const fmtNumBR = n => n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+const fmtMoedaBR = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 function calcResumoPeriodoPDF(isoInicio, isoFim) {
   const dias = Object.keys(history).filter(k => dataDaChave(k) >= isoInicio && dataDaChave(k) <= isoFim).sort();
   const acum = {}; // atId -> total
+  const eventos = {}; // tipo -> {ocorrencias, cargas, volume, peso, valor}
+  const totalEventos = { ocorrencias: 0, cargas: 0, volume: 0, peso: 0, valor: 0 };
   let somaEfetivo = 0, diasComEfetivo = 0;
   dias.forEach(data => {
     const dia = history[data];
+    // Só eventos de verdade: o texto antigo de Observações do Dia não entra na soma.
+    (dia.eventosDia || []).forEach(ev => {
+      const e = eventos[ev.tipo || 'Evento'] || (eventos[ev.tipo || 'Evento'] = { ocorrencias: 0, cargas: 0, volume: 0, peso: 0, valor: 0 });
+      e.ocorrencias++; totalEventos.ocorrencias++;
+      if (ev.transporte) {
+        const vol = numeroBR(ev.volume), peso = numeroBR(ev.peso);
+        e.cargas++; e.volume += vol; e.peso += peso;
+        totalEventos.cargas++; totalEventos.volume += vol; totalEventos.peso += peso;
+      }
+      const val = numeroBR(ev.valorCarga);
+      e.valor += val; totalEventos.valor += val;
+    });
     const ids = new Set([
       ...Object.keys(dia.atividadesQtd || {}),
       ...Object.keys(dia.atividadesMarcadas || {})
@@ -3719,7 +3746,7 @@ function calcResumoPeriodoPDF(isoInicio, isoFim) {
       if (n > 0) { somaEfetivo += n; diasComEfetivo++; }
     }
   });
-  return { dias, acum, somaEfetivo, diasComEfetivo };
+  return { dias, acum, eventos, totalEventos, somaEfetivo, diasComEfetivo };
 }
 
 // O Check-in vive no buildly-completo.html, mas as duas paginas sao servidas da
@@ -3933,9 +3960,11 @@ function gerarPdfRDO() {
   const iniMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth(), 1);
   const fimMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth() + 1, 0);
   const isoIniMes = fmtISOlocalPdf(iniMesD), isoFimMes = fmtISOlocalPdf(fimMesD);
+  const isoIniAno = `${dRefPdf.getFullYear()}-01-01`, isoFimAno = `${dRefPdf.getFullYear()}-12-31`;
 
   const resumoSemana = calcResumoPeriodoPDF(isoIniSem, isoFimSem);
   const resumoMes = calcResumoPeriodoPDF(isoIniMes, isoFimMes);
+  const resumoAno = calcResumoPeriodoPDF(isoIniAno, isoFimAno);
   const mesesPdf = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
   const blocoResumoPeriodo = (titulo, periodoLabel, r) => {
@@ -3948,6 +3977,18 @@ function gerarPdfRDO() {
     });
     if (!linhasServ) linhasServ = '<tr><td colspan="2" style="text-align:center">Nenhum serviço lançado no período</td></tr>';
     const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
+    const trav = n => n ? fmtNumBR(n) : '—';
+    const linhaEv = (nome, e, forte) => {
+      const c = forte ? 'font-weight:800;background:#f8f9fa' : '';
+      return `<tr><td style="${c}">${escHtml(nome)}</td><td style="text-align:right;${c}">${e.ocorrencias}</td><td style="text-align:right;${c}">${trav(e.cargas)}</td><td style="text-align:right;${c}">${trav(e.volume)}</td><td style="text-align:right;${c}">${trav(e.peso)}</td><td style="text-align:right;${c}">${e.valor ? fmtMoedaBR(e.valor) : '—'}</td></tr>`;
+    };
+    const tiposEv = Object.keys(r.eventos).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const tabelaEventos = tiposEv.length ? `
+            <table class="data-table">
+                <tr><th>Evento</th><th style="width: 11%; text-align: right;">Ocorr.</th><th style="width: 11%; text-align: right;">Cargas</th><th style="width: 15%; text-align: right;">Volume (m³)</th><th style="width: 13%; text-align: right;">Peso (ton)</th><th style="width: 19%; text-align: right;">Valor</th></tr>
+                ${tiposEv.map(t => linhaEv(t, r.eventos[t], false)).join('')}
+                ${tiposEv.length > 1 ? linhaEv('TOTAL', r.totalEventos, true) : ''}
+            </table>` : '';
     // Cada resumo de período começa em página nova
     return `
         <div class="quebra-pagina">
@@ -3960,6 +4001,7 @@ function gerarPdfRDO() {
                 <tr><th>Serviço</th><th style="width: 25%; text-align: right;">Total acumulado</th></tr>
                 ${linhasServ}
             </table>
+            ${tabelaEventos}
         </div>`;
   };
 
@@ -4067,6 +4109,8 @@ function gerarPdfRDO() {
         ${blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana)}
 
         ${blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes)}
+
+        ${blocoResumoPeriodo('RESUMO DO ANO', `${dRefPdf.getFullYear()}`, resumoAno)}
 
         ${blocoCheckinPdf(day.data)}
 
@@ -6971,6 +7015,24 @@ function buildRelatorio(day) {
         const unid = a.unidade ? ' ' + a.unidade : '';
         s += `• ${a.desc}: *${r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unid}*\n`;
       });
+    }
+    const tiposEv = Object.keys(r.eventos).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    if (tiposEv.length) {
+      const detalhes = e => [
+        e.cargas ? `${e.cargas} carga${e.cargas > 1 ? 's' : ''}` : '',
+        e.volume ? `${fmtNumBR(e.volume)} m³` : '',
+        e.peso ? `${fmtNumBR(e.peso)} t` : '',
+        e.valor ? fmtMoedaBR(e.valor) : ''
+      ].filter(Boolean).join(' · ');
+      s += `\n_Eventos acumulados_\n`;
+      tiposEv.forEach(t => {
+        const e = r.eventos[t];
+        s += `• ${t}: *${e.ocorrencias}x*${detalhes(e) ? ' — ' + detalhes(e) : ''}\n`;
+      });
+      if (tiposEv.length > 1) {
+        const e = r.totalEventos;
+        s += `• *Total:* *${e.ocorrencias}x*${detalhes(e) ? ' — ' + detalhes(e) : ''}\n`;
+      }
     }
     return s;
   };
