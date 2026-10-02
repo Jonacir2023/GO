@@ -241,10 +241,12 @@ with sync_playwright() as p:
     page.evaluate("gerarPdfRDO()")
     page.wait_for_timeout(600)
     pdf = page.inner_text("#pdfOverlay")
-    check("RESUMO DA SEMANA" in pdf and "RESUMO DO MÊS" in pdf and "RESUMO DO ANO" in pdf, "PDF traz semana, mês e ano")
-    check(pdf.count("R$ 5.850,00") >= 1 and pdf.count("R$ 6.830,00") >= 1 and pdf.count("R$ 8.830,50") >= 1,
-          "PDF traz o valor somado de semana, mês e ano")
-    check(pdf.count("TOTAL") >= 3, "PDF traz a linha TOTAL de eventos em cada resumo")
+    check("ACUMULADOS" in pdf and "SEMANA" in pdf.upper() and "MÊS" in pdf.upper() and "ANO" in pdf.upper(),
+          "PDF traz a tabela de acumulados com semana, mês e ano")
+    check("R$ 5.850,00" in pdf and "R$ 6.830,00" in pdf and "R$ 8.830,50" in pdf,
+          "PDF traz o valor somado de semana, mês e ano na mesma linha")
+    check("Cargas de material" in pdf and "Volume (m³)" in pdf and "Peso (ton)" in pdf,
+          "PDF traz cargas, volume e peso acumulados")
     page.evaluate("fecharPdfRDO()")
 
     # ---- aba Resumo (tela): eventos acumulados no período ----

@@ -66,15 +66,14 @@ with sync_playwright() as p:
 
     # ---- botões na aba Gerar ----
     gerar = page.text_content("#view-gerar")
-    check("PDF resumido (econômico)" in gerar and "PDF completo do RDO" in gerar,
-          "aba Gerar tem os dois botões: resumido e completo")
+    check("Gerar PDF do RDO" in gerar and "PDF resumido" not in gerar and "PDF completo" not in gerar,
+          "aba Gerar tem um botão só: Gerar PDF do RDO")
 
     # ---- conteúdo do PDF condensado ----
-    page.evaluate("gerarPdfRDOCompacto()")
+    page.evaluate("gerarPdfRDO()")
     page.wait_for_timeout(500)
     doc = page.inner_text("#pdfOverlay .pdf-doc")
-    check(page.evaluate("modoPdfRdo") == "compacto" and page.locator("#pdfOverlay .pdf-doc.pdf-compacto").count() == 1,
-          "versão condensada abre com a folha .pdf-compacto")
+    check(page.locator("#pdfOverlay .pdf-doc.pdf-compacto").count() == 1, "o PDF abre com a folha condensada")
     for trecho, nome in [
         ("RELATÓRIO DIÁRIO DE OBRA", "título"), ("Base Aerogerador 2 — Escavação para fundação", "local da obra do dia"),
         ("07:00 às 17:00", "jornada correta (início/fim)"), ("Trabalho em altura e içamento", "tema do DSS"),
@@ -84,9 +83,9 @@ with sync_playwright() as p:
         ("Cimento CP-II NF 1234", "evento do dia"), ("Valor R$ 4.850,00", "valor da carga"),
         ("Placa ABC1D23", "placa do transporte"), ("Votorantim", "fornecedor"),
         ("ACUMULADOS", "tabela de acumulados"), ("Cargas de material", "cargas nos acumulados"),
-        ("501 – Marcelo Dias", "apontador"), ("versão resumida", "rodapé identifica a versão"),
+        ("501 – Marcelo Dias", "apontador"), ("Gerado pelo App Diário de Obras", "rodapé"),
     ]:
-        check(trecho.lower() in doc.lower(), f"condensado traz: {nome}")
+        check(trecho.lower() in doc.lower(), f"PDF traz: {nome}")
     check(page.locator("#pdfOverlay .cx-fotos img").count() == 7, "fotos entram como miniaturas (7)")
     check(page.locator("#pdfOverlay .cx-kpi td").count() == 7, "faixa de indicadores com 7 itens")
     check(page.locator("#pdfOverlay .pdf-page").count() == 1 and page.locator("#pdfOverlay .quebra-pagina").count() == 0,
@@ -94,47 +93,35 @@ with sync_playwright() as p:
     page.evaluate("fecharPdfRDO()")
 
     # ---- economia de papel ----
-    n_comp = paginas(page, "gerarPdfRDOCompacto()")
+    n = paginas(page, "gerarPdfRDO()")
     page.evaluate("fecharPdfRDO()")
-    n_full = paginas(page, "gerarPdfRDO()")
-    page.evaluate("fecharPdfRDO()")
-    check(n_comp == 1, f"dia completo (efetivo 14, 7 fotos, eventos, SSMA) cabe em 1 folha (obtido: {n_comp})")
-    check(n_full >= 4 and n_comp * 3 <= n_full, f"economia: condensado {n_comp} folha(s) x completo {n_full}")
+    check(n == 1, f"dia cheio (efetivo 14, 7 fotos, eventos, SSMA, acumulados) cabe em 1 folha (obtido: {n})")
 
     # ---- dia vazio e dia sem fotos ----
     vazio = page.evaluate("""() => {
         const d = EMPTY_DAY(); d.data = '2024-05-06'; d.apontador = '501 – Marcelo Dias (Qualidade / Apontamento)';
-        currentDay = d; gerarPdfRDOCompacto();
+        currentDay = d; gerarPdfRDO();
         return document.querySelector('#pdfOverlay .pdf-doc').innerText.length;
     }""")
     check(vazio > 100 and not erros, f"dia vazio gera sem erro ({vazio} caracteres, erros={erros})")
     page.evaluate("fecharPdfRDO()")
 
-    # ---- PDF completo continua igual e com jornada corrigida ----
+    # ---- jornada com os rótulos certos e layout antigo removido ----
     page.evaluate("""(ap) => { currentDay = JSON.parse(JSON.stringify(history[chaveDiario(todayISO(), ap)] || currentDay)); }""", AP)
     page.evaluate("gerarPdfRDO()")
     page.wait_for_timeout(400)
-    comp = page.inner_text("#pdfOverlay .pdf-doc")
-    check(page.evaluate("modoPdfRdo") == "completo" and page.locator("#pdfOverlay .pdf-compacto").count() == 0,
-          "PDF completo continua abrindo sem o estilo condensado")
-    check("RESUMO DA SEMANA" in comp.upper() and "RESUMO DO ANO" in comp.upper(), "PDF completo mantém os resumos de período")
-    check("Início: 07:00" in comp and "Fim: 17:00" in comp and "Café" not in comp,
-          "PDF completo: jornada com rótulos corretos (início 07:00, fim 17:00)")
+    txt = page.inner_text("#pdfOverlay .pdf-doc")
+    check("07:00 às 17:00" in txt and "Café" not in txt, "jornada mostra início 07:00 e fim 17:00, sem 'Café'")
+    check(page.locator("#pdfOverlay .quebra-pagina, #pdfOverlay .kanban-grid, #pdfOverlay .data-table").count() == 0,
+          "o layout antigo (páginas forçadas, kanban, tabelas grandes) não existe mais")
     page.evaluate("fecharPdfRDO()")
 
-    # ---- "Salvar PDF (abre no Safari)" mantém a versão escolhida ----
-    urls = page.evaluate("""() => {
-        const abertas = []; const orig = window.open; window.open = u => { abertas.push(u); };
-        modoPdfRdo = 'compacto'; abrirRdoNoSafari();
-        modoPdfRdo = 'completo'; abrirRdoNoSafari();
-        window.open = orig; return abertas;
-    }""")
-    check("modo=compacto" in urls[0] and "modo=compacto" not in urls[1], f"link do Safari carrega o modo ({urls})")
+    # ---- "Salvar PDF (abre no Safari)" e abertura direta por ?rdo= ----
     page2 = ctx.new_page()
     page2.on("dialog", lambda d: d.dismiss())
-    page2.goto(f"{BASE}/rdo.html?rdo=2024-05-06&modo=compacto")
+    page2.goto(f"{BASE}/rdo.html?rdo=2024-05-06")
     page2.wait_for_timeout(1800)
-    check(page2.locator("#pdfOverlay .pdf-doc.pdf-compacto").count() == 1, "?modo=compacto abre direto a versão condensada")
+    check(page2.locator("#pdfOverlay .pdf-doc.pdf-compacto").count() == 1, "?rdo=AAAA-MM-DD abre direto o PDF")
     page2.close()
 
     check(not erros, f"sem erros de JS ({erros})")

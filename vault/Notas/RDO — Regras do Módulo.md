@@ -87,27 +87,30 @@ horário e detalhe; há também "+ Registrar evento avulso" para o que não est�
   uma função só, `textoEventosAcumulados(r)`, usada também no relatório do dia — mexer nela muda os dois.
 - Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
 
-## PDF: completo e resumido (02/10/2026)
+## PDF do RDO: um layout só, condensado (02/10/2026)
 
-Dois botões na aba Gerar: **🌱 PDF resumido (econômico)** (`gerarPdfRDOCompacto`) e **📄 PDF completo**
-(`gerarPdfRDO`). Os dois usam a mesma tela/botões (`montarOverlayPdf`) e `modoPdfRdo` guarda qual está
-aberto (assinar e regenerar, e o link "Salvar PDF (abre no Safari)" com `?modo=compacto`, respeitam isso).
+Um botão na aba Gerar ("📄 Gerar PDF do RDO") → `gerarPdfRDO()`. Até 02/10/2026 existiam um layout
+grande (~8 folhas por dia cheio) e um "resumido"; o usuário pediu o mesmo layout compacto para o PDF
+principal e o antigo foi **apagado** (o git guarda: commits anteriores a `06cb9a9`+1).
 
-- **Resumido:** mesma folha A4 e **mesma margem de 10 mm** (o Compartilhar usa 10 mm fixos — não mexer
-  só em um lado), fonte 7,5–8 pt, tabelas coladas, duas colunas (clima | jornada; efetivo | equipamentos),
-  sem fundos escuros (filetes cinza). Um dia cheio (14 de efetivo, 7 fotos, eventos, SSMA, acumulados)
-  cabe em **1 folha**; o completo gasta 8. O teste trava isso (`test_rdo_pdf_compacto.py`).
-- **Conteúdo extra em relação ao completo:** local da obra do dia, atividades paralisadas com
-  justificativa, eventos de segurança e meio ambiente (tipo, gravidade, descrição, ação), eventos do dia
-  com cargas, acumulados semana/mês/ano numa tabela só, pendências do Check-in em lista curta (o
-  completo traz o Kanban em página própria).
-- **Fotos:** miniaturas, sempre 8 por linha (com 6 por linha, 3 fotos ocupavam mais que 7).
-- Quebras de página forçadas (`.quebra-pagina`) **não** são usadas no resumido; se passar de uma folha,
-  quebra linha de tabela entre páginas sem partir linhas (`tr` com `page-break-inside: avoid`).
+- **Layout:** mesma folha A4 e **mesma margem de 10 mm** (o Compartilhar usa 10 mm fixos — não mexer só
+  em um lado), fonte 7,5–8 pt, tabelas coladas, duas colunas (clima | jornada; efetivo | equipamentos),
+  sem fundos escuros (filetes cinza), sem quebras forçadas de página. Um dia cheio (14 de efetivo, 7 fotos,
+  eventos, SSMA, acumulados) cabe em **1 folha**; o teste `test_rdo_pdf.py` trava isso.
+- **Conteúdo:** cabeçalho com RDO nº, data, cliente, contrato, local/frente (obra + local do dia);
+  faixa de 7 indicadores; clima; jornada e DSS; atividades (com paralisadas e justificativa); efetivo por
+  função/empresa; equipamentos e veículos (operando/parados com justificativa); eventos do dia (hora,
+  detalhe, fornecedor, valor, transporte); segurança e meio ambiente (gravidade, ação); **acumulados**
+  semana/mês/ano numa tabela só (atividades, eventos por tipo, cargas, m³, ton, valor); pendências do
+  Check-in em lista curta; fotos; assinaturas.
+- **Fotos:** só miniaturas, sempre 8 por linha (com 6 por linha, 3 fotos ocupavam mais que 7). O
+  Kanban do Check-in em página própria e as fotos grandes saíram com o layout antigo.
+- Se passar de uma folha, quebra entre linhas de tabela sem partir linha (`tr` com `page-break-inside:
+  avoid`; o Compartilhar também evita cortar `tr` e linhas de foto).
 - Armadilha: o símbolo ⏸ não existe na fonte do PDF (sai quadradinho); no PDF use texto.
-- O PDF completo tinha a caixa Jornada com rótulos velhos ("Café: --:-- – 07:00"): os campos
+- A caixa Jornada do layout antigo tinha rótulos velhos ("Café: --:-- – 07:00"): os campos
   `cafeFim`/`almocoInicio`/`almocoFim`/`encerramento` na tela são Início de jornada / Início e Fim do
-  almoço / Fim de jornada. Corrigido para "Início · Almoço · Fim".
+  almoço / Fim de jornada. O novo mostra "Jornada: 07:00 às 17:00 · Almoço: 12:00 – 13:00".
 
 ## Duas chaves são strings parecidas: data e `data#apontador`
 
