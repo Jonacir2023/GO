@@ -1,0 +1,144 @@
+import json
+import os
+import re
+import tempfile
+from playwright.sync_api import sync_playwright
+
+BASE = os.environ.get("BUILDLY_URL", "http://localhost:8795")
+falhas = []
+
+
+def check(cond, msg):
+    print(("  OK   " if cond else "  FALHA ") + msg)
+    if not cond:
+        falhas.append(msg)
+
+
+AP = "501 – Marcelo Dias (Qualidade / Apontamento)"
+
+SEMEAR = """([ap]) => {
+  const cv = document.createElement('canvas'); cv.width = 400; cv.height = 300;
+  const x = cv.getContext('2d'); x.fillStyle = '#78965a'; x.fillRect(0, 0, 400, 300);
+  const foto = cv.toDataURL('image/jpeg', 0.7);
+  const d = currentDay; d.apontador = ap; d.localObra = 'Base Aerogerador 2'; d.descricaoLocal = 'Escavação para fundação';
+  d.cafeFim = '07:00'; d.almocoInicio = '12:00'; d.almocoFim = '13:00'; d.encerramento = '17:00';
+  d.dssHorario = '06:50'; d.dssTema = 'Trabalho em altura e içamento';
+  d.tempoManha = 'sol'; d.pratManha = 'praticavel'; d.tempoTarde = 'chuva'; d.pratTarde = 'impraticavel'; d.chuvaTardeQtd = '12';
+  let c = 0; state.colaboradores.categorias.forEach(cat => cat.itens.forEach(i => { if (c < 14) { d.efetivo[i.id] = true; c++; } }));
+  const sv = {}; state.equipamentos.slice(0, 3).forEach(e => sv[e.id] = true); S.set('equipDia_' + d.data, sv);
+  state.atividades.slice(0, 4).forEach((a, i) => { d.atividadesMarcadas[a.id] = true; d.atividadesQtd[a.id] = String(10 * (i + 1)); });
+  d.atividadesAvulsas = [{ id: 'av1', desc: 'Atendimento à fiscalização', local: 'Acesso 1' }];
+  d.atividadesParalisadas = [{ id: 'p1', desc: 'Concretagem de laje', just: 'Chuva forte na tarde' }];
+  d.eventosSeguranca = [{ id: 's', tipo: 'Quase-acidente', gravidade: 'media', desc: 'Queda de material a 2 m', acao: 'Isolamento e DDS extra' }];
+  d.eventosAmbiente = [{ id: 'm', tipo: 'Emissão de poeira excessiva', gravidade: 'leve', desc: 'Via de acesso', acao: 'Umectação' }];
+  d.eventosDia = [
+    { id: 'e1', tipo: 'Chegada de material', hora: '08:30', detalhe: 'Cimento CP-II NF 1234', fornecedor: 'Votorantim', valorCarga: '4.850,00', transporte: true, placa: 'ABC1D23', volume: '12,5', peso: '18' },
+    { id: 'e2', tipo: 'Quebra de equipamento', hora: '14:10', detalhe: 'Escavadeira PC200 - mangueira hidráulica' }];
+  d.fotos = [1, 2, 3, 4, 5, 6, 7].map(i => ({ id: 'f' + i, dataUrl: foto, legenda: 'Frente de serviço ' + i }));
+  salvarDiarioDia(false);
+}"""
+
+
+def paginas(page, gerar):
+    page.evaluate(gerar)
+    page.wait_for_timeout(600)
+    page.emulate_media(media="print")
+    caminho = os.path.join(tempfile.gettempdir(), "rdo_teste.pdf")
+    page.pdf(path=caminho, format="A4", margin={"top": "10mm", "bottom": "10mm", "left": "10mm", "right": "10mm"},
+             print_background=True)
+    n = len(re.findall(rb"/Type\s*/Page[^s]", open(caminho, "rb").read()))
+    page.emulate_media(media="screen")
+    return n
+
+
+with sync_playwright() as p:
+    b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
+    ctx = b.new_context(viewport={"width": 794, "height": 1123})
+    page = ctx.new_page()
+    erros = []
+    page.on("pageerror", lambda e: erros.append(str(e)))
+    page.on("dialog", lambda d: d.dismiss())
+    page.route("**/script.google.com/**", lambda r: r.fulfill(
+        status=200, content_type="application/json", body=json.dumps({"ok": True})))
+    page.goto(f"{BASE}/rdo.html")
+    page.wait_for_timeout(1000)
+    page.evaluate(SEMEAR, [AP])
+
+    # ---- botões na aba Gerar ----
+    gerar = page.text_content("#view-gerar")
+    check("PDF resumido (econômico)" in gerar and "PDF completo do RDO" in gerar,
+          "aba Gerar tem os dois botões: resumido e completo")
+
+    # ---- conteúdo do PDF condensado ----
+    page.evaluate("gerarPdfRDOCompacto()")
+    page.wait_for_timeout(500)
+    doc = page.inner_text("#pdfOverlay .pdf-doc")
+    check(page.evaluate("modoPdfRdo") == "compacto" and page.locator("#pdfOverlay .pdf-doc.pdf-compacto").count() == 1,
+          "versão condensada abre com a folha .pdf-compacto")
+    for trecho, nome in [
+        ("RELATÓRIO DIÁRIO DE OBRA", "título"), ("Base Aerogerador 2 — Escavação para fundação", "local da obra do dia"),
+        ("07:00 às 17:00", "jornada correta (início/fim)"), ("Trabalho em altura e içamento", "tema do DSS"),
+        ("Acompanhamento de fiscalização", "atividade do cadastro"), ("Atendimento à fiscalização", "atividade avulsa"),
+        ("Concretagem de laje — Chuva forte na tarde", "atividade paralisada com justificativa"),
+        ("Quase-acidente", "evento de segurança"), ("Umectação", "ação do evento de meio ambiente"),
+        ("Cimento CP-II NF 1234", "evento do dia"), ("Valor R$ 4.850,00", "valor da carga"),
+        ("Placa ABC1D23", "placa do transporte"), ("Votorantim", "fornecedor"),
+        ("ACUMULADOS", "tabela de acumulados"), ("Cargas de material", "cargas nos acumulados"),
+        ("501 – Marcelo Dias", "apontador"), ("versão resumida", "rodapé identifica a versão"),
+    ]:
+        check(trecho.lower() in doc.lower(), f"condensado traz: {nome}")
+    check(page.locator("#pdfOverlay .cx-fotos img").count() == 7, "fotos entram como miniaturas (7)")
+    check(page.locator("#pdfOverlay .cx-kpi td").count() == 7, "faixa de indicadores com 7 itens")
+    check(page.locator("#pdfOverlay .pdf-page").count() == 1 and page.locator("#pdfOverlay .quebra-pagina").count() == 0,
+          "sem quebras forçadas de página: uma folha contínua")
+    page.evaluate("fecharPdfRDO()")
+
+    # ---- economia de papel ----
+    n_comp = paginas(page, "gerarPdfRDOCompacto()")
+    page.evaluate("fecharPdfRDO()")
+    n_full = paginas(page, "gerarPdfRDO()")
+    page.evaluate("fecharPdfRDO()")
+    check(n_comp == 1, f"dia completo (efetivo 14, 7 fotos, eventos, SSMA) cabe em 1 folha (obtido: {n_comp})")
+    check(n_full >= 4 and n_comp * 3 <= n_full, f"economia: condensado {n_comp} folha(s) x completo {n_full}")
+
+    # ---- dia vazio e dia sem fotos ----
+    vazio = page.evaluate("""() => {
+        const d = EMPTY_DAY(); d.data = '2024-05-06'; d.apontador = '501 – Marcelo Dias (Qualidade / Apontamento)';
+        currentDay = d; gerarPdfRDOCompacto();
+        return document.querySelector('#pdfOverlay .pdf-doc').innerText.length;
+    }""")
+    check(vazio > 100 and not erros, f"dia vazio gera sem erro ({vazio} caracteres, erros={erros})")
+    page.evaluate("fecharPdfRDO()")
+
+    # ---- PDF completo continua igual e com jornada corrigida ----
+    page.evaluate("""(ap) => { currentDay = JSON.parse(JSON.stringify(history[chaveDiario(todayISO(), ap)] || currentDay)); }""", AP)
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(400)
+    comp = page.inner_text("#pdfOverlay .pdf-doc")
+    check(page.evaluate("modoPdfRdo") == "completo" and page.locator("#pdfOverlay .pdf-compacto").count() == 0,
+          "PDF completo continua abrindo sem o estilo condensado")
+    check("RESUMO DA SEMANA" in comp.upper() and "RESUMO DO ANO" in comp.upper(), "PDF completo mantém os resumos de período")
+    check("Início: 07:00" in comp and "Fim: 17:00" in comp and "Café" not in comp,
+          "PDF completo: jornada com rótulos corretos (início 07:00, fim 17:00)")
+    page.evaluate("fecharPdfRDO()")
+
+    # ---- "Salvar PDF (abre no Safari)" mantém a versão escolhida ----
+    urls = page.evaluate("""() => {
+        const abertas = []; const orig = window.open; window.open = u => { abertas.push(u); };
+        modoPdfRdo = 'compacto'; abrirRdoNoSafari();
+        modoPdfRdo = 'completo'; abrirRdoNoSafari();
+        window.open = orig; return abertas;
+    }""")
+    check("modo=compacto" in urls[0] and "modo=compacto" not in urls[1], f"link do Safari carrega o modo ({urls})")
+    page2 = ctx.new_page()
+    page2.on("dialog", lambda d: d.dismiss())
+    page2.goto(f"{BASE}/rdo.html?rdo=2024-05-06&modo=compacto")
+    page2.wait_for_timeout(1800)
+    check(page2.locator("#pdfOverlay .pdf-doc.pdf-compacto").count() == 1, "?modo=compacto abre direto a versão condensada")
+    page2.close()
+
+    check(not erros, f"sem erros de JS ({erros})")
+    b.close()
+
+print()
+print("FALHAS:", falhas if falhas else "nenhuma")

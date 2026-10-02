@@ -87,6 +87,28 @@ horário e detalhe; há também "+ Registrar evento avulso" para o que não est�
   uma função só, `textoEventosAcumulados(r)`, usada também no relatório do dia — mexer nela muda os dois.
 - Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
 
+## PDF: completo e resumido (02/10/2026)
+
+Dois botões na aba Gerar: **🌱 PDF resumido (econômico)** (`gerarPdfRDOCompacto`) e **📄 PDF completo**
+(`gerarPdfRDO`). Os dois usam a mesma tela/botões (`montarOverlayPdf`) e `modoPdfRdo` guarda qual está
+aberto (assinar e regenerar, e o link "Salvar PDF (abre no Safari)" com `?modo=compacto`, respeitam isso).
+
+- **Resumido:** mesma folha A4 e **mesma margem de 10 mm** (o Compartilhar usa 10 mm fixos — não mexer
+  só em um lado), fonte 7,5–8 pt, tabelas coladas, duas colunas (clima | jornada; efetivo | equipamentos),
+  sem fundos escuros (filetes cinza). Um dia cheio (14 de efetivo, 7 fotos, eventos, SSMA, acumulados)
+  cabe em **1 folha**; o completo gasta 8. O teste trava isso (`test_rdo_pdf_compacto.py`).
+- **Conteúdo extra em relação ao completo:** local da obra do dia, atividades paralisadas com
+  justificativa, eventos de segurança e meio ambiente (tipo, gravidade, descrição, ação), eventos do dia
+  com cargas, acumulados semana/mês/ano numa tabela só, pendências do Check-in em lista curta (o
+  completo traz o Kanban em página própria).
+- **Fotos:** miniaturas, sempre 8 por linha (com 6 por linha, 3 fotos ocupavam mais que 7).
+- Quebras de página forçadas (`.quebra-pagina`) **não** são usadas no resumido; se passar de uma folha,
+  quebra linha de tabela entre páginas sem partir linhas (`tr` com `page-break-inside: avoid`).
+- Armadilha: o símbolo ⏸ não existe na fonte do PDF (sai quadradinho); no PDF use texto.
+- O PDF completo tinha a caixa Jornada com rótulos velhos ("Café: --:-- – 07:00"): os campos
+  `cafeFim`/`almocoInicio`/`almocoFim`/`encerramento` na tela são Início de jornada / Início e Fim do
+  almoço / Fim de jornada. Corrigido para "Início · Almoço · Fim".
+
 ## Duas chaves são strings parecidas: data e `data#apontador`
 
 Ver [[Decisões/2026-08-25 Um RDO por apontador no mesmo dia]]. `history` é indexado pela chave

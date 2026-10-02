@@ -1188,6 +1188,47 @@
 .pdf-doc .split-col:first-child { padding-right: 10px; }
 .pdf-doc .split-col:last-child { padding-left: 10px; }
 
+/* ── Versão condensada ("econômica") ────────────────────────────────────────
+   Mesma folha A4 e mesma margem de 10 mm (o compartilhamento depende delas),
+   mas fonte pequena, tabelas coladas, duas colunas e pouca tinta: sem fundos
+   escuros, só filetes cinza. Cabe em uma folha na maioria dos dias. */
+.pdf-doc.pdf-compacto table.cx { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.pdf-doc.pdf-compacto table.cx th, .pdf-doc.pdf-compacto table.cx td { border: 0.5px solid #b8b8b8; padding: 1.5px 4px; text-align: left; vertical-align: top; font-size: 7.5pt; line-height: 1.25; color: #111; word-wrap: break-word; }
+.pdf-doc.pdf-compacto table.cx th { background: #ececec; font-weight: 800; font-size: 6.5pt; text-transform: uppercase; letter-spacing: .3px; color: #333; }
+.pdf-doc.pdf-compacto table.cx .r { text-align: right; }
+.pdf-doc.pdf-compacto table.cx .c { text-align: center; }
+.pdf-doc.pdf-compacto table.cx tr { page-break-inside: avoid; break-inside: avoid; }
+.pdf-doc.pdf-compacto .cx-cab { width: 100%; border-collapse: collapse; border-bottom: 1.5px solid #222; margin-bottom: 4px; }
+.pdf-doc.pdf-compacto .cx-cab td { padding: 0 0 3px 0; vertical-align: bottom; }
+.pdf-doc.pdf-compacto .cx-cab img { height: 26px; width: auto; max-width: 70px; object-fit: contain; display: block; }
+.pdf-doc.pdf-compacto .cx-h1 { font-size: 11pt; font-weight: 800; text-transform: uppercase; line-height: 1.1; }
+.pdf-doc.pdf-compacto .cx-sub { font-size: 7.5pt; color: #444; }
+.pdf-doc.pdf-compacto .cx-num { font-size: 15pt; font-weight: 800; line-height: 1; text-align: right; }
+.pdf-doc.pdf-compacto .cx-num small { display: block; font-size: 7pt; font-weight: 600; color: #444; }
+.pdf-doc.pdf-compacto .cx-info { width: 100%; border-collapse: collapse; margin-bottom: 4px; table-layout: fixed; }
+.pdf-doc.pdf-compacto .cx-info td { border: 0.5px solid #b8b8b8; padding: 1.5px 4px; font-size: 7.5pt; vertical-align: top; }
+.pdf-doc.pdf-compacto .cx-info b { display: block; font-size: 6pt; text-transform: uppercase; color: #555; letter-spacing: .3px; }
+.pdf-doc.pdf-compacto .cx-kpi { width: 100%; border-collapse: collapse; margin-bottom: 4px; table-layout: fixed; }
+.pdf-doc.pdf-compacto .cx-kpi td { border: 0.5px solid #b8b8b8; text-align: center; padding: 1px 2px; background: #f4f4f4; }
+.pdf-doc.pdf-compacto .cx-kpi b { display: block; font-size: 10pt; line-height: 1.1; }
+.pdf-doc.pdf-compacto .cx-kpi span { font-size: 6pt; text-transform: uppercase; color: #555; }
+.pdf-doc.pdf-compacto .cx-sec { margin-bottom: 4px; page-break-inside: avoid; break-inside: avoid; }
+.pdf-doc.pdf-compacto .cx-tit { font-size: 7pt; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #222; margin-bottom: 2px; padding-bottom: 0.5px; page-break-after: avoid; }
+.pdf-doc.pdf-compacto .cx-duas { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; margin-bottom: 4px; }
+.pdf-doc.pdf-compacto .cx-duas > tbody > tr > td { width: 50%; vertical-align: top; padding: 0; }
+.pdf-doc.pdf-compacto .cx-duas > tbody > tr > td:first-child { padding-right: 4px; }
+.pdf-doc.pdf-compacto .cx-duas > tbody > tr > td:last-child { padding-left: 4px; }
+.pdf-doc.pdf-compacto .cx-duas .cx-sec { margin-bottom: 0; }
+.pdf-doc.pdf-compacto .cx-txt { font-size: 7.5pt; line-height: 1.3; }
+.pdf-doc.pdf-compacto .cx-fotos { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; }
+.pdf-doc.pdf-compacto .cx-fotos td { width: 16.66%; vertical-align: top; padding: 0; }
+.pdf-doc.pdf-compacto .cx-fotos img { width: 100%; height: auto; border: 0.5px solid #b8b8b8; display: block; }
+.pdf-doc.pdf-compacto .cx-fotos div { font-size: 5.5pt; line-height: 1.1; color: #333; margin-top: 1px; }
+.pdf-doc.pdf-compacto .cx-ass { width: 100%; border-collapse: separate; border-spacing: 12px 0; table-layout: fixed; margin-top: 6px; page-break-inside: avoid; }
+.pdf-doc.pdf-compacto .cx-ass td { width: 50%; text-align: center; border-top: 0.75px solid #222; padding-top: 1px; font-size: 7pt; vertical-align: top; }
+.pdf-doc.pdf-compacto .cx-ass img { height: 28px; display: block; margin: 0 auto -2px; }
+.pdf-doc.pdf-compacto .cx-rodape { margin-top: 3px; text-align: center; font-size: 6pt; color: #777; }
+
 /* Começa em página nova na impressão. Em tela não tem efeito. */
 .pdf-doc .quebra-pagina { page-break-before: always; break-before: page; }
 .pdf-doc table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
@@ -1516,7 +1557,8 @@
     <div class="section-title"><div class="section-title-text">📤 Texto para WhatsApp</div></div>
     <div class="output-box" id="output">Toque em "Gerar Relatório" abaixo.</div>
     <div class="btn-stack">
-      <button class="btn btn-primary" onclick="gerarPdfRDO()">📄 Gerar PDF do RDO</button>
+      <button class="btn btn-primary" onclick="gerarPdfRDOCompacto()">🌱 PDF resumido (econômico)</button>
+      <button class="btn btn-secondary" onclick="gerarPdfRDO()">📄 PDF completo do RDO</button>
       <button class="btn btn-whatsapp" onclick="copiarRelatorio()">📋 Copiar Texto</button>
       <button class="btn btn-ghost" onclick="limparDiarioAtual()">🗑️ Limpar Diário Atual</button>
     </div>
@@ -3837,6 +3879,8 @@ function blocoCheckinPdf(dataDiario) {
     </div>`;
 }
 
+let modoPdfRdo = 'completo';  // qual versão está aberta: 'completo' | 'compacto'
+
 function gerarPdfRDO() {
   const day = currentDay;
   if (!day.data) { toast('❌ Defina a data do diário'); return; }
@@ -4101,8 +4145,7 @@ function gerarPdfRDO() {
         <div class="section-title">JORNADA E DSS</div>
         <div class="jornada-box">
             <strong>Jornada de Trabalho:</strong>
-            <div>Café: ${day.cafeInicio || '--:--'} – ${day.cafeFim || '--:--'} &nbsp;|&nbsp; Almoço: ${day.almocoInicio || '--:--'} – ${day.almocoFim || '--:--'}</div>
-            <div>Encerramento Padrão: ${day.encerramento || '--:--'}</div>
+            <div>Início: ${day.cafeFim || '--:--'} &nbsp;|&nbsp; Almoço: ${day.almocoInicio || '--:--'} – ${day.almocoFim || '--:--'} &nbsp;|&nbsp; Fim: ${day.encerramento || '--:--'}</div>
             <strong style="margin-top: 10px;">Diálogo Diário de Segurança (DSS):</strong>
             <div>Horário: ${escHtml(day.dssHorario || '—')} &nbsp;|&nbsp; Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')}</div>
             <div>Tema: ${escHtml(day.dssTema || '—')}</div>
@@ -4166,7 +4209,13 @@ function gerarPdfRDO() {
     </div>
   `;
 
-  // Montar overlay
+  montarOverlayPdf(h, false);
+}
+
+// Tela do PDF (barra de botões + folha). Serve às duas versões do relatório:
+// a completa e a condensada ("econômica"), que só muda o estilo da folha.
+function montarOverlayPdf(h, compacto) {
+  modoPdfRdo = compacto ? 'compacto' : 'completo';
   const overlay = document.createElement('div');
   overlay.id = 'pdfOverlay';
   const emModoApp = (navigator.standalone === true);
@@ -4176,19 +4225,255 @@ function gerarPdfRDO() {
   const btnCompartilhar = (navigator.share)
     ? `<button id="btnCompartilharPdf" style="background:#25D366;color:#fff" onclick="compartilharPdfRDO()">📤 Compartilhar</button>`
     : '';
+  const estiloDoc = compacto
+    ? "font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:8pt;line-height:1.25;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)"
+    : "font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)";
   overlay.innerHTML = `
     <div class="pdf-toolbar">
       ${btnImprimir}
       ${btnCompartilhar}
       <button style="background:#555;color:#fff" onclick="fecharPdfRDO()">✕ Fechar</button>
     </div>
-    <div class="pdf-stage"><div class="pdf-doc" style="font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)">${h}</div></div>`;
+    <div class="pdf-stage"><div class="pdf-doc${compacto ? ' pdf-compacto' : ''}" style="${estiloDoc}">${h}</div></div>`;
   document.body.appendChild(overlay);
   document.body.classList.add('pdf-printing');
   agruparBlocosPdf(overlay);
   ajustarEscalaPdf();
   window.addEventListener('resize', ajustarEscalaPdf);
   window.addEventListener('orientationchange', ajustarEscalaPdf);
+}
+
+// ============================================================
+// PDF CONDENSADO ("econômico") — a maior parte do que foi lançado no dia em
+// uma folha, com pouca tinta. O PDF completo continua existindo (gerarPdfRDO).
+// Diferenças de conteúdo: traz o local da obra do dia, as atividades
+// paralisadas com justificativa, os eventos de segurança e meio ambiente e os
+// acumulados de semana/mês/ano numa tabela só; não traz o Kanban do Check-in
+// em página própria (vira lista curta de pendências).
+// ============================================================
+function gerarPdfRDOCompacto() {
+  const day = currentDay;
+  if (!day.data) { toast('❌ Defina a data do diário'); return; }
+  salvarDiarioDia(false);
+
+  const E = escHtml;
+  const num = numeroRDO(day.data);
+  const dataBR = formatDateBR(day.data);
+  const dias = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const diaSem = dias[parseISO(day.data).getDay()];
+  const bloco = (titulo, corpo) => `<div class="cx-sec"><div class="cx-tit">${titulo}</div>${corpo}</div>`;
+  const colunaVazia = '<div class="cx-txt">—</div>';
+
+  // ----- indicadores -----
+  let totEf = 0;
+  state.colaboradores.categorias.forEach(cat => { totEf += cat.itens.filter(c => day.efetivo[c.id]).length; });
+  const savedEquip = S.get(`equipDia_${day.data}`) || {};
+  const savedVL = S.get(`vlDia_${day.data}`) || {};
+  const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
+  const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
+  const ativsMarc = state.atividades.filter(a => day.atividadesMarcadas[a.id]);
+  const avulsas = day.atividadesAvulsas || [];
+  const paralisadas = day.atividadesParalisadas || [];
+  const evSeg = day.eventosSeguranca || [];
+  const evAmb = day.eventosAmbiente || [];
+  const fotos = day.fotos || [];
+  const kpi = (n, rot) => `<td><b>${n}</b><span>${rot}</span></td>`;
+
+  // ----- clima -----
+  const mapCond = { sol: 'Limpo', nublado: 'Nublado', chuva: 'Chuvoso' };
+  let linhasClima = '';
+  PERIODOS_RDO.forEach(pr => {
+    const cond = day['tempo' + pr.suf], prat = day['prat' + pr.suf], mm = mmPeriodo(day, pr.suf);
+    if (!cond && !prat && !mm) return;
+    linhasClima += `<tr><td>${pr.nome}</td><td class="c">${prat === 'praticavel' ? 'Sim' : prat === 'impraticavel' ? 'Não' : '—'}</td><td>${mapCond[cond] || '—'}</td><td class="r">${mm ? mm.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : '—'}</td></tr>`;
+  });
+  const tabClima = linhasClima
+    ? `<table class="cx"><tr><th style="width:26%">Período</th><th style="width:22%" class="c">Operação</th><th>Condição</th><th style="width:14%" class="r">mm</th></tr>${linhasClima}</table>`
+    : '<div class="cx-txt">Sem registros climáticos</div>';
+
+  // ----- jornada e DSS -----
+  const ministrante = day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '';
+  const jornada = `<div class="cx-txt"><b>Jornada:</b> ${E(day.cafeFim || '--:--')} às ${E(day.encerramento || '--:--')} · <b>Almoço:</b> ${E(day.almocoInicio || '--:--')} – ${E(day.almocoFim || '--:--')}</div>
+    <div class="cx-txt"><b>DSS:</b> ${E(day.dssHorario || '—')}${ministrante ? ' · ' + E(ministrante) : ''}</div>
+    ${day.dssTema ? `<div class="cx-txt"><b>Tema:</b> ${E(day.dssTema)}</div>` : ''}`;
+
+  // ----- local da obra do dia -----
+  const localDia = [day.localObra, day.descricaoLocal].filter(Boolean).map(E).join(' — ');
+
+  // ----- atividades (+ paralisadas) -----
+  let linhasAtiv = '', n = 0;
+  ativsMarc.forEach(a => {
+    n++;
+    const q = qtdAtividadeDia(day, a.id);
+    const st = ((day.atividadesStatus || {})[a.id] === 'concluida') ? 'Concluída' : 'Em andamento';
+    linhasAtiv += `<tr><td class="c">${n}</td><td>${E(a.desc)}</td><td>${E(a.local || '—')}</td><td class="r">${q > 0 ? E(fmtNumBR(q) + (a.unidade ? ' ' + a.unidade : '')) : '—'}</td><td>${st}</td></tr>`;
+  });
+  avulsas.forEach(a => {
+    n++;
+    linhasAtiv += `<tr><td class="c">${n}</td><td>${E(a.desc)}</td><td>${E(a.local || '—')}</td><td class="r">—</td><td>—</td></tr>`;
+  });
+  paralisadas.forEach(pa => {
+    linhasAtiv += `<tr><td class="c">—</td><td colspan="4"><b>Paralisada:</b> ${E(pa.desc)} — <i>${E(pa.just || 'sem justificativa')}</i></td></tr>`;
+  });
+  const secAtiv = bloco('Atividades do dia', linhasAtiv
+    ? `<table class="cx"><tr><th style="width:4%" class="c">#</th><th>Atividade</th><th style="width:20%">Local</th><th style="width:14%" class="r">Qtd</th><th style="width:16%">Status</th></tr>${linhasAtiv}</table>`
+    : colunaVazia);
+
+  // ----- efetivo -----
+  const empresaPropria = (state.obra.empresa || 'Empresa própria').trim();
+  const porLinha = {};
+  state.colaboradores.categorias.forEach(cat => {
+    cat.itens.filter(c => day.efetivo[c.id]).forEach(c => {
+      const emp = (c.empresa || '').trim() || empresaPropria;
+      const k = `${(c.funcao || 'Sem função').trim()}|${emp}`;
+      porLinha[k] = (porLinha[k] || 0) + 1;
+    });
+  });
+  const linhasEf = Object.keys(porLinha).sort((a, b) => a.localeCompare(b, 'pt-BR')).map(k => {
+    const [f, emp] = k.split('|');
+    return `<tr><td>${E(f)}</td><td>${E(emp)}</td><td class="r">${porLinha[k]}</td></tr>`;
+  }).join('');
+  const secEfetivo = bloco(`Efetivo — total ${totEf}`, linhasEf
+    ? `<table class="cx"><tr><th>Função</th><th style="width:34%">Empresa</th><th style="width:12%" class="r">Qtd</th></tr>${linhasEf}</table>`
+    : colunaVazia);
+
+  // ----- equipamentos e veículos -----
+  const parados = day.veiculosParados || {};
+  const equipsParados = vigentesNoDia(state.equipamentos, day.data, savedEquip).filter(e => !savedEquip[e.id]);
+  const vlParados = vigentesNoDia(state.veiculosFrota, day.data, savedVL).filter(v => !savedVL[v.id]);
+  const agrupa = (lista) => { const g = {}; lista.forEach(x => { const k = x.desc.trim(); g[k] = (g[k] || 0) + 1; }); return g; };
+  let linhasEq = '';
+  [['Eq.', agrupa(equipsAtivos)], ['VL', agrupa(vlAtivos)]].forEach(([tipo, g]) => {
+    Object.keys(g).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
+      linhasEq += `<tr><td class="c">${tipo}</td><td>${E(k)}</td><td>Operando</td><td class="r">${g[k]}</td></tr>`;
+    });
+  });
+  equipsParados.forEach(e => {
+    linhasEq += `<tr><td class="c">Eq.</td><td>${E((e.numero ? e.numero + ' – ' : '') + e.desc)}</td><td>Parado: ${E(parados[e.id] || 'sem just.')}</td><td class="r">1</td></tr>`;
+  });
+  vlParados.forEach(v => {
+    linhasEq += `<tr><td class="c">VL</td><td>${E(v.desc + (v.placa ? ' (' + v.placa + ')' : ''))}</td><td>Parado: ${E(parados[v.id] || 'sem just.')}</td><td class="r">1</td></tr>`;
+  });
+  const secEquip = bloco('Equipamentos e veículos', linhasEq
+    ? `<table class="cx"><tr><th style="width:9%" class="c">Tipo</th><th>Descrição</th><th style="width:38%">Situação</th><th style="width:9%" class="r">Qtd</th></tr>${linhasEq}</table>`
+    : colunaVazia);
+
+  // ----- eventos do dia -----
+  const eventos = eventosDoDia(day);
+  const linhasEv = eventos.map(ev => {
+    const partes = [ev.detalhe ? E(ev.detalhe) : '', textoCargaEvento(ev) ? E(textoCargaEvento(ev)) : '', textoTransporteEvento(ev) ? '<b>Transp.:</b> ' + E(textoTransporteEvento(ev)) : ''].filter(Boolean);
+    return `<tr><td class="c">${E(ev.hora || '—')}</td><td>${E(ev.tipo)}</td><td>${partes.join(' · ')}</td></tr>`;
+  }).join('');
+  const secEventos = eventos.length ? bloco('Eventos do dia',
+    `<table class="cx"><tr><th style="width:8%" class="c">Hora</th><th style="width:24%">Evento</th><th>Detalhe</th></tr>${linhasEv}</table>`) : '';
+
+  // ----- segurança e meio ambiente -----
+  const gravRot = { leve: 'Leve', media: 'Média', grave: 'Grave' };
+  const linhasSsma = [['Seg.', evSeg], ['Amb.', evAmb]].map(([area, lista]) => lista.map(ev =>
+    `<tr><td class="c">${area}</td><td>${E(ev.tipo)}</td><td>${gravRot[ev.gravidade] || '—'}</td><td>${[ev.desc ? E(ev.desc) : '', ev.acao ? '<b>Ação:</b> ' + E(ev.acao) : ''].filter(Boolean).join(' · ')}</td></tr>`
+  ).join('')).join('');
+  const secSsma = linhasSsma ? bloco('Segurança e meio ambiente',
+    `<table class="cx"><tr><th style="width:7%" class="c">Área</th><th style="width:22%">Evento</th><th style="width:9%">Grav.</th><th>Descrição / ação</th></tr>${linhasSsma}</table>`) : '';
+
+  // ----- fotos em miniatura -----
+  let secFotos = '';
+  if (fotos.length) {
+    // sempre 8 por linha: miniaturas do mesmo tamanho, menos folha
+    const cols = 8;
+    const larg = (100 / cols).toFixed(2) + '%';
+    let linhas = '';
+    for (let i = 0; i < fotos.length; i += cols) {
+      let tds = '';
+      for (let k = i; k < i + cols; k++) {
+        tds += fotos[k] ? `<td style="width:${larg}"><img src="${fotos[k].dataUrl}" alt="Foto ${k + 1}"><div>${E(legendaFoto(fotos[k], k))}</div></td>` : `<td style="width:${larg}"></td>`;
+      }
+      linhas += `<tr>${tds}</tr>`;
+    }
+    secFotos = bloco(`Registro fotográfico — ${fotos.length}`, `<table class="cx-fotos">${linhas}</table>`);
+  }
+
+  // ----- acumulados: semana / mês / ano numa tabela só -----
+  const fmtIso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const ref = new Date(day.data + 'T00:00:00');
+  const iniSem = new Date(ref); iniSem.setDate(ref.getDate() + (ref.getDay() === 0 ? -6 : 1 - ref.getDay()));
+  const fimSem = new Date(iniSem); fimSem.setDate(iniSem.getDate() + 5);
+  const meses3 = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const periodos = [
+    { rot: 'Semana', sub: `${formatDateBR(fmtIso(iniSem)).slice(0, 5)} a ${formatDateBR(fmtIso(fimSem)).slice(0, 5)}`, r: calcResumoPeriodoPDF(fmtIso(iniSem), fmtIso(fimSem)) },
+    { rot: 'Mês', sub: `${meses3[ref.getMonth()]}/${ref.getFullYear()}`, r: calcResumoPeriodoPDF(fmtIso(new Date(ref.getFullYear(), ref.getMonth(), 1)), fmtIso(new Date(ref.getFullYear(), ref.getMonth() + 1, 0))) },
+    { rot: 'Ano', sub: `${ref.getFullYear()}`, r: calcResumoPeriodoPDF(`${ref.getFullYear()}-01-01`, `${ref.getFullYear()}-12-31`) }
+  ];
+  const celulas = fn => periodos.map(pr => `<td class="r">${fn(pr.r)}</td>`).join('');
+  const linhaAc = (rot, fn, forte) => `<tr><td${forte ? ' style="font-weight:700"' : ''}>${rot}</td>${celulas(fn)}</tr>`;
+  const tiposEv = [...new Set(periodos.flatMap(pr => Object.keys(pr.r.eventos)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const temCarga = periodos.some(pr => pr.r.totalEventos.cargas);
+  const temValor = periodos.some(pr => pr.r.totalEventos.valor);
+  let linhasAc = linhaAc('Dias com registro', r => r.dias.length)
+    + linhaAc('Efetivo médio/dia', r => r.diasComEfetivo ? Math.round(r.somaEfetivo / r.diasComEfetivo) : '—');
+  state.atividades.filter(a => periodos.some(pr => pr.r.acum[a.id])).forEach(a => {
+    linhasAc += linhaAc(E(a.desc) + (a.unidade ? ` (${E(a.unidade)})` : ''), r => r.acum[a.id] ? fmtNumBR(r.acum[a.id]) : '—');
+  });
+  tiposEv.forEach(t => { linhasAc += linhaAc(E(t) + ' (ocorr.)', r => (r.eventos[t] || {}).ocorrencias || '—'); });
+  if (temCarga) {
+    linhasAc += linhaAc('Cargas de material', r => r.totalEventos.cargas || '—', true)
+      + linhaAc('Volume (m³)', r => r.totalEventos.volume ? fmtNumBR(r.totalEventos.volume) : '—')
+      + linhaAc('Peso (ton)', r => r.totalEventos.peso ? fmtNumBR(r.totalEventos.peso) : '—');
+  }
+  if (temValor) linhasAc += linhaAc('Valor das cargas', r => r.totalEventos.valor ? fmtMoedaBR(r.totalEventos.valor) : '—', true);
+  const secAcum = bloco('Acumulados', `<table class="cx"><tr><th>Item</th>${periodos.map(pr => `<th class="r" style="width:19%">${pr.rot}<br><span style="font-weight:400">${pr.sub}</span></th>`).join('')}</tr>${linhasAc}</table>`);
+
+  // ----- pendências do check-in (lista curta) -----
+  let secCheckin = '';
+  const noDia = ts => ts && new Date(ts).toISOString().slice(0, 10) === day.data;
+  const pend = lerAssuntosCheckin().filter(a => a.status === 'afazer' || a.status === 'fazendo' || (a.status === 'concluido' && noDia(a.concluidoEm)));
+  if (pend.length) {
+    const rotSt = { afazer: 'A fazer', fazendo: 'Fazendo', concluido: 'Concluído' };
+    secCheckin = bloco(`Check-in — pendências (${pend.length})`,
+      `<table class="cx"><tr><th style="width:11%">Status</th><th>Assunto</th><th style="width:20%">Resp.</th><th style="width:11%">Prazo</th></tr>${
+        pend.map(a => `<tr><td>${rotSt[a.status] || ''}</td><td>${E(a.assunto || '')}</td><td>${E(a.resp || '—')}</td><td>${a.dataTerm ? formatDateBR(a.dataTerm).slice(0, 5) : '—'}</td></tr>`).join('')}</table>`);
+  }
+
+  // ----- assinaturas -----
+  const sigs = day.assinaturas || {};
+  const img = slot => sigs[slot] ? `<img src="${sigs[slot]}" alt="assinatura">` : '<div style="height:24px"></div>';
+  const nomeApont = day.apontador || 'Apontador responsável';
+
+  const h = `
+    <div class="pdf-page" style="padding:0;box-sizing:border-box">
+      <table class="cx-cab"><tr>
+        <td style="width:74px;padding-right:6px"><img src="${state.obra.logo || LOGO_PADRAO}" alt="logo"></td>
+        <td><div class="cx-h1">Relatório Diário de Obra</div><div class="cx-sub">${E(state.obra.empresa || '')}${state.obra.nome ? ' · ' + E(state.obra.nome) : ''}</div></td>
+        <td style="width:120px"><div class="cx-num"><small>RDO Nº</small>${num}</div></td>
+      </tr></table>
+      <table class="cx-info"><tr>
+        <td style="width:22%"><b>Data</b>${dataBR} · ${diaSem}</td>
+        <td style="width:24%"><b>Cliente</b>${E(state.obra.cliente || '—')}</td>
+        <td style="width:18%"><b>Contrato</b>${E(state.obra.contrato || '—')}</td>
+        <td><b>Local / frente</b>${E([state.obra.local, localDia].filter(Boolean).join(' · ') || '—')}</td>
+      </tr></table>
+      <table class="cx-kpi"><tr>
+        ${kpi(totEf, 'Efetivo')}${kpi(ativsMarc.length + avulsas.length, 'Atividades')}${kpi(equipsAtivos.length + vlAtivos.length, 'Equip./veíc.')}
+        ${kpi(paralisadas.length, 'Paralisadas')}${kpi(evSeg.length + evAmb.length, 'SSMA')}${kpi(totalPrecipitacao(day).toFixed(1), 'Chuva mm')}${kpi(fotos.length, 'Fotos')}
+      </tr></table>
+      <table class="cx-duas"><tr>
+        <td>${bloco('Clima', tabClima)}</td>
+        <td>${bloco('Jornada e DSS', jornada)}</td>
+      </tr></table>
+      ${secAtiv}
+      <table class="cx-duas"><tr><td>${secEfetivo}</td><td>${secEquip}</td></tr></table>
+      ${secEventos}
+      ${secSsma}
+      ${secAcum}
+      ${secCheckin}
+      ${secFotos}
+      <table class="cx-ass"><tr>
+        <td>${img('apontador')}<b>${E(nomeApont)}</b><br>Apontador — ${E(state.obra.empresa || '')}</td>
+        <td>${img('fiscal')}<b>Fiscalização / Cliente</b><br>${E(state.obra.cliente || '')}</td>
+      </tr></table>
+      <div class="cx-rodape">RDO Nº ${num} · ${E(state.obra.nome || '')} · versão resumida · Gerado pelo App Diário de Obras</div>
+    </div>`;
+
+  montarOverlayPdf(h, true);
 }
 
 // Fração da largura disponível ocupada pela folha na visualização. Abaixo de 1
@@ -4460,7 +4745,8 @@ function enviarPdfPreparado() {
 }
 
 function abrirRdoNoSafari() {
-  const url = location.origin + location.pathname + '?rdo=' + encodeURIComponent(currentDay.data);
+  const url = location.origin + location.pathname + '?rdo=' + encodeURIComponent(currentDay.data)
+    + (modoPdfRdo === 'compacto' ? '&modo=compacto' : '');
   window.open(url, '_blank');
 }
 
@@ -4501,7 +4787,7 @@ window.addEventListener('DOMContentLoaded', () => {
         currentDay = JSON.parse(JSON.stringify(doDia));
         currentDay.data = dataRdo;
       }
-      gerarPdfRDO();
+      if (p.get('modo') === 'compacto') gerarPdfRDOCompacto(); else gerarPdfRDO();
       toast('Toque em 🖨️ Imprimir / Salvar PDF');
     } catch (e) { console.error('auto-rdo:', e); }
   }, 600);
@@ -4590,8 +4876,9 @@ function salvarPadAssinatura() {
   salvarDiarioDia(false);
   fecharPadAssinatura();
   // Regenerar o PDF em tela com a assinatura aplicada
+  const eraCompacto = modoPdfRdo === 'compacto';
   fecharPdfRDO();
-  gerarPdfRDO();
+  if (eraCompacto) gerarPdfRDOCompacto(); else gerarPdfRDO();
   toast('✅ Assinatura registrada');
 }
 
