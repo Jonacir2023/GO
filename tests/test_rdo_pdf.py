@@ -86,6 +86,10 @@ with sync_playwright() as p:
         ("501 – Marcelo Dias", "apontador"), ("Gerado pelo App Diário de Obras", "rodapé"),
     ]:
         check(trecho.lower() in doc.lower(), f"PDF traz: {nome}")
+    ordem = page.evaluate("""() => [...document.querySelectorAll('#pdfOverlay .cx-tit')].map(e => e.textContent.trim().toUpperCase())""")
+    ia = next(i for i, t in enumerate(ordem) if t.startswith("ATIVIDADES DO DIA"))
+    check(ia + 1 < len(ordem) and ordem[ia + 1].startswith("EVENTOS DO DIA"),
+          f"Atividades do dia vem logo acima de Eventos do dia (ordem: {ordem})")
     check(page.locator("#pdfOverlay .cx-fotos img").count() == 7, "fotos entram como miniaturas (7)")
     check(page.locator("#pdfOverlay .cx-kpi td").count() == 7, "faixa de indicadores com 7 itens")
     check(page.locator("#pdfOverlay .pdf-page").count() == 1 and page.locator("#pdfOverlay .quebra-pagina").count() == 0,

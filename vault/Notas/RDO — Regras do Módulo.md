@@ -97,6 +97,9 @@ principal e o antigo foi **apagado** (o git guarda: commits anteriores a `06cb9a
   em um lado), fonte 7,5–8 pt, tabelas coladas, duas colunas (clima | jornada; efetivo | equipamentos),
   sem fundos escuros (filetes cinza), sem quebras forçadas de página. Um dia cheio (14 de efetivo, 7 fotos,
   eventos, SSMA, acumulados) cabe em **1 folha**; o teste `test_rdo_pdf.py` trava isso.
+- **Ordem das seções (pedida pelo usuário):** cabeçalho, indicadores, clima | jornada, efetivo | equipamentos,
+  **atividades do dia logo acima de eventos do dia**, segurança/meio ambiente, acumulados, check-in, fotos,
+  assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
 - **Conteúdo:** cabeçalho com RDO nº, data, cliente, contrato, local/frente (obra + local do dia);
   faixa de 7 indicadores; clima; jornada e DSS; atividades (com paralisadas e justificativa); efetivo por
   função/empresa; equipamentos e veículos (operando/parados com justificativa); eventos do dia (hora,
