@@ -2938,6 +2938,42 @@ function atualizarHeader() {
 // ============================================================
 // CURRENT DAY
 // ============================================================
+// As telas de marcar do Cadastro (efetivo, equipamentos, veículos, atividades)
+// trabalham em rascunhos locais (efetivoDia_/equipDia_/vlDia_/ativDia_<data>)
+// que os botões "Salvar ... do dia" copiam para o RDO. Um dia que chega do
+// histórico sem rascunho neste aparelho (veio de outro aparelho, de backup, ou
+// o rascunho foi limpo) abria o Cadastro todo desmarcado e o Salvar apagava o
+// que o dia já tinha. Por isso o rascunho nasce do próprio dia — só quando não
+// existe, para nunca pisar em marcação mais nova.
+function semearRascunhosDoDia(dia) {
+  if (!dia || !dia.data) return;
+  const d = dia.data;
+  const marcadas = dia.atividadesMarcadas || {};
+  if (S.get('ativDia_' + d) == null && Object.keys(marcadas).length) {
+    const r = {};
+    Object.keys(marcadas).forEach(id => {
+      const m = marcadas[id];
+      const q = (dia.atividadesQtd || {})[id];
+      r[id] = {
+        qty: (q !== undefined && q !== null && q !== '') ? q : ((m && typeof m === 'object' && m.qty) || ''),
+        local: (m && typeof m === 'object' && m.local) || ''
+      };
+    });
+    S.set('ativDia_' + d, r);
+  }
+  if (S.get('efetivoDia_' + d) == null && Object.keys(dia.efetivo || {}).length) {
+    S.set('efetivoDia_' + d, { ...dia.efetivo });
+  }
+  const eq = Object.keys(dia.equipamentos || {}).filter(id => (dia.equipamentos[id] || {}).ativo !== false);
+  if (S.get('equipDia_' + d) == null && eq.length) {
+    const r = {}; eq.forEach(id => { r[id] = true; }); S.set('equipDia_' + d, r);
+  }
+  const vl = (dia.veiculosLeves || []).map(v => v.frotaId).filter(Boolean);
+  if (S.get('vlDia_' + d) == null && vl.length) {
+    const r = {}; vl.forEach(id => { r[id] = true; }); S.set('vlDia_' + d, r);
+  }
+}
+
 function initCurrentDay(data) {
   // Salvar o dia atual ANTES de trocar, para não perder dados
   if (currentDay && currentDay.data && currentDay.data !== data) {
@@ -2948,6 +2984,7 @@ function initCurrentDay(data) {
   if (doDia) {
     currentDay = JSON.parse(JSON.stringify(doDia));
     currentDay.data = data;
+    semearRascunhosDoDia(currentDay);
   } else {
     currentDay = EMPTY_DAY();
     currentDay.data = data;
@@ -4802,13 +4839,11 @@ function renderConfigEventosDia() {
 }
 
 function salvarEventosDoDia() {
+  const gravou = diarioPodeSerSalvo(currentDay);
   salvarDiarioDia();
   renderDiario();
-  toast('✓ Eventos salvos e adicionados ao Diário!');
-  setTimeout(() => {
-    const t = document.querySelector('.tab[data-view="diario"]');
-    if (t) t.click();
-  }, 300);
+  toastSalvoDoCadastro(gravou, '✓ Eventos salvos e adicionados ao Diário!');
+  voltarAoDiarioAposSalvar(currentDay.data, gravou);
 }
 
 function abrirModalEventoDoDiaAvulso() {
@@ -6350,6 +6385,29 @@ function abrirAbaAtividades(){
   }, 200);
 }
 
+// Depois de "Salvar ... do dia" no Cadastro. Se o RDO foi gravado, volta ao
+// Diário recarregando-o. Se NÃO foi (falta o Apontador responsável — o
+// salvamento é recusado em silêncio), recarregar do histórico traria um dia
+// vazio por cima do que acabou de ser marcado: então as seleções ficam em
+// memória, o Diário abre com elas e o aviso pede o responsável. Escolhido o
+// apontador, o dia grava com tudo (ver selecionarApontadorDireto).
+function voltarAoDiarioAposSalvar(dataDiario, gravou) {
+  setTimeout(() => {
+    const t = document.querySelector('.tab[data-view="diario"]');
+    if (t) t.click();
+    if (gravou) {
+      setTimeout(() => initCurrentDay(dataDiario), 200);
+    } else {
+      renderDiario();
+      setTimeout(avisarFaltaResponsavel, 150);
+    }
+  }, 300);
+}
+
+function toastSalvoDoCadastro(gravou, textoOk) {
+  toast(gravou ? textoOk : '⚠️ Marcado, mas ainda NÃO gravado: escolha o Apontador responsável');
+}
+
 function salvarAtividadesDodia(){
   const hoje = new Date().toISOString().slice(0, 10);
 
@@ -6376,22 +6434,13 @@ function salvarAtividadesDodia(){
   });
 
   // Salvar e renderizar
+  const gravou = diarioPodeSerSalvo(currentDay);
   salvarDiarioDia();
   renderDiario();
   renderAtividadesDia();
 
-  toast('✓ Atividades salvas e adicionadas ao Diário!');
-
-  // Redirecionar para Diário
-  setTimeout(() => {
-    const t = document.querySelector('.tab[data-view="diario"]');
-    if (t) {
-      t.click();
-      setTimeout(() => {
-        initCurrentDay(dataDiario);
-      }, 200);
-    }
-  }, 300);
+  toastSalvoDoCadastro(gravou, '✓ Atividades salvas e adicionadas ao Diário!');
+  voltarAoDiarioAposSalvar(dataDiario, gravou);
 }
 
 function abrirAbaEfetivo(){
@@ -6414,21 +6463,13 @@ function salvarEfetivoDia(){
   const savedEfetivo = S.get(`efetivoDia_${dataDiario}`) || {};
 
   currentDay.efetivo = { ...savedEfetivo };
+  const gravou = diarioPodeSerSalvo(currentDay);
   salvarDiarioDia();
   renderDiario();
   renderEfetivoDia();
 
-  toast('✓ Efetivo do dia salvo!');
-
-  setTimeout(() => {
-    const t = document.querySelector('.tab[data-view="diario"]');
-    if (t) {
-      t.click();
-      setTimeout(() => {
-        initCurrentDay(dataDiario);
-      }, 200);
-    }
-  }, 300);
+  toastSalvoDoCadastro(gravou, '✓ Efetivo do dia salvo!');
+  voltarAoDiarioAposSalvar(dataDiario, gravou);
 }
 
 function abrirAbaEquipamentos(){
@@ -6444,16 +6485,11 @@ function salvarEquipDia(){
   const hoje = new Date().toISOString().slice(0, 10);
   if (!currentDay || !currentDay.data) initCurrentDay(hoje);
   const dataDiario = currentDay.data || hoje;
+  const gravou = diarioPodeSerSalvo(currentDay);
   salvarDiarioDia();
   renderEquipDia();
-  toast('✓ Equipamentos do dia salvos!');
-  setTimeout(() => {
-    const t = document.querySelector('.tab[data-view="diario"]');
-    if (t) {
-      t.click();
-      setTimeout(() => initCurrentDay(dataDiario), 200);
-    }
-  }, 300);
+  toastSalvoDoCadastro(gravou, '✓ Equipamentos do dia salvos!');
+  voltarAoDiarioAposSalvar(dataDiario, gravou);
 }
 
 function abrirAbaVeiculosLeves(){
@@ -6469,16 +6505,11 @@ function salvarVLDia(){
   const hoje = new Date().toISOString().slice(0, 10);
   if (!currentDay || !currentDay.data) initCurrentDay(hoje);
   const dataDiario = currentDay.data || hoje;
+  const gravou = diarioPodeSerSalvo(currentDay);
   salvarDiarioDia();
   renderVeiculosLevesDia();
-  toast('✓ Veículos do dia salvos!');
-  setTimeout(() => {
-    const t = document.querySelector('.tab[data-view="diario"]');
-    if (t) {
-      t.click();
-      setTimeout(() => initCurrentDay(dataDiario), 200);
-    }
-  }, 300);
+  toastSalvoDoCadastro(gravou, '✓ Veículos do dia salvos!');
+  voltarAoDiarioAposSalvar(dataDiario, gravou);
 }
 
 function abrirModalAtividade() {

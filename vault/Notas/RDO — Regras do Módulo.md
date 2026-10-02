@@ -112,6 +112,29 @@ principal e o antigo foi **apagado** (o git guarda: commits anteriores a `06cb9a
   `cafeFim`/`almocoInicio`/`almocoFim`/`encerramento` na tela são Início de jornada / Início e Fim do
   almoço / Fim de jornada. O novo mostra "Jornada: 07:00 às 17:00 · Almoço: 12:00 – 13:00".
 
+## Cadastro > "Salvar ... do dia": rascunhos e responsável (02/10/2026)
+
+As telas de marcar do Cadastro (Equipe, Equip., Veículos, Ativ.) não mexem no RDO direto: gravam
+**rascunhos locais** `efetivoDia_<data>`, `equipDia_<data>`, `vlDia_<data>`, `ativDia_<data>` (formato
+`{id: true}`; atividades `{id: {qty, local}}`) e os botões "💾 Salvar ... do dia" **copiam o rascunho
+para o RDO** (`salvarEfetivoDia`, `salvarAtividadesDodia` substituem; equip/VL só regravam o dia).
+Dois defeitos reais que isto causava ao editar um dia anterior (reportado em 02/10/2026):
+
+1. **Dia sem apontador: voltava ao Diário "sem nada salvo e nada selecionado".** `salvarDiarioDia()` recusa
+   em silêncio dia sem responsável; o fluxo seguia dizendo "✓ salvas" e depois `initCurrentDay(data)`
+   recarregava do histórico — um dia vazio por cima do que acabara de ser marcado. Agora
+   `voltarAoDiarioAposSalvar(data, gravou)` só recarrega se gravou; senão mantém as seleções **em memória**,
+   mostra "⚠️ Marcado, mas ainda NÃO gravado" e leva ao seletor de Apontador; `selecionarApontadorDireto`
+   grava o dia com tudo. A regra "só grava com responsável" continua valendo.
+2. **Dia já gravado, sem rascunho neste aparelho (outro aparelho, backup, rascunho limpo): o Salvar APAGAVA
+   o que o dia tinha** (o Cadastro abria tudo desmarcado e o Salvar substituía o dia pelo rascunho vazio).
+   Agora `semearRascunhosDoDia(dia)`, chamado em `initCurrentDay`, cria os 4 rascunhos a partir do dia
+   gravado **só quando não existem** (nunca pisa em marcação mais nova).
+- Armadilha para futuros botões "Salvar" do Cadastro: sempre calcular `diarioPodeSerSalvo(currentDay)`
+  antes e usar `voltarAoDiarioAposSalvar`/`toastSalvoDoCadastro`; nunca chamar `initCurrentDay` logo depois
+  de um `salvarDiarioDia()` sem checar se gravou.
+- Suíte: `tests/test_rdo_salvar_cadastro.py`.
+
 ## Duas chaves são strings parecidas: data e `data#apontador`
 
 Ver [[Decisões/2026-08-25 Um RDO por apontador no mesmo dia]]. `history` é indexado pela chave
