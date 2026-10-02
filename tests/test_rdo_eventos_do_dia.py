@@ -247,6 +247,26 @@ with sync_playwright() as p:
     check(pdf.count("TOTAL") >= 3, "PDF traz a linha TOTAL de eventos em cada resumo")
     page.evaluate("fecharPdfRDO()")
 
+    # ---- aba Resumo (tela): eventos acumulados no período ----
+    page.click('.tab[data-view="resumo"]')
+    page.evaluate("setResumoPeriodo('ano'); resumoOffset = 2024 - new Date().getFullYear(); renderResumo();")
+    tela = page.inner_text("#resumoEventosList")
+    check("Chegada de material" in tela and "Quebra de equipamento" in tela and "TOTAL" in tela.upper(),
+          "aba Resumo (ano 2024) lista os tipos de evento e o total")
+    check("4 cargas" in tela and "50,5 m³" in tela and "75,5 t" in tela and "R$ 8.830,50" in tela,
+          f"aba Resumo traz cargas, volume, peso e valor somados ({tela!r})")
+    check(page.eval_on_selector("#resumoEventosList", "e => e.previousElementSibling.textContent").strip().endswith("Eventos do Período"),
+          "seção chama 'Eventos do Período'")
+    page.evaluate("resumoOffset = 2024 - new Date().getFullYear() + 5; renderResumo();")
+    check("Nenhum evento registrado no período" in page.inner_text("#resumoEventosList"),
+          "período sem eventos mostra a mensagem de vazio")
+    page.evaluate("resumoOffset = 2024 - new Date().getFullYear(); renderResumo();")
+    txt = page.evaluate("buildResumoTexto()")
+    check("📌 Eventos do Período" in txt and "• Chegada de material: *4x* — 4 cargas · 50,5 m³ · 75,5 t · R$ 8.830,50" in txt
+          and "• *Total:* *5x*" in txt, "Copiar/Enviar da aba Resumo traz os eventos acumulados")
+    check("_Eventos acumulados_" not in txt, "texto da aba não repete o subtítulo do relatório do dia")
+    page.click('.tab[data-view="diario"]')
+
     # ---- dado antigo: observacoesDia vira eventos "Observação" ----
     leg = page.evaluate("""() => {
         const dia = {data: '2026-05-05', observacoesDia: 'Chuva forte * Visita do cliente', eventosDia: []};

@@ -81,7 +81,10 @@ horário e detalhe; há também "+ Registrar evento avulso" para o que não est�
 - **Leitura de números:** `numeroBR()` aceita "12,5", "4.850,00", "R$ 980", "18 t". Ponto sozinho é
   milhar só no padrão 1.234 / 12.345.678; "12.5" é decimal. Se alguém digitar "1.5" para 1,5 m³ está
   certo; "1.500" vira 1500 (milhar).
-- A aba Resumo (tela) ainda mostra só atividades; os eventos somados estão só nos relatórios.
+- **Aba Resumo (tela):** seção "📌 Eventos do Período" (`renderResumoEventos`) com um cartão por tipo
+  (ocorrências + chips de cargas, m³, t e R$) e cartão TOTAL; vale para semana, mês e ano e para os
+  botões Copiar/Enviar WhatsApp da aba (`buildResumoTexto`). O texto "Eventos acumulados" vem de
+  uma função só, `textoEventosAcumulados(r)`, usada também no relatório do dia — mexer nela muda os dois.
 - Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
 
 ## Duas chaves são strings parecidas: data e `data#apontador`

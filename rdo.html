@@ -1578,6 +1578,12 @@
     <div id="resumoAtivList"></div>
   </div>
 
+  <!-- eventos do dia acumulados -->
+  <div class="section">
+    <div class="section-title"><div class="section-title-text">📌 Eventos do Período</div></div>
+    <div id="resumoEventosList"></div>
+  </div>
+
   <!-- efetivo por categoria -->
   <div class="section">
     <div class="section-title"><div class="section-title-text">👷 Efetivo do Período</div></div>
@@ -3712,6 +3718,29 @@ function numeroBR(v) {
 }
 const fmtNumBR = n => n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 const fmtMoedaBR = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// "Eventos acumulados" em texto de WhatsApp — usado pelo relatório do dia e
+// pelo Copiar/Enviar da aba Resumo, para os dois dizerem sempre a mesma coisa.
+function textoEventosAcumulados(r) {
+  const tiposEv = Object.keys(r.eventos).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  if (!tiposEv.length) return '';
+  const detalhes = e => [
+    e.cargas ? `${e.cargas} carga${e.cargas > 1 ? 's' : ''}` : '',
+    e.volume ? `${fmtNumBR(e.volume)} m³` : '',
+    e.peso ? `${fmtNumBR(e.peso)} t` : '',
+    e.valor ? fmtMoedaBR(e.valor) : ''
+  ].filter(Boolean).join(' · ');
+  let s = `\n_Eventos acumulados_\n`;
+  tiposEv.forEach(t => {
+    const e = r.eventos[t];
+    s += `• ${t}: *${e.ocorrencias}x*${detalhes(e) ? ' — ' + detalhes(e) : ''}\n`;
+  });
+  if (tiposEv.length > 1) {
+    const e = r.totalEventos;
+    s += `• *Total:* *${e.ocorrencias}x*${detalhes(e) ? ' — ' + detalhes(e) : ''}\n`;
+  }
+  return s;
+}
 
 function calcResumoPeriodoPDF(isoInicio, isoFim) {
   const dias = Object.keys(history).filter(k => dataDaChave(k) >= isoInicio && dataDaChave(k) <= isoFim).sort();
@@ -7016,24 +7045,7 @@ function buildRelatorio(day) {
         s += `• ${a.desc}: *${r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unid}*\n`;
       });
     }
-    const tiposEv = Object.keys(r.eventos).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-    if (tiposEv.length) {
-      const detalhes = e => [
-        e.cargas ? `${e.cargas} carga${e.cargas > 1 ? 's' : ''}` : '',
-        e.volume ? `${fmtNumBR(e.volume)} m³` : '',
-        e.peso ? `${fmtNumBR(e.peso)} t` : '',
-        e.valor ? fmtMoedaBR(e.valor) : ''
-      ].filter(Boolean).join(' · ');
-      s += `\n_Eventos acumulados_\n`;
-      tiposEv.forEach(t => {
-        const e = r.eventos[t];
-        s += `• ${t}: *${e.ocorrencias}x*${detalhes(e) ? ' — ' + detalhes(e) : ''}\n`;
-      });
-      if (tiposEv.length > 1) {
-        const e = r.totalEventos;
-        s += `• *Total:* *${e.ocorrencias}x*${detalhes(e) ? ' — ' + detalhes(e) : ''}\n`;
-      }
-    }
+    s += textoEventosAcumulados(r);
     return s;
   };
 
@@ -7109,6 +7121,34 @@ function getResumoDatas() {
     isoInicio: fmtISO(inicio),
     isoFim: fmtISO(fim)
   };
+}
+
+function renderResumoEventos(r) {
+  const cont = document.getElementById('resumoEventosList');
+  if (!cont) return;
+  const tipos = Object.keys(r.eventos).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  if (!tipos.length) {
+    cont.innerHTML = '<div class="resumo-vazio">Nenhum evento registrado no período.</div>';
+    return;
+  }
+  const chip = t => `<span class="resumo-dia-chip">${escapeHtml(t)}</span>`;
+  const bloco = (nome, e, destaque) => {
+    const chips = [
+      e.cargas ? chip(`🚛 ${e.cargas} carga${e.cargas > 1 ? 's' : ''}`) : '',
+      e.volume ? chip(`${fmtNumBR(e.volume)} m³`) : '',
+      e.peso ? chip(`${fmtNumBR(e.peso)} t`) : '',
+      e.valor ? chip(fmtMoedaBR(e.valor)) : ''
+    ].join('');
+    return `<div class="resumo-ativ-item"${destaque ? ' style="border-color:var(--accent)"' : ''}>
+      <div class="resumo-ativ-header">
+        <div class="resumo-ativ-nome">${escapeHtml(nome)}</div>
+        <div style="text-align:right"><div class="resumo-ativ-total">${e.ocorrencias}</div><div class="resumo-ativ-unid">ocorrência${e.ocorrencias > 1 ? 's' : ''}</div></div>
+      </div>
+      ${chips ? `<div class="resumo-ativ-detalhe">${chips}</div>` : ''}
+    </div>`;
+  };
+  cont.innerHTML = tipos.map(t => bloco(t, r.eventos[t], false)).join('') +
+    (tipos.length > 1 ? bloco('TOTAL', r.totalEventos, true) : '');
 }
 
 function renderResumo() {
@@ -7250,6 +7290,8 @@ function renderResumo() {
     });
   }
 
+  renderResumoEventos(calcResumoPeriodoPDF(isoInicio, isoFim));
+
   // Renderizar efetivo por categoria
   const listEf = document.getElementById('resumoEfetivoList');
   listEf.innerHTML = '';
@@ -7349,6 +7391,15 @@ ${divisor}
 `;
     });
     txt += `
+${divisor}
+
+`;
+  }
+
+  // Eventos do dia acumulados
+  const evAcum = textoEventosAcumulados(calcResumoPeriodoPDF(isoInicio, isoFim));
+  if (evAcum) {
+    txt += `*📌 Eventos do Período*` + evAcum.replace('\n_Eventos acumulados_\n', '\n') + `
 ${divisor}
 
 `;
