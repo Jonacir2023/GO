@@ -15,6 +15,13 @@ preferências de estilo.
 1. **Nunca recomendar limpar dados do site / Safari como solução de cache.** Isso apaga o
    `localStorage` inteiro — cadastro e histórico. Se o app não atualizar visualmente: fechar e
    reabrir, e aguardar a propagação do GitHub Pages (1–2 min).
+   - O Pages manda `cache-control: max-age=600`: o Safari pode reaproveitar um `.html` por até
+     **10 min** depois do deploy, e cada app em iframe (ex.: `rdo.html`) é um arquivo à parte — dá para
+     ver a tela nova no shell e o RDO velho dentro dele. Foi o que fez o usuário achar, em 02/10/2026,
+     que "não mudou nada" quando o PDF completo já tinha sido trocado (o layout antigo nem existia mais
+     no repositório). Antes de investigar bug de "não mudou": conferir o run `pages build and deployment`
+     do commit (`gh`/API de Actions) e se o layout antigo ainda existe no código (`grep`).
+   - Sintoma típico de cache velho: a aba Gerar ainda mostra botões que já foram removidos.
 
 2. **Nunca pedir para o usuário redigitar cadastro por causa de bug.** Se dados sumirem ou
    aparecerem misturados depois de uma atualização, a correção é restaurar do backup

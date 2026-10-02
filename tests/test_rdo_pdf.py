@@ -106,6 +106,20 @@ with sync_playwright() as p:
     check(vazio > 100 and not erros, f"dia vazio gera sem erro ({vazio} caracteres, erros={erros})")
     page.evaluate("fecharPdfRDO()")
 
+    # ---- horário vindo do banco com segundos ("16:00:00") sai como 16:00 ----
+    seg = page.evaluate("""() => {
+        currentDay.cafeFim = '07:00:00'; currentDay.encerramento = '16:00:00'; currentDay.almocoInicio = '12:00:00'; currentDay.almocoFim = '13:00:00'; currentDay.dssHorario = '06:50:00';
+        gerarPdfRDO();
+        const pdf = document.querySelector('#pdfOverlay .pdf-doc').innerText;
+        fecharPdfRDO();
+        return { pdf, wa: buildRelatorio(currentDay) };
+    }""")
+    check("07:00 às 16:00" in seg["pdf"] and ":00:00" not in seg["pdf"].replace("06:50", "") and "16:00:00" not in seg["pdf"],
+          "PDF: jornada sem segundos")
+    check("Encerramento: 16:00\n" in seg["wa"] and "16:00:00" not in seg["wa"], "WhatsApp: encerramento sem segundos")
+    check(page.evaluate("state.obra.encerramentoSexta = '16:00:00'; jornadaPadraoPorDia('2026-10-02')") == "16:00",
+          "encerramento padrão da sexta vindo do banco é cortado para HH:MM")
+
     # ---- jornada com os rótulos certos e layout antigo removido ----
     page.evaluate("""(ap) => { currentDay = JSON.parse(JSON.stringify(history[chaveDiario(todayISO(), ap)] || currentDay)); }""", AP)
     page.evaluate("gerarPdfRDO()")

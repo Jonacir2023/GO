@@ -2877,11 +2877,15 @@ function tempoLabel(day) {
   return label;
 }
 
+// Horário "HH:MM". O banco (coluna time) devolve "16:00:00"; sem cortar, o
+// relatório saía com "às 16:00:00".
+const hhmm = t => String(t || '').slice(0, 5);
+
 function jornadaPadraoPorDia(iso) {
   const d = parseISO(iso).getDay(); // 0=dom, 5=sex, 6=sab
-  if (d === 5) return state.obra.encerramentoSexta || '16:00';
-  if (d === 6) return state.obra.encerramentoSabado || '16:00';
-  return state.obra.encerramentoNormal || '17:00';
+  if (d === 5) return hhmm(state.obra.encerramentoSexta) || '16:00';
+  if (d === 6) return hhmm(state.obra.encerramentoSabado) || '16:00';
+  return hhmm(state.obra.encerramentoNormal) || '17:00';
 }
 
 // ============================================================
@@ -3818,8 +3822,8 @@ function gerarPdfRDO() {
 
   // ----- jornada e DSS -----
   const ministrante = day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '';
-  const jornada = `<div class="cx-txt"><b>Jornada:</b> ${E(day.cafeFim || '--:--')} às ${E(day.encerramento || '--:--')} · <b>Almoço:</b> ${E(day.almocoInicio || '--:--')} – ${E(day.almocoFim || '--:--')}</div>
-    <div class="cx-txt"><b>DSS:</b> ${E(day.dssHorario || '—')}${ministrante ? ' · ' + E(ministrante) : ''}</div>
+  const jornada = `<div class="cx-txt"><b>Jornada:</b> ${E(hhmm(day.cafeFim) || '--:--')} às ${E(hhmm(day.encerramento) || '--:--')} · <b>Almoço:</b> ${E(hhmm(day.almocoInicio) || '--:--')} – ${E(hhmm(day.almocoFim) || '--:--')}</div>
+    <div class="cx-txt"><b>DSS:</b> ${E(hhmm(day.dssHorario) || '—')}${ministrante ? ' · ' + E(ministrante) : ''}</div>
     ${day.dssTema ? `<div class="cx-txt"><b>Tema:</b> ${E(day.dssTema)}</div>` : ''}`;
 
   // ----- local da obra do dia -----
@@ -6635,7 +6639,7 @@ function buildRelatorio(day) {
   txt += `*⏰ Jornada de Trabalho*\n`;
   txt += `• Café: ${day.cafeInicio || '--:--'} às ${day.cafeFim || '--:--'}\n`;
   txt += `• Almoço: ${day.almocoInicio || '--:--'} às ${day.almocoFim || '--:--'}\n`;
-  txt += `• Encerramento: ${day.encerramento || '--:--'}\n\n`;
+  txt += `• Encerramento: ${hhmm(day.encerramento) || '--:--'}\n\n`;
   txt += `${divisor}\n\n`;
   
   // DSS
