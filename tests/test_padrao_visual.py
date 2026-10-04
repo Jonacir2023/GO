@@ -53,7 +53,8 @@ with sync_playwright() as p:
     # ---- home ----
     check(page.locator(".home-card").count() == 14, "home com 14 cartões de módulo")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
-    check(visiveis == 9, f"celular mostra 9 cartões; os 5 extras ficam em 'Mais' ({visiveis})")
+    check(visiveis == 14, f"celular mostra os 14 cartões, nenhum escondido ({visiveis})")
+    check(page.locator('.home-card[data-mod="custos"] .selo').inner_text().strip().lower() == "ativo", "selo 'Ativo' do Custos")
     check(page.evaluate("() => getComputedStyle(document.body).backgroundColor") != "rgb(74, 81, 98)",
           "fundo da casca não é mais o escuro antigo")
     check(page.locator("#app-nav button").count() == 4, "barra inferior com 4 botões")
@@ -125,6 +126,19 @@ with sync_playwright() as p:
     check(fr.evaluate("() => { const h = document.querySelector('.header,.hdr'); return !h || getComputedStyle(h).display === 'none'; }"),
           "cabeçalho próprio do RDO fica oculto dentro da casca")
     check(fr.evaluate("() => document.documentElement.scrollWidth <= window.innerWidth + 1"), "RDO embutido sem rolagem horizontal")
+
+    # ---- botões de ação do cabeçalho continuam acessíveis dentro da casca ----
+    for mod, arq, acao in [("custos", "custos.html", "abrirConfig()"), ("eap", "eap.html", "abrirNovaEAP()"),
+                           ("planejamento", "planejamento.html", "abrirNovoCronograma()"),
+                           ("suprimentos", "suprimentos.html", "abrirNovaRequisicao()")]:
+        page.evaluate("t => switchTab(t)", mod)
+        page.wait_for_timeout(700)
+        f2 = next(f for f in page.frames if f.url.endswith(arq))
+        vis = f2.evaluate("""a => { const e = document.querySelector('[onclick="' + a + '"]'); if (!e) return false;
+          const r = e.getBoundingClientRect(); return r.width > 20 && r.height > 20 && r.top >= 0 && r.right <= innerWidth + 1; }""", acao)
+        check(vis, f"{mod}: botão {acao} visível dentro da casca")
+    page.evaluate("switchTab('rdo')")
+    page.wait_for_timeout(800)
 
     # ---- app aberto direto (fora do iframe) mantém o próprio cabeçalho ----
     solo = ctx.new_page()

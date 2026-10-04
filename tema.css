@@ -212,6 +212,21 @@ html.embutido .view.active { padding-top: 78px !important; }
 html.embutido .page.active { padding-top: 78px !important; }
 html.embutido body { max-width: none !important; }
 
+/* Botões de ação que viviam no cabeçalho do app: ficam visíveis dentro da casca */
+html.embutido .header:has(> .btn) { display: flex !important; justify-content: stretch; margin: 0 0 12px !important; grid-column: 1 / -1; }
+html.embutido .header:has(> .btn) > h1 { display: none; }
+html.embutido .header:has(> .btn) > .btn { width: 100%; padding: 13px 16px; }
+html.embutido .hdr:has(.hdr-settings) {
+  display: block !important; position: fixed !important; top: 60px !important; right: 12px !important; left: auto !important;
+  width: auto !important; height: auto !important; transform: none !important; padding: 0 !important; background: transparent !important;
+  border: 0 !important; box-shadow: none !important; z-index: 55;
+}
+html.embutido .hdr:has(.hdr-settings) .hdr-top { display: block; margin: 0; }
+html.embutido .hdr:has(.hdr-settings) .hdr-top > div:first-child, html.embutido .hdr:has(.hdr-settings) .hdr-date { display: none !important; }
+html.embutido .hdr:has(.hdr-settings) .hdr-top > div { display: block !important; }
+html.embutido .hdr-settings { width: 38px; height: 38px; border-radius: 12px !important; background: #fff !important; border: 1px solid var(--line-soft) !important; box-shadow: var(--shadow); font-size: 18px !important; padding: 0 !important; }
+html.embutido:has(.hdr-settings) .view.active, html.embutido:has(.hdr-settings) .page.active { padding-top: 112px !important; }
+
 /* ── Módulos genéricos (EAP, Planejamento, Financeiro, Suprimentos) ───── */
 .container { max-width: 1200px; padding: 14px !important; overflow-x: hidden; }
 .content, .tree-container, .filters, .sidebar, .stat-card, .modal-content {
@@ -363,7 +378,8 @@ body.modulo .hero-mod { display: block; }
 .home-card .fav { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border: 0; background: transparent; color: #c3cad6; font-size: 16px; display: grid; place-items: center; cursor: pointer; border-radius: 50%; }
 .home-card .fav.on { color: #f5b301; }
 .home-card .fav.on svg { fill: #f5b301; }
-.home-card.extra { display: none; }
+.home-footer { text-align: center; color: var(--ink-soft) !important; font-size: 11px; padding: 6px 16px 120px; }
+.home-card .selo { position: absolute; left: 10px; bottom: 14px; padding: 2px 8px; border-radius: 6px; background: var(--accent); color: #fff; font-size: 9.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
 .home-card[data-cor="tan"] { --cor: #d9a766; } .home-card[data-cor="green"] { --cor: #2f9e3f; }
 .home-card[data-cor="blue"] { --cor: #2a6df0; } .home-card[data-cor="orange"] { --cor: #eba01b; }
 .home-card[data-cor="slate"] { --cor: #566479; } .home-card[data-cor="purple"] { --cor: #7a4fe0; }
@@ -445,7 +461,6 @@ body.modulo #page-planejamento, body.modulo #page-financeiro, body.modulo #page-
   .hero-home .hero-bg { background-position: center 30%; border-radius: 0 0 30px 30px; }
   .obra-card { top: 178px; max-width: 460px; right: auto; }
   .home-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; padding: 16px 16px 6px !important; }
-  .home-card.extra { display: flex; }
   .home-card { min-height: 170px; }
   #page-pauta > .tabs, #page-checkin > .tabs { max-width: 1068px !important; }
   body.modulo .page iframe { height: calc(100vh - var(--hero-total) - var(--nav-altura)) !important; height: calc(100dvh - var(--hero-total) - var(--nav-altura)) !important; }
