@@ -51,6 +51,16 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ## Histórico
 
+### 04/10/2026 — Padrão visual claro em toda a plataforma
+
+Pedido do usuário com 4 mockups: tema claro, hero com obra ao pôr do sol, cartão Obra Atual,
+grade de módulos, barra inferior flutuante (Início, Favoritos, Relatórios, Mais) e módulos com
+hero compacto + abas em pílula. Substitui o Modelo C escuro de 18/09. Decisão, itens novos
+(favoritos, relatórios, mais, sino, perfil) e armadilhas em
+[[Decisões/2026-10-04 Padrão visual claro]]. Regra nova: rodar
+`python3 scripts/versionar_estaticos.py` depois de editar `tema.css`. Suíte nova
+`test_padrao_visual.py` (11 suítes). **Pendente:** conferir no iPhone real.
+
 ### 19/09/2026 (4) — Início da migração para Supabase multi-obra
 
 Pedido do usuário: aba Obras precisa criar mais de uma obra, cada uma com "pacote de dados

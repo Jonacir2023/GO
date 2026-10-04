@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Suprimentos — BUILDLy</title>
@@ -12,8 +13,8 @@
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     h1 { font-size: 28px; color: #1a1a1a; }
     .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
-    .btn-primary { background: #007AFF; color: white; }
-    .btn-primary:hover { background: #0051d5; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
     .btn-secondary { background: #e9ecef; color: #333; }
     .btn-secondary:hover { background: #dee2e6; }
     .btn-danger { background: #ff3b30; color: white; }
@@ -22,7 +23,7 @@
     .btn-success:hover { background: #2ab745; }
     .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; overflow-x: auto; }
     .tab { padding: 12px 20px; cursor: pointer; border: none; background: none; font-size: 14px; border-bottom: 3px solid transparent; white-space: nowrap; }
-    .tab.active { border-bottom-color: #007AFF; color: #007AFF; font-weight: 600; }
+    .tab.active { border-bottom-color: var(--accent); color: var(--accent); font-weight: 600; }
     .content { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .table { width: 100%; border-collapse: collapse; }
     .table th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; border-bottom: 2px solid #e0e0e0; }
@@ -44,18 +45,8 @@
     .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; }
     .empty-state { text-align: center; padding: 40px; color: #999; }
     .empty-state i { font-size: 48px; display: block; margin-bottom: 15px; }
-    @media(prefers-color-scheme: dark) {
-      body { background: #1a1a1a; color: #e0e0e0; }
-      .content { background: #2a2a2a; }
-      .table th { background: #333; }
-      .table tr:hover { background: #323232; }
-      .btn-secondary { background: #3a3a3a; color: #e0e0e0; }
-      .btn-secondary:hover { background: #4a4a4a; }
-      .modal-content { background: #2a2a2a; }
-      .form-group input, .form-group select, .form-group textarea { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
-      .tabs { border-bottom-color: #3a3a3a; }
-    }
   </style>
+<link rel="stylesheet" href="tema.css?v=246eebe8" media="screen">
 </head>
 <body>
 <div class="container">

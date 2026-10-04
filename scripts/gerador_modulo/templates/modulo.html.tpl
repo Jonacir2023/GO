@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{{TITULO}} — BUILDLy Premium</title>
@@ -45,6 +46,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:40px}
 .badge-concluido{background:#384a3d;color:var(--green)}
 .vazio{text-align:center;color:#fff;font-size:13px;padding:16px}
 </style>
+<link rel="stylesheet" href="tema.css" media="screen">
 </head>
 <body>
 

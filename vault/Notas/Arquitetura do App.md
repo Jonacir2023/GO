@@ -42,6 +42,17 @@ cabeçalho próprio e botão de voltar (`voltarParaHome()`, que detecta se está
 
 ---
 
+## Padrão visual (desde 04/10/2026)
+
+Tema claro, definido em `tema.css` (carregado por último, `media="screen"`, com `?v=hash` via
+`scripts/versionar_estaticos.py`). A casca tem hero grande na Home e hero compacto fixo
+(`#hero-mod`, `body.modulo`) nos módulos; barra inferior `#app-nav`; painéis `#sheet`. Dentro do
+iframe, `html.embutido` esconde o cabeçalho próprio do app. A nota "Armadilha conhecida" abaixo
+(cabeçalho da Home escondido fora de `home`) continua valendo: o que precisa aparecer em todas as
+abas é `position:fixed`. Ver [[Decisões/2026-10-04 Padrão visual claro]].
+
+---
+
 ## Navegação
 
 `switchTab(tab, el)` no shell: tira `.active` de todas as `.page` (menos as sub-páginas

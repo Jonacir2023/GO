@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -30,18 +31,18 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 
 .tabs{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:99;width:100%;max-width:480px;display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
 .tabs::-webkit-scrollbar{display:none}
-.tab{background:none;border:none;flex:none;padding:14px 16px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;color:#fff;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
-.tab.active{color:#fff;border-bottom-color:var(--accent)}
+.tab{background:none;border:none;flex:none;padding:14px 16px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;color:var(--ink);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{color:var(--ink);border-bottom-color:var(--accent)}
 
 .page{display:none;padding:0 16px}
 .page.active{display:block;padding-top:140px}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;margin-bottom:12px}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);margin-bottom:12px}
 
 .frow{margin-bottom:10px}
-.frow label{display:block;font-size:12px;font-weight:600;color:#fff;margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
-.frow input,.frow select,.frow textarea{width:100%;min-width:0;min-height:38px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none;-webkit-appearance:none;appearance:none}
+.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow input,.frow select,.frow textarea{width:100%;min-width:0;min-height:38px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:var(--bg-mid);color:var(--ink);transition:border .2s;outline:none;-webkit-appearance:none;appearance:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:60px}
 .frow-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
@@ -49,44 +50,44 @@ body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
 
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
 .btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#c68f6d}
-.btn-secondary{background:var(--bg-dark);color:#fff}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{background:var(--bg-dark);color:var(--ink)}
 .btn-full{width:100%;justify-content:center;margin-bottom:8px}
 .btn-sm{padding:6px 12px;font-size:12px}
 
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--serif);letter-spacing:.4px;text-transform:uppercase}
-.badge-red{background:#4a3d3a;color:var(--red)}
-.badge-blue{background:#38414f;color:var(--blue)}
-.badge-green{background:#384a3d;color:var(--green)}
+.badge-red{background:var(--tint-red);color:var(--red)}
+.badge-blue{background:var(--tint-blue);color:var(--blue)}
+.badge-green{background:var(--tint-green);color:var(--green)}
 
 .notif{position:fixed;top:60px;left:16px;right:16px;padding:12px;border-radius:8px;background:var(--green);color:white;font-size:13px;font-weight:600;z-index:200;display:none}
 .notif.show{display:block}
 
-.card{background:#5a6272;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid #454c59}
+.card{background:var(--bg-card);border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid var(--bg-mid)}
 .card-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.card-desc{font-size:12px;color:#fff;margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--ink);margin-bottom:6px}
 .card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
-.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #5a6272;font-size:11px;color:#fff}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--bg-card);font-size:11px;color:var(--ink)}
 
-.item-row{background:#454c59;padding:10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)}
+.item-row{background:var(--bg-mid);padding:10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)}
 .item-row-header{display:flex;justify-content:space-between;margin-bottom:6px}
 .item-row-title{font-weight:700;color:var(--ink)}
 .item-row-actions{display:flex;gap:4px}
-.item-row-actions button{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#d98a7c}
+.item-row-actions button{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--red)}
 
 .stat-box{background:var(--bg-card);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid var(--line)}
-.stat-label{font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:#fff;margin-top:4px}
+.stat-label{font-size:11px;color:var(--ink);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--ink);margin-top:4px}
 
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:var(--bg-dark);color:#fff;padding:8px;text-align:left;font-weight:700}
+th{background:var(--bg-dark);color:var(--ink);padding:8px;text-align:left;font-weight:700}
 td{padding:8px;border-bottom:1px solid var(--line)}
-tr:hover{background:#454c59}
+tr:hover{background:var(--bg-mid)}
 
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;overflow-y:auto}
 .modal.open{display:flex}
-.modal-content{background:#5a6272;border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative;margin:auto}
-.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#fff}
+.modal-content{background:var(--bg-card);border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative;margin:auto}
+.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink)}
 .modal-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:15px}
 
 /* ══════════════════════════════════════════════════════════════
@@ -111,6 +112,7 @@ tr:hover{background:#454c59}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=f48c7213"></script>
+<link rel="stylesheet" href="tema.css?v=246eebe8" media="screen">
 </head>
 <body>
 
@@ -119,10 +121,10 @@ tr:hover{background:#454c59}
 <header class="hdr" style="height:70px">
   <div class="hdr-top">
     <div style="display:flex;align-items:center;gap:10px">
-      <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#fff" onclick="voltarParaHome()">⬅️</button>
+      <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:var(--ink)" onclick="voltarParaHome()">⬅️</button>
       <div>
         <div class="hdr-logo">CUS<span>TOS</span></div>
-        <div style="font-size:11px;color:#fff">Controle de Notas Fiscais</div>
+        <div style="font-size:11px;color:var(--ink)">Controle de Notas Fiscais</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -181,7 +183,7 @@ tr:hover{background:#454c59}
       <div id="nf-foto-preview" style="display:none;position:relative;max-width:220px;margin-bottom:8px">
         <img id="nf-foto-img" style="width:100%;border-radius:8px;border:1.5px solid var(--line);display:block"/>
         <button type="button" onclick="removerFotoNF()" title="Remover"
-          style="position:absolute;top:6px;right:6px;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:14px;line-height:1;cursor:pointer">✕</button>
+          style="position:absolute;top:6px;right:6px;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:var(--ink);font-size:14px;line-height:1;cursor:pointer">✕</button>
       </div>
       <button type="button" class="btn btn-secondary btn-full btn-sm" id="nf-foto-btn"
         onclick="document.getElementById('nf-foto-input').click()">📷 FOTOGRAFAR NOTA</button>
@@ -192,7 +194,7 @@ tr:hover{background:#454c59}
     <div class="sec-title">📦 Itens da Nota Fiscal</div>
     <div id="lista-itens-novo"></div>
 
-    <div style="background:#454c59;padding:12px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line)">
+    <div style="background:var(--bg-mid);padding:12px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line)">
       <div class="frow">
         <label>Descrição do Item</label>
         <input type="text" id="item-descricao" placeholder="Ex: Cimento"/>
@@ -208,7 +210,7 @@ tr:hover{background:#454c59}
         </div>
         <div class="frow">
           <label>Total</label>
-          <input type="number" id="item-total" disabled style="background:#5a6272"/>
+          <input type="number" id="item-total" disabled style="background:var(--bg-card)"/>
         </div>
       </div>
       <button class="btn btn-secondary btn-full btn-sm" onclick="adicionarItem()">+ ADICIONAR ITEM</button>
@@ -472,7 +474,7 @@ function renderItensTemp() {
       <div class="item-row-header">
         <div>
           <div class="item-row-title">${item.descricao}</div>
-          <div style="font-size:11px;color:#fff">
+          <div style="font-size:11px;color:var(--ink)">
             ${item.quantidade} × R$ ${item.preco_unitario.toFixed(2)} = ${formatarMoeda(item.total)}
           </div>
         </div>
@@ -481,7 +483,7 @@ function renderItensTemp() {
         </div>
       </div>
     </div>
-  `).join('') : '<p style="color:#fff;font-size:12px">Nenhum item adicionado ainda</p>';
+  `).join('') : '<p style="color:var(--ink);font-size:12px">Nenhum item adicionado ainda</p>';
 
   document.getElementById('lista-itens-novo').innerHTML = html;
 }
@@ -673,16 +675,16 @@ function renderListar() {
         <img src="${nf.foto}" alt="Foto da nota"
           style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1.5px solid var(--line);margin-top:8px;display:block"/>
       </a>` : ''}
-      <div style="margin-top:8px;font-size:12px;color:#fff">
+      <div style="margin-top:8px;font-size:12px;color:var(--ink)">
         <strong>${nf.itens.length} item(ns):</strong><br>
         ${nf.itens.map(i => `• ${i.descricao} (${i.quantidade} × R$ ${i.preco_unitario.toFixed(2)})`).join('<br>')}
       </div>
       <div class="card-footer">
         <span>${formatarMoeda(nf.total_nf)}</span>
-        <button onclick="deletarNF(${nf.id})" style="background:none;border:none;color:#d98a7c;cursor:pointer;font-weight:700">🗑️ DELETAR</button>
+        <button onclick="deletarNF(${nf.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-weight:700">🗑️ DELETAR</button>
       </div>
     </div>
-  `).join('') : '<p style="color:#fff">Nenhuma nota fiscal</p>';
+  `).join('') : '<p style="color:var(--ink)">Nenhuma nota fiscal</p>';
 
   document.getElementById('lista-nfs').innerHTML = html;
 }
@@ -704,8 +706,8 @@ function renderResumo() {
     .map(([cat, valor]) => `
       <div class="stat-box">
         <div class="stat-label">${cat}</div>
-        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#fff">${formatarMoeda(valor)}</div>
-        <div style="font-size:11px;color:#fff;margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink)">${formatarMoeda(valor)}</div>
+        <div style="font-size:11px;color:var(--ink);margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
       </div>
     `).join('');
 
@@ -716,7 +718,7 @@ function renderResumo() {
     .map(([forn, valor]) => `
       <div class="stat-box">
         <div class="stat-label">${forn}</div>
-        <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:#fff">${formatarMoeda(valor)}</div>
+        <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--ink)">${formatarMoeda(valor)}</div>
       </div>
     `).join('') + '</div>';
 

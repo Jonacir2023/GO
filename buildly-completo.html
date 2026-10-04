@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -33,7 +34,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
    layout de cada uma: fica por cima de tudo, sempre no mesmo lugar. */
 .fab-ia-wrap{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:0;z-index:150;pointer-events:none}
 .fab-ia-btn{position:absolute;right:16px;bottom:16px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer;pointer-events:auto;display:flex;align-items:center;justify-content:center}
-.fab-ia-btn:active{background:#c68f6d}
+.fab-ia-btn:active{background:var(--accent-hover)}
 @media (min-width: 900px) { .fab-ia-wrap { max-width: 1100px; } }
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0;gap:12px}
 .hdr-logo{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:1px;color:#ffffff}
@@ -42,14 +43,14 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .hdr-sub{font-size:11px;color:#fff;margin-top:0}
 .hdr-home .hdr-sub{font-size:12px;color:#fff;margin-top:2px}
 .hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
-.btn-admin{background:none;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border-radius:6px;cursor:pointer;text-transform:uppercase;font-family:var(--serif)}
+.btn-admin{background:none;border:1px solid rgba(255,255,255,.2);color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border-radius:6px;cursor:pointer;text-transform:uppercase;font-family:var(--serif)}
 .btn-admin:hover{background:rgba(255,255,255,.08)}
 
 .tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;background:var(--bg-dark);border-top:1px solid rgba(255,255,255,.08);padding:0;margin:0;position:fixed;top:70px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:99}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;padding:14px 16px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:#fff;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;background:transparent}
-.tab.active{color:#ffffff;border-bottom-color:var(--accent)}
-.tab:hover:not(.active){color:#fff}
+.tab{flex:none;padding:14px 16px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:var(--ink);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;background:transparent}
+.tab.active{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:var(--ink)}
 
 .page{display:none;padding:14px 16px;margin-top:0}
 .page.active{display:block}
@@ -63,11 +64,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 #page-pauta .page,#page-checkin .page{padding-left:0;padding-right:0}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 
 .frow{margin-bottom:10px}
-.frow label{display:block;font-size:12px;font-weight:600;color:#fff;margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
-.frow input,.frow select,.frow textarea{width:100%;min-width:0;min-height:38px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);transition:border .2s;outline:none;-webkit-appearance:none;appearance:none}
+.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow input,.frow select,.frow textarea{width:100%;min-width:0;min-height:38px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:var(--bg-mid);color:var(--ink);transition:border .2s;outline:none;-webkit-appearance:none;appearance:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:70px}
 .frow-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
@@ -81,8 +82,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 
 .btn{-webkit-appearance:none;appearance:none;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase;box-sizing:border-box}
 .btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#c68f6d}
-.btn-secondary{background:var(--bg-dark);color:#ffffff}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{background:var(--bg-dark);color:var(--ink)}
 .btn-secondary:hover{background:var(--bg-mid)}
 .btn-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
 .btn-green{background:var(--green);color:#fff}
@@ -91,104 +92,104 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .btn-sm{padding:6px 12px;font-size:12px}
 
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--serif);letter-spacing:.4px;text-transform:uppercase}
-.badge-red{background:#4a3d3a;color:var(--red)}
-.badge-yellow{background:#453f30;color:var(--yellow)}
-.badge-green{background:#384a3d;color:var(--green)}
-.badge-blue{background:#38414f;color:var(--blue)}
-.badge-gray{background:#454c59;color:#fff}
-.badge-orange{background:#4a3d33;color:var(--accent)}
-.badge-canceled{background:#454c59;color:#8a92a0;text-decoration:line-through}
+.badge-red{background:var(--tint-red);color:var(--red)}
+.badge-yellow{background:var(--tint-yellow);color:var(--yellow)}
+.badge-green{background:var(--tint-green);color:var(--green)}
+.badge-blue{background:var(--tint-blue);color:var(--blue)}
+.badge-gray{background:var(--bg-mid);color:var(--ink)}
+.badge-orange{background:var(--tint-orange);color:var(--accent)}
+.badge-canceled{background:var(--bg-mid);color:var(--ink-faint);text-decoration:line-through}
 
 .pri-group{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}
-.pri-btn{padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:#454c59;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:#fff}
-.pri-btn.sel-alta{background:#4a3d3a;border-color:var(--red);color:var(--red)}
-.pri-btn.sel-media{background:#453f30;border-color:var(--yellow);color:var(--yellow)}
-.pri-btn.sel-baixa{background:#384a3d;border-color:var(--green);color:var(--green)}
+.pri-btn{padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:var(--bg-mid);font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:var(--ink)}
+.pri-btn.sel-alta{background:var(--tint-red);border-color:var(--red);color:var(--red)}
+.pri-btn.sel-media{background:var(--tint-yellow);border-color:var(--yellow);color:var(--yellow)}
+.pri-btn.sel-baixa{background:var(--tint-green);border-color:var(--green);color:var(--green)}
 
 .status-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
-.status-btn{padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:#454c59;font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.4px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:#fff}
-.status-btn.sel-afazer{background:#38414f;border-color:var(--blue);color:var(--blue)}
-.status-btn.sel-fazendo{background:#453f30;border-color:var(--yellow);color:var(--yellow)}
-.status-btn.sel-concluido{background:#384a3d;border-color:var(--green);color:var(--green)}
-.status-btn.sel-cancelado{background:#454c59;border-color:#fff;color:#fff}
+.status-btn{padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:var(--bg-mid);font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.4px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:var(--ink)}
+.status-btn.sel-afazer{background:var(--tint-blue);border-color:var(--blue);color:var(--blue)}
+.status-btn.sel-fazendo{background:var(--tint-yellow);border-color:var(--yellow);color:var(--yellow)}
+.status-btn.sel-concluido{background:var(--tint-green);border-color:var(--green);color:var(--green)}
+.status-btn.sel-cancelado{background:var(--bg-mid);border-color:#fff;color:var(--ink)}
 
-.card-assunto{background:#5a6272;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.card-assunto{background:var(--bg-card);border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.18)}
 .card-assunto-titulo{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.card-assunto-desc{font-size:12px;color:#fff;margin-bottom:6px;line-height:1.4}
+.card-assunto-desc{font-size:12px;color:var(--ink);margin-bottom:6px;line-height:1.4}
 .card-assunto-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
-.card-assunto-footer{font-size:11px;color:#fff;display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;padding-top:6px;border-top:1px solid #666f80}
+.card-assunto-footer{font-size:11px;color:var(--ink);display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;padding-top:6px;border-top:1px solid var(--line)}
 
-.card{background:#5a6272;border-radius:8px;padding:11px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,.22);border:1px solid #666f80;transition:transform .15s,box-shadow .15s}
+.card{background:var(--bg-card);border-radius:8px;padding:11px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,.22);border:1px solid var(--line);transition:transform .15s,box-shadow .15s}
 .card:last-child{margin-bottom:0}
 .card-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:5px}
-.card-desc{font-size:12px;color:#fff;margin-bottom:7px;line-height:1.4}
+.card-desc{font-size:12px;color:var(--ink);margin-bottom:7px;line-height:1.4}
 .card-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
-.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid #666f80}
-.card-aging{font-size:10px;font-weight:700;font-family:var(--serif);color:#fff}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.card-aging{font-size:10px;font-weight:700;font-family:var(--serif);color:var(--ink)}
 .card-aging.alert{color:var(--red)}
-.card-resp{font-size:11px;color:#fff;font-weight:600}
+.card-resp{font-size:11px;color:var(--ink);font-weight:600}
 .card-actions{display:flex;gap:4px}
 .card-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:2px 5px;border-radius:4px;transition:background .15s}
-.card-btn:hover{background:#666f80}
-.card-dates{font-size:11px;color:#fff;margin-top:3px}
+.card-btn:hover{background:var(--line)}
+.card-dates{font-size:11px;color:var(--ink);margin-top:3px}
 
 .kanban-wrap{display:flex;flex-direction:column;gap:10px}
-.kol{background:#454c59;border-radius:var(--radius);padding:10px;border:1px solid var(--line)}
+.kol{background:var(--bg-mid);border-radius:var(--radius);padding:10px;border:1px solid var(--line)}
 .kol-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:8px 10px;border-radius:8px}
-.kol-afazer .kol-hdr{background:#38414f;border-top:3px solid var(--blue)}
-.kol-fazendo .kol-hdr{background:#453f30;border-top:3px solid var(--yellow)}
-.kol-concluido .kol-hdr{background:#384a3d;border-top:3px solid var(--green)}
+.kol-afazer .kol-hdr{background:var(--tint-blue);border-top:3px solid var(--blue)}
+.kol-fazendo .kol-hdr{background:var(--tint-yellow);border-top:3px solid var(--yellow)}
+.kol-concluido .kol-hdr{background:var(--tint-green);border-top:3px solid var(--green)}
 .kol-title{font-family:var(--serif);font-size:14px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
 .kol-afazer .kol-title{color:var(--blue)}
 .kol-fazendo .kol-title{color:var(--yellow)}
 .kol-concluido .kol-title{color:var(--green)}
-.kol-cancelado .kol-hdr{background:#454c59;border-top:3px solid #7b8290}
-.kol-cancelado .kol-title{color:#8a92a0}
-.card-so-nome .card-title{color:#8a92a0}
-.kol-count{background:var(--bg-dark);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:var(--serif)}
+.kol-cancelado .kol-hdr{background:var(--bg-mid);border-top:3px solid var(--ink-faint)}
+.kol-cancelado .kol-title{color:var(--ink-faint)}
+.card-so-nome .card-title{color:var(--ink-faint)}
+.kol-count{background:var(--bg-dark);color:var(--ink);font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:var(--serif)}
 
-.drop-zone{min-height:40px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+.drop-zone{min-height:40px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:12px}
 
 .ci-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .ci-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.ci-box{background:#454c59;border-radius:8px;padding:8px 6px;border:1px solid var(--line);text-align:center}
-.ci-box-val{font-family:var(--serif);font-size:28px;font-weight:800;color:#fff}
+.ci-box{background:var(--bg-mid);border-radius:8px;padding:8px 6px;border:1px solid var(--line);text-align:center}
+.ci-box-val{font-family:var(--serif);font-size:28px;font-weight:800;color:var(--ink)}
 .ci-box-val.green{color:var(--green)}
 .ci-box-val.yellow{color:var(--yellow)}
 .ci-box-val.red{color:var(--red)}
-.ci-box-lbl{font-size:10px;color:#fff;text-transform:uppercase;letter-spacing:.2px;font-weight:700;line-height:1.3}
+.ci-box-lbl{font-size:10px;color:var(--ink);text-transform:uppercase;letter-spacing:.2px;font-weight:700;line-height:1.3}
 
-.confirm-box{display:none;background:#384a3d;border:1.5px solid var(--green);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px}
+.confirm-box{display:none;background:var(--tint-green);border:1.5px solid var(--green);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px}
 .confirm-box.show{display:block}
 .confirm-box-icon{font-size:28px;margin-bottom:4px}
 .confirm-box-txt{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--green)}
-.confirm-box-sub{font-size:12px;color:#fff;margin-top:2px}
+.confirm-box-sub{font-size:12px;color:var(--ink);margin-top:2px}
 
 .export-status{border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;font-weight:600;display:none}
-.export-status.ok{display:block;background:#384a3d;border:1px solid var(--green);color:var(--green)}
-.export-status.err{display:block;background:#4a3d3a;border:1px solid var(--red);color:var(--red)}
+.export-status.ok{display:block;background:var(--tint-green);border:1px solid var(--green);color:var(--green)}
+.export-status.err{display:block;background:var(--tint-red);border:1px solid var(--red);color:var(--red)}
 
-.empty-state{text-align:center;padding:32px 16px;color:#fff}
+.empty-state{text-align:center;padding:32px 16px;color:var(--ink)}
 .empty-state-icon{font-size:36px;margin-bottom:8px}
 .empty-state-txt{font-size:13px}
 
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg-card);border-radius:var(--radius);padding:20px 16px;width:100%;max-width:480px;margin:16px auto;box-shadow:0 8px 32px rgba(0,0,0,.45)}
-.modal-title{font-family:var(--serif);font-size:18px;font-weight:800;margin-bottom:16px;color:#fff;display:flex;align-items:center;justify-content:space-between}
-.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#fff}
+.modal-title{font-family:var(--serif);font-size:18px;font-weight:800;margin-bottom:16px;color:var(--ink);display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink)}
 
 .atabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.atab{padding:6px 12px;border-radius:6px;font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.4px;cursor:pointer;border:1.5px solid var(--line);background:#454c59;color:#fff;text-transform:uppercase;transition:all .18s}
+.atab{padding:6px 12px;border-radius:6px;font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.4px;cursor:pointer;border:1.5px solid var(--line);background:var(--bg-mid);color:var(--ink);text-transform:uppercase;transition:all .18s}
 .atab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
 .admin-section{display:none}
 .admin-section.active{display:block}
 
-.adm-item{display:flex;align-items:center;justify-content:space-between;background:#5a6272;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--line)}
+.adm-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--line)}
 .adm-item-name{font-size:13px;font-weight:600;flex:1}
 .adm-rm{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .15s}
-.adm-rm:hover{background:#4a3d3a}
+.adm-rm:hover{background:var(--tint-red)}
 
 .notif{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;z-index:400;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
 .notif.show{opacity:1}
@@ -196,15 +197,15 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .home-container{text-align:center;padding:0;display:flex;flex-direction:column;height:100%;overflow:hidden}
 .home-header{margin-bottom:8px}
 .home-logo{font-size:28px;font-weight:800;margin-bottom:2px;letter-spacing:-1px;color:var(--ink)}
-.home-subtitle{font-size:11px;color:#fff;font-weight:300}
+.home-subtitle{font-size:11px;color:var(--ink);font-weight:300}
 .home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:108px;gap:10px;margin-bottom:0;padding:0 12px;flex:1;align-content:start;padding-top:8px}
 .home-button{background:var(--bg-card);border:2px solid var(--accent);border-top:4px solid var(--accent);border-radius:8px;padding:14px 10px;cursor:pointer;transition:all 0.2s ease;box-shadow:0 2px 8px rgba(0,0,0,.08);text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;position:relative;height:100%;min-width:0;overflow:hidden;box-sizing:border-box}
-.home-button:hover:not(.disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12);border-color:#c68f6d}
-.home-button.disabled{opacity:0.5;cursor:not-allowed;background:#3a3f49}
+.home-button:hover:not(.disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12);border-color:var(--accent-hover)}
+.home-button.disabled{opacity:0.5;cursor:not-allowed;background:var(--bg-dark)}
 .home-button.disabled:hover{transform:none}
 .home-button-icon{font-size:24px;line-height:1}
 .home-button-title{font-size:12px;font-weight:700;color:var(--ink);letter-spacing:.2px}
-.home-button-desc{font-size:9px;color:#fff;line-height:1.1;display:none}
+.home-button-desc{font-size:9px;color:var(--ink);line-height:1.1;display:none}
 .home-button-badge{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);font-size:7px;background:var(--accent);color:white;padding:2px 4px;border-radius:2px;margin-top:2px;text-transform:uppercase;font-weight:700;letter-spacing:.2px}
 .btn-obras{border-top-color:var(--accent)}
 .btn-pautas{border-top-color:var(--accent)}
@@ -217,7 +218,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .btn-planejamento{border-top-color:var(--accent)}
 .btn-financeiro{border-top-color:var(--accent)}
 .btn-suprimentos{border-top-color:var(--accent)}
-.home-footer{text-align:center;color:#fff;font-size:10px;padding:4px 16px 0;margin-top:auto}
+.home-footer{text-align:center;color:var(--ink);font-size:10px;padding:4px 16px 0;margin-top:auto}
 .home-footer a{color:var(--ink);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.3)}
 .home-footer a:hover{border-bottom-color:var(--ink)}
 
@@ -254,10 +255,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .config-modal.open{display:flex}
 .modal-overlay.modal-checkin{align-items:flex-end}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cal-day-name{text-align:center;font-size:11px;font-weight:700;color:#fff;padding:4px 0;font-family:var(--serif)}
-.cal-day{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;background:#454c59;border:1px solid var(--line)}
+.cal-day-name{text-align:center;font-size:11px;font-weight:700;color:var(--ink);padding:4px 0;font-family:var(--serif)}
+.cal-day{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;background:var(--bg-mid);border:1px solid var(--line)}
 .cal-day.today{background:var(--accent);color:#fff;border-color:var(--accent)}
-.cal-day.has-event{border-color:var(--blue);background:#38414f}
+.cal-day.has-event{border-color:var(--blue);background:var(--tint-blue)}
 .cal-day.selected{outline:2px solid var(--blue);outline-offset:-1px}
 .cal-day.empty{background:transparent;border-color:transparent;cursor:default}
 .cal-day-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);position:absolute;bottom:4px;left:50%;transform:translateX(-50%)}
@@ -268,31 +269,31 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .resumo-toggle{display:flex;gap:8px;margin-bottom:14px}
 .rtab{padding:8px 16px;border-radius:8px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.4px;cursor:pointer;border:none;text-transform:uppercase;transition:all .18s}
 .rtab.active{background:var(--accent);color:#fff}
-.rtab:not(.active){background:#454c59;color:#fff}
+.rtab:not(.active){background:var(--bg-mid);color:var(--ink)}
 .dash-bar-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
 .dash-bar-row:last-child{border-bottom:none}
 .dash-bar-label{font-size:13px;font-weight:600;width:100px;flex-shrink:0}
-.dash-bar-track{flex:1;height:8px;background:#454c59;border-radius:4px;overflow:hidden}
+.dash-bar-track{flex:1;height:8px;background:var(--bg-mid);border-radius:4px;overflow:hidden}
 .dash-bar-fill{height:100%;border-radius:4px;transition:width .4s}
 .dash-bar-pct{font-size:12px;font-weight:700;font-family:var(--serif);width:36px;text-align:right;flex-shrink:0}
 .kanban-status-box{background:var(--bg-dark);border-radius:10px;padding:14px;margin-bottom:10px;text-align:center}
 .ksb-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:8px}
 .ksb-val{font-family:var(--serif);font-size:28px;font-weight:800}
-.ksb-val.blue{color:#b7c8e0}
+.ksb-val.blue{color:var(--blue)}
 .ksb-val.yellow{color:var(--accent2)}
-.ksb-val.green{color:#a8d6ae}
-.ksb-lbl{font-size:10px;color:#fff;text-transform:uppercase;letter-spacing:.3px;font-weight:700}
-.ksb-progress{height:4px;background:#2c3038;border-radius:2px;margin-top:8px;overflow:hidden}
+.ksb-val.green{color:var(--green)}
+.ksb-lbl{font-size:10px;color:var(--ink);text-transform:uppercase;letter-spacing:.3px;font-weight:700}
+.ksb-progress{height:4px;background:var(--line);border-radius:2px;margin-top:8px;overflow:hidden}
 .ksb-progress-fill{height:100%;background:var(--accent);border-radius:2px}
-.ksb-pct{font-size:11px;color:#fff;text-align:right;margin-top:4px}
-.ranking-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#5a6272;border-radius:8px;margin-bottom:6px;border:1px solid var(--line)}
-.ranking-num{font-family:var(--serif);font-size:18px;font-weight:800;color:#fff;width:24px}
+.ksb-pct{font-size:11px;color:var(--ink);text-align:right;margin-top:4px}
+.ranking-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border-radius:8px;margin-bottom:6px;border:1px solid var(--line)}
+.ranking-num{font-family:var(--serif);font-size:18px;font-weight:800;color:var(--ink);width:24px}
 .ranking-label{font-weight:600;font-size:14px;flex:1}
-.ranking-bar-wrap{width:60%;height:6px;background:#454c59;border-radius:3px;overflow:hidden}
+.ranking-bar-wrap{width:60%;height:6px;background:var(--bg-mid);border-radius:3px;overflow:hidden}
 .ranking-bar{height:100%;border-radius:3px}
 .ranking-pct{font-size:12px;font-weight:700;font-family:var(--serif);width:36px;text-align:right}
-.ultimas-item{background:#5a6272;border-radius:8px;border:1px solid var(--line);padding:11px 13px;margin-bottom:8px}
-.ultimas-data{font-size:11px;color:#fff;font-family:var(--serif);font-weight:700;margin-bottom:3px}
+.ultimas-item{background:var(--bg-card);border-radius:8px;border:1px solid var(--line);padding:11px 13px;margin-bottom:8px}
+.ultimas-data{font-size:11px;color:var(--ink);font-family:var(--serif);font-weight:700;margin-bottom:3px}
 .ultimas-titulo{font-family:var(--serif);font-size:14px;font-weight:800;color:var(--ink);margin-bottom:6px}
 .ultimas-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
@@ -411,127 +412,150 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=f48c7213"></script>
+<link rel="stylesheet" href="tema.css?v=246eebe8" media="screen">
 </head>
 <body>
 
 <div class="notif" id="notif"></div>
 <div id="print-kanban" style="display:none"></div>
 
-<header class="hdr hdr-home" id="main-hdr">
-  <div class="hdr-top" id="main-hdr-top">
-    <div>
-      <div class="hdr-logo hdr-logo-main">🏗️ BUILD<span>Ly</span></div>
-      <div class="hdr-sub">Gestão de Obras</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></symbol><symbol id="i-dollar" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol><symbol id="i-ruler" viewBox="0 0 24 24"><path d="M4 20V4l16 16z"/><path d="M8 20v-3M12 20v-5M8 13h3"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol><symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-bars" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41M15.95 12.65a4 4 0 0 0-5.93-4.13"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol><symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol><symbol id="i-card" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></symbol><symbol id="i-package" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol><symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol><symbol id="i-mais" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/><circle cx="5" cy="12" r="1.2"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol><symbol id="i-robo" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 14h.01M15 14h.01M9 17h6"/><circle cx="12" cy="3" r="1"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol><symbol id="i-guindaste" viewBox="0 0 64 60"><path d="M28 10V54M36 10V54M28 16L36 22L28 28L36 34L28 40L36 46L28 52"/><path d="M5 10H59M32 2L23 10M32 2L41 10M32 2L8 10M32 2L56 10"/><path d="M12 10V32M8 32h8v7H8z"/><path d="M50 10v7h8v-7M21 54h22"/></symbol></svg>
+<header class="hero hero-home" id="main-hdr">
+  <div class="hero-bg"></div>
+  <div class="hero-bar">
+    <div class="brand">
+      <svg class="brand-crane" viewBox="0 0 64 60"><use href="#i-guindaste"/></svg>
+      <div><div class="brand-main">BUILD<span>Ly</span></div><div class="brand-sub">Gestão de Obras</div></div>
+    </div>
+    <div class="hero-actions">
+      <button class="hero-btn" onclick="abrirSino()" aria-label="Pendências"><svg viewBox="0 0 24 24"><use href="#i-bell"/></svg><i class="sino-ponto" hidden></i></button>
+      <button class="hero-btn" onclick="abrirPerfil()" aria-label="Perfil"><svg viewBox="0 0 24 24"><use href="#i-user"/></svg></button>
     </div>
   </div>
+  <button class="obra-card" onclick="abrirTrocaObra()" aria-label="Trocar de obra">
+    <span class="obra-card-ico"><svg viewBox="0 0 24 24"><use href="#i-building"/></svg></span>
+    <span class="obra-card-txt"><small>Obra Atual</small><b id="obra-card-nome">—</b><em id="obra-card-local"></em></span>
+    <span class="obra-card-sep"></span>
+    <svg class="obra-card-chev" viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg>
+  </button>
 </header>
+
+<header class="hero hero-mod" id="hero-mod">
+  <div class="hero-bg"></div>
+  <div class="hero-bar">
+    <button class="hero-btn hero-back" onclick="switchTab('home')" aria-label="Voltar ao início"><svg viewBox="0 0 24 24"><use href="#i-arrow-left"/></svg></button>
+    <div class="brand brand-sm"><div><div class="brand-main">BUILD<span>Ly</span></div><div class="brand-sub">Gestão de Obras</div></div></div>
+    <div class="hero-actions">
+      <button class="hero-btn" onclick="abrirSino()" aria-label="Pendências"><svg viewBox="0 0 24 24"><use href="#i-bell"/></svg><i class="sino-ponto" hidden></i></button>
+      <button class="hero-btn" onclick="abrirPerfil()" aria-label="Perfil"><svg viewBox="0 0 24 24"><use href="#i-user"/></svg></button>
+    </div>
+  </div>
+  <div class="mod-card"><span class="mod-ico ico" id="mod-ico"></span><span><b id="mod-title"></b><small id="mod-sub"></small></span></div>
+</header>
+
 
 <!-- HOME PAGE -->
 <div class="page active" id="page-home">
   <div class="home-container">
     <div class="home-grid">
-      <!-- 1. Pautas (Tarefas) -->
-      <div class="home-button btn-pautas" onclick="switchTab('pauta', document.querySelectorAll('.tab')[1])">
-        <div class="home-button-icon">📋</div>
-        <div class="home-button-title">Pautas</div>
-        <div class="home-button-desc">Envio de assuntos</div>
+      <div class="home-card" data-mod="pauta" data-cor="tan" onclick="switchTab('pauta')">
+        <button class="fav" data-fav="pauta" onclick="alternarFavorito('pauta', event)" aria-label="Favoritar Pautas"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-tan"><svg viewBox="0 0 24 24"><use href="#i-clipboard"/></svg></div>
+        <h3>Pautas</h3>
+        <p>Assuntos e ações da obra</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 2. Check-in -->
-      <div class="home-button btn-checkin" onclick="switchTab('checkin', document.querySelectorAll('.tab')[2])">
-        <div class="home-button-icon">✅</div>
-        <div class="home-button-title">Check-in</div>
-        <div class="home-button-desc">Acompanhamento diário</div>
+      <div class="home-card" data-mod="checkin" data-cor="green" onclick="switchTab('checkin')">
+        <button class="fav" data-fav="checkin" onclick="alternarFavorito('checkin', event)" aria-label="Favoritar Check-in"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-green"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></div>
+        <h3>Check-in</h3>
+        <p>Reuniões diárias e acompanhamento</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 3. RDO (Diário de Obras) -->
-      <div class="home-button btn-rdo" onclick="switchTab('rdo', document.querySelectorAll('.tab')[3])">
-        <div class="home-button-icon">📝</div>
-        <div class="home-button-title">RDO</div>
-        <div class="home-button-desc">Diário de obras</div>
+      <div class="home-card" data-mod="rdo" data-cor="blue" onclick="switchTab('rdo')">
+        <button class="fav" data-fav="rdo" onclick="alternarFavorito('rdo', event)" aria-label="Favoritar RDO"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-blue"><svg viewBox="0 0 24 24"><use href="#i-file"/></svg></div>
+        <h3>RDO</h3>
+        <p>Relatório Diário de Obras</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 4. Custos -->
-      <div class="home-button" onclick="switchTab('custos', document.querySelector('.tab[onclick*=custos]') || this)">
-        <div class="home-button-icon">💰</div>
-        <div class="home-button-title">Custos</div>
-        <div class="home-button-desc">Controle de gastos</div>
-        <div class="home-button-badge">Ativo</div>
+      <div class="home-card" data-mod="custos" data-cor="orange" onclick="switchTab('custos')">
+        <button class="fav" data-fav="custos" onclick="alternarFavorito('custos', event)" aria-label="Favoritar Custos"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-orange"><svg viewBox="0 0 24 24"><use href="#i-dollar"/></svg></div>
+        <h3>Custos</h3>
+        <p>Orçamentos e controle</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 5. Medição -->
-      <div class="home-button btn-medicao" onclick="switchTab('medicao', this)">
-        <div class="home-button-icon">📐</div>
-        <div class="home-button-title">Medição</div>
-        <div class="home-button-desc">Cliente e terceiros</div>
+      <div class="home-card" data-mod="medicao" data-cor="slate" onclick="switchTab('medicao')">
+        <button class="fav" data-fav="medicao" onclick="alternarFavorito('medicao', event)" aria-label="Favoritar Medição"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-slate"><svg viewBox="0 0 24 24"><use href="#i-ruler"/></svg></div>
+        <h3>Medição</h3>
+        <p>Quantidades e avanço físico</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 6. Documentos -->
-      <div class="home-button btn-docs" onclick="switchTab('documentos', this)">
-        <div class="home-button-icon">📄</div>
-        <div class="home-button-title">Documentos</div>
-        <div class="home-button-desc">Contrato e orçamento</div>
+      <div class="home-card" data-mod="documentos" data-cor="purple" onclick="switchTab('documentos')">
+        <button class="fav" data-fav="documentos" onclick="alternarFavorito('documentos', event)" aria-label="Favoritar Documentos"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-purple"><svg viewBox="0 0 24 24"><use href="#i-folder"/></svg></div>
+        <h3>Documentos</h3>
+        <p>Projetos, contratos e registros</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 7. Obras -->
-      <div class="home-button btn-obras" onclick="switchTab('obra', this)">
-        <div class="home-button-icon">🏢</div>
-        <div class="home-button-title">Obras</div>
-        <div class="home-button-desc">Cadastrar e editar obras</div>
+      <div class="home-card" data-mod="obra" data-cor="red" onclick="switchTab('obra')">
+        <button class="fav" data-fav="obra" onclick="alternarFavorito('obra', event)" aria-label="Favoritar Obras"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-red"><svg viewBox="0 0 24 24"><use href="#i-building"/></svg></div>
+        <h3>Obras</h3>
+        <p>Cadastro e acompanhamento</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 8. Reuniões (Ata de Reunião) -->
-      <div class="home-button btn-reunioes" onclick="switchTab('reuniao', this)">
-        <div class="home-button-icon">🗓️</div>
-        <div class="home-button-title">Reuniões</div>
-        <div class="home-button-desc">Atas de reunião</div>
+      <div class="home-card" data-mod="reuniao" data-cor="teal" onclick="switchTab('reuniao')">
+        <button class="fav" data-fav="reuniao" onclick="alternarFavorito('reuniao', event)" aria-label="Favoritar Reuniões"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-teal"><svg viewBox="0 0 24 24"><use href="#i-users"/></svg></div>
+        <h3>Reuniões</h3>
+        <p>Agendas, atas e decisões</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 9. Resumo do Tempo -->
-      <div class="home-button btn-tempo" onclick="switchTab('resumo-tempo', this)">
-        <div class="home-button-icon">🌦️</div>
-        <div class="home-button-title">Resumo do Tempo</div>
-        <div class="home-button-desc">Condições climáticas</div>
+      <div class="home-card" data-mod="planejamento" data-cor="gray" onclick="switchTab('planejamento')">
+        <button class="fav" data-fav="planejamento" onclick="alternarFavorito('planejamento', event)" aria-label="Favoritar Planejamento"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-gray"><svg viewBox="0 0 24 24"><use href="#i-bars"/></svg></div>
+        <h3>Planejamento</h3>
+        <p>Cronograma e marcos</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 10. Manutenção -->
-      <div class="home-button btn-manutencao" onclick="switchTab('manutencao', this)">
-        <div class="home-button-icon">🛠️</div>
-        <div class="home-button-title">Manutenção</div>
-        <div class="home-button-desc">Status e mural da obra</div>
+      <div class="home-card extra" data-mod="resumo-tempo" data-cor="sky" onclick="switchTab('resumo-tempo')">
+        <button class="fav" data-fav="resumo-tempo" onclick="alternarFavorito('resumo-tempo', event)" aria-label="Favoritar Resumo do Tempo"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-sky"><svg viewBox="0 0 24 24"><use href="#i-cloud"/></svg></div>
+        <h3>Resumo do Tempo</h3>
+        <p>Condições climáticas</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 11. EAP -->
-      <div class="home-button btn-eap" onclick="switchTab('eap', this)">
-        <div class="home-button-icon">📊</div>
-        <div class="home-button-title">EAP</div>
-        <div class="home-button-desc">Estrutura analítica</div>
+      <div class="home-card extra" data-mod="manutencao" data-cor="brown" onclick="switchTab('manutencao')">
+        <button class="fav" data-fav="manutencao" onclick="alternarFavorito('manutencao', event)" aria-label="Favoritar Manutenção"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-brown"><svg viewBox="0 0 24 24"><use href="#i-wrench"/></svg></div>
+        <h3>Manutenção</h3>
+        <p>Equipamentos e veículos</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 12. Planejamento -->
-      <div class="home-button btn-planejamento" onclick="switchTab('planejamento', this)">
-        <div class="home-button-icon">📅</div>
-        <div class="home-button-title">Planejamento</div>
-        <div class="home-button-desc">Cronogramas e atividades</div>
+      <div class="home-card extra" data-mod="eap" data-cor="indigo" onclick="switchTab('eap')">
+        <button class="fav" data-fav="eap" onclick="alternarFavorito('eap', event)" aria-label="Favoritar EAP"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-indigo"><svg viewBox="0 0 24 24"><use href="#i-layers"/></svg></div>
+        <h3>EAP</h3>
+        <p>Estrutura analítica</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 13. Financeiro -->
-      <div class="home-button btn-financeiro" onclick="switchTab('financeiro', this)">
-        <div class="home-button-icon">💳</div>
-        <div class="home-button-title">Financeiro</div>
-        <div class="home-button-desc">Medições e aprovações</div>
+      <div class="home-card extra" data-mod="financeiro" data-cor="emerald" onclick="switchTab('financeiro')">
+        <button class="fav" data-fav="financeiro" onclick="alternarFavorito('financeiro', event)" aria-label="Favoritar Financeiro"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-emerald"><svg viewBox="0 0 24 24"><use href="#i-card"/></svg></div>
+        <h3>Financeiro</h3>
+        <p>Medições e aprovações</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-
-      <!-- 14. Suprimentos -->
-      <div class="home-button btn-suprimentos" onclick="switchTab('suprimentos', this)">
-        <div class="home-button-icon">📦</div>
-        <div class="home-button-title">Suprimentos</div>
-        <div class="home-button-desc">Requisições e pedidos</div>
+      <div class="home-card extra" data-mod="suprimentos" data-cor="amber" onclick="switchTab('suprimentos')">
+        <button class="fav" data-fav="suprimentos" onclick="alternarFavorito('suprimentos', event)" aria-label="Favoritar Suprimentos"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
+        <div class="ico g-amber"><svg viewBox="0 0 24 24"><use href="#i-package"/></svg></div>
+        <h3>Suprimentos</h3>
+        <p>Requisições e pedidos</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-    </div>
-
-    <div class="home-footer">
-      <p>v1.0 | BUILDLy Premium</p>
     </div>
   </div>
 </div>
@@ -677,7 +701,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
     <div class="admin-section" id="pauta-admin-backup">
       <button class="btn btn-secondary btn-full" onclick="pautaGravarBackup()">💾 GRAVAR CADASTROS</button>
       <div style="margin-top:10px">
-        <label class="frow"><span style="display:block;font-size:12px;font-weight:600;color:#fff;margin-bottom:4px">Restaurar</span>
+        <label class="frow"><span style="display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px">Restaurar</span>
           <input type="file" accept=".json" onchange="pautaRestaurarBackup(event)"/>
         </label>
       </div>
@@ -799,57 +823,57 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 
 <!-- CUSTOS PAGE (Controle de Gastos) -->
 <div class="page" id="page-custos">
-  <iframe id="custos-iframe" src="custos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="custos-iframe" src="custos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- RDO PAGE (Diário de Obras) -->
 <div class="page" id="page-rdo">
-  <iframe id="rdo-iframe" src="rdo.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="rdo-iframe" src="rdo.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- REUNIÃO PAGE (Ata de Reunião) -->
 <div class="page" id="page-reuniao">
-  <iframe id="reuniao-iframe" src="reuniao.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="reuniao-iframe" src="reuniao.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- RESUMO DO TEMPO PAGE (condições climáticas, alimentado pelo RDO) -->
 <div class="page" id="page-resumo-tempo">
-  <iframe id="resumo-tempo-iframe" src="resumo-tempo.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="resumo-tempo-iframe" src="resumo-tempo.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- MEDIÇÃO PAGE (medições com cliente e terceiros) -->
 <div class="page" id="page-medicao">
-  <iframe id="medicao-iframe" src="medicoes.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="medicao-iframe" src="medicoes.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- DOCUMENTOS PAGE (contrato, cronograma, orçamento + alertas) -->
 <div class="page" id="page-documentos">
-  <iframe id="documentos-iframe" src="documentos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="documentos-iframe" src="documentos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- MANUTENÇÃO PAGE (painel de status + mural da obra) -->
 <div class="page" id="page-manutencao">
-  <iframe id="manutencao-iframe" src="manutencao.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="manutencao-iframe" src="manutencao.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- EAP PAGE (Estrutura Analítica do Projeto) -->
 <div class="page" id="page-eap">
-  <iframe id="eap-iframe" src="eap.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="eap-iframe" src="eap.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- PLANEJAMENTO PAGE (Cronogramas e atividades) -->
 <div class="page" id="page-planejamento">
-  <iframe id="planejamento-iframe" src="planejamento.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="planejamento-iframe" src="planejamento.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- FINANCEIRO PAGE (Medições, NFs, aprovações) -->
 <div class="page" id="page-financeiro">
-  <iframe id="financeiro-iframe" src="financeiro.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="financeiro-iframe" src="financeiro.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- SUPRIMENTOS PAGE (Requisições, cotações, pedidos) -->
 <div class="page" id="page-suprimentos">
-  <iframe id="suprimentos-iframe" src="suprimentos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#5a6272;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="suprimentos-iframe" src="suprimentos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- OBRA PAGE (cadastro compartilhado entre todos os apps) -->
@@ -875,7 +899,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
         <label>Trabalhando em</label>
         <select id="obra-seletor" onchange="obraTrocarAtual(this.value)"></select>
       </div>
-      <p style="font-size:11px;color:#fff;margin-top:4px">
+      <p style="font-size:11px;color:var(--ink);margin-top:4px">
         Cada obra é um banco de dados totalmente separado. Trocar aqui muda
         Pauta, Check-in, RDO, Custos e todas as outras abas para os dados
         dessa obra.
@@ -906,8 +930,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
     <div class="sec">
       <div class="sec-title">🖼️ Logo da Empresa</div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <div id="obra-logo-preview" style="width:64px;height:64px;border-radius:8px;background:#454c59;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;overflow:hidden;flex-shrink:0">LOGO</div>
-        <div style="font-size:12px;color:#fff">PNG ou JPG, até 500 KB. Aparece no topo do RDO.</div>
+        <div id="obra-logo-preview" style="width:64px;height:64px;border-radius:8px;background:var(--bg-mid);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink);overflow:hidden;flex-shrink:0">LOGO</div>
+        <div style="font-size:12px;color:var(--ink)">PNG ou JPG, até 500 KB. Aparece no topo do RDO.</div>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="document.getElementById('obra-logo-input').click()">📤 Selecionar Imagem</button>
@@ -1001,9 +1025,22 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
   </div>
 </div>
 
+<!-- BARRA INFERIOR -->
+<nav class="app-nav" id="app-nav" aria-label="Navegação principal">
+  <button class="ativo" data-nav="inicio" onclick="navInicio()"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg><span>Início</span></button>
+  <button data-nav="favoritos" onclick="abrirFavoritos()"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><span>Favoritos</span></button>
+  <button data-nav="relatorios" onclick="abrirRelatorios()"><svg viewBox="0 0 24 24"><use href="#i-bars"/></svg><span>Relatórios</span></button>
+  <button data-nav="mais" onclick="abrirMais()"><svg viewBox="0 0 24 24"><use href="#i-mais"/></svg><span>Mais</span></button>
+</nav>
+
+<!-- PAINEL (bottom sheet) -->
+<div class="sheet-overlay" id="sheet" onclick="if(event.target===this)fecharSheet()">
+  <div class="sheet" id="sheet-corpo"></div>
+</div>
+
 <!-- BOTÃO FLUTUANTE DO ROBÔ — visível em qualquer aba -->
 <div class="fab-ia-wrap">
-  <button class="fab-ia-btn" onclick="abrirModalPerguntar()" title="Perguntar sobre os dados">🤖</button>
+  <button class="fab-ia-btn" onclick="abrirModalPerguntar()" title="Perguntar sobre os dados"><svg viewBox="0 0 24 24"><use href="#i-robo"/></svg></button>
 </div>
 
 <!-- MODAL PERGUNTAR (robô) -->
@@ -1013,14 +1050,14 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
       🤖 Perguntar sobre os dados
       <button class="modal-close" onclick="fecharModalPerguntar()">✕</button>
     </div>
-    <p style="font-size:12px;color:#fff;margin:-8px 0 12px;font-style:italic">
+    <p style="font-size:12px;color:var(--ink);margin:-8px 0 12px;font-style:italic">
       Pergunte sobre RDOs, pautas, check-ins, notas fiscais, medições, documentos e mural. Ex.: "está tudo batendo com o contrato, orçamento e prazo?"
     </p>
     <div class="frow">
       <textarea id="perguntarInput" style="min-height:70px" placeholder="Ex.: Quantos bags de areia fizemos em julho? Quais pautas estão atrasadas? Quanto gastamos com cimento?"></textarea>
     </div>
-    <div id="perguntarResposta" style="display:none;margin-top:4px;padding:12px;background:#5a6272;border:1px solid var(--line);border-radius:8px;font-size:14px;line-height:1.5;white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
-    <div id="perguntarLoading" style="display:none;margin-top:4px;font-size:13px;color:#fff">⏳ Consultando os dados...</div>
+    <div id="perguntarResposta" style="display:none;margin-top:4px;padding:12px;background:var(--bg-card);border:1px solid var(--line);border-radius:8px;font-size:14px;line-height:1.5;white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
+    <div id="perguntarLoading" style="display:none;margin-top:4px;font-size:13px;color:var(--ink)">⏳ Consultando os dados...</div>
     <button class="btn btn-primary btn-full" id="btnPerguntarEnviar" style="margin-top:12px" onclick="enviarPergunta()">PERGUNTAR</button>
   </div>
 </div>
@@ -1052,11 +1089,16 @@ function switchTab(tab, el) {
 
   currentTab = tab;
 
-  // Show/hide home header based on current tab
+  // Cabeçalho grande só na Home; nos módulos, o hero fixo com o cartão do módulo
   const homeHeader = document.getElementById('main-hdr');
   if (homeHeader) {
     homeHeader.style.display = tab === 'home' ? 'block' : 'none';
   }
+  document.body.classList.toggle('modulo', tab !== 'home');
+  if (tab !== 'home') atualizarHeroModulo(tab);
+  if (typeof fecharSheet === 'function') fecharSheet();
+  if (typeof atualizarSino === 'function') atualizarSino();
+  window.scrollTo(0, 0);
 
   if (tab === 'pauta') {
     pautaInit();
@@ -1076,6 +1118,194 @@ function switchTab(tab, el) {
     }
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// CASCA — hero, barra inferior e painéis (padrão visual claro)
+// ═══════════════════════════════════════════════════════════════
+const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Custos", "desc": "Orçamentos e controle", "i": "dollar", "c": "orange", "t": "CUSTOS", "s": "Controle de Notas Fiscais"}, "medicao": {"nome": "Medição", "desc": "Quantidades e avanço físico", "i": "ruler", "c": "slate", "t": "MEDIÇÕES", "s": "Quantidades e avanço físico"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "eap": {"nome": "EAP", "desc": "Estrutura analítica", "i": "layers", "c": "indigo", "t": "EAP", "s": "Estrutura analítica do projeto"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
+const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "eap", "financeiro", "suprimentos"];
+
+function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }
+function _esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function atualizarHeroModulo(tab) {
+  const m = MODULOS[tab];
+  if (!m) return;
+  const ico = document.getElementById('mod-ico');
+  ico.className = 'mod-ico ico g-' + m.c;
+  ico.innerHTML = _svg(m.i);
+  document.getElementById('mod-title').textContent = m.t;
+  document.getElementById('mod-sub').textContent = m.s;
+}
+
+function marcarNav(qual) {
+  document.querySelectorAll('#app-nav button').forEach(b => b.classList.toggle('ativo', b.dataset.nav === qual));
+}
+
+function abrirSheet(html) {
+  document.getElementById('sheet-corpo').innerHTML = '<div class="sheet-alca"></div>' + html;
+  document.getElementById('sheet').classList.add('aberto');
+}
+function fecharSheet() {
+  const sh = document.getElementById('sheet');
+  if (sh) sh.classList.remove('aberto');
+  marcarNav('inicio');
+}
+function navInicio() { fecharSheet(); switchTab('home'); }
+function irModulo(id) { fecharSheet(); switchTab(id); }
+
+// Abre um módulo e, se pedido, já na aba interna dele (apps em iframe)
+function irAba(mod, view) {
+  fecharSheet();
+  switchTab(mod);
+  if (!view) return;
+  if (mod === 'checkin') {
+    const ab = document.querySelectorAll('#checkin-tabs .tab');
+    const ordem = { checkin: 0, cadastro: 1, calendario: 2, resumo: 3, dashboard: 4 };
+    if (ab[ordem[view]]) checkinGoTab(view, ab[ordem[view]]);
+    return;
+  }
+  const ifr = document.getElementById(mod + '-iframe');
+  const tentar = n => {
+    try {
+      const d = ifr && ifr.contentDocument;
+      const b = d && d.querySelector('.tab[data-view="' + view + '"]');
+      if (b) { b.click(); return; }
+    } catch (e) {}
+    if (n > 0) setTimeout(() => tentar(n - 1), 250);
+  };
+  tentar(16);
+}
+
+// ── favoritos ──
+function lerFavoritos() { try { return JSON.parse(localStorage.getItem('favoritos')) || []; } catch (e) { return []; } }
+function gravarFavoritos(a) { try { localStorage.setItem('favoritos', JSON.stringify(a)); } catch (e) {} }
+function alternarFavorito(id, ev) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  const f = lerFavoritos(), i = f.indexOf(id);
+  if (i >= 0) f.splice(i, 1); else f.push(id);
+  gravarFavoritos(f);
+  pintarFavoritos();
+}
+function pintarFavoritos() {
+  const f = lerFavoritos();
+  document.querySelectorAll('.home-card .fav').forEach(b => b.classList.toggle('on', f.includes(b.dataset.fav)));
+}
+function listaModulos(ids) {
+  return '<div class="sheet-lista">' + ids.map(id => {
+    const m = MODULOS[id];
+    return '<button class="sheet-item" onclick="irModulo(\'' + id + '\')"><span class="ico g-' + m.c + '">' + _svg(m.i) +
+      '</span><span><b>' + _esc(m.nome) + '</b><small>' + _esc(m.desc) + '</small></span><span class="chev">' + _svg('chevron-right') + '</span></button>';
+  }).join('') + '</div>';
+}
+function abrirFavoritos() {
+  marcarNav('favoritos');
+  const f = lerFavoritos().filter(id => MODULOS[id]);
+  abrirSheet('<h2>Favoritos</h2><div class="sheet-sub">Atalhos fixados pela estrela dos cartões.</div>' +
+    (f.length ? listaModulos(f) :
+      '<div class="sheet-vazio">Nenhum favorito ainda.<br>Toque na estrela de um cartão da tela inicial para fixar o atalho aqui.</div>'));
+}
+
+// ── relatórios ──
+function abrirRelatorios() {
+  marcarNav('relatorios');
+  const itens = [
+    ['rdo', 'gerar', 'PDF do RDO', 'Gerar o relatório do dia', 'file', 'blue'],
+    ['rdo', 'resumo', 'Resumo do RDO', 'Semana, mês e ano', 'bars', 'blue'],
+    ['resumo-tempo', '', 'Resumo do Tempo', 'Condições climáticas e chuva', 'cloud', 'sky'],
+    ['reuniao', 'gerar', 'Ata de Reunião', 'Gerar PDF da ata', 'users', 'teal'],
+    ['medicao', 'historico', 'Medições', 'Histórico e relatórios', 'ruler', 'slate'],
+    ['checkin', 'resumo', 'Resumo do Check-in', 'Assuntos por status', 'check', 'green']
+  ];
+  abrirSheet('<h2>Relatórios</h2><div class="sheet-sub">Atalhos para gerar e consultar relatórios.</div><div class="sheet-lista">' +
+    itens.map(([mod, view, t, d, ic, cor]) =>
+      '<button class="sheet-item" onclick="irAba(\'' + mod + '\',\'' + view + '\')"><span class="ico g-' + cor + '">' + _svg(ic) +
+      '</span><span><b>' + t + '</b><small>' + d + '</small></span><span class="chev">' + _svg('chevron-right') + '</span></button>').join('') + '</div>');
+}
+
+// ── mais ──
+function abrirMais() {
+  marcarNav('mais');
+  abrirSheet('<h2>Mais módulos</h2><div class="sheet-sub">Outras áreas da plataforma.</div>' + listaModulos(MODULOS_EXTRAS) +
+    '<div class="sheet-lista" style="margin-top:8px"><button class="sheet-item" onclick="fecharSheet();abrirModalPerguntar()"><span class="ico g-brown">' + _svg('robo') +
+    '</span><span><b>Perguntar à IA</b><small>Tire dúvidas sobre os dados da obra</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>');
+}
+
+// ── sino: pendências do Check-in ──
+function pendenciasCheckin() {
+  try {
+    return (JSON.parse(localStorage.getItem('chk_assuntos')) || []).filter(a => a.status === 'afazer' || a.status === 'fazendo');
+  } catch (e) { return []; }
+}
+function atualizarSino() {
+  const n = pendenciasCheckin().length;
+  document.querySelectorAll('.sino-ponto').forEach(e => { e.hidden = !n; });
+}
+function abrirSino() {
+  const p = pendenciasCheckin();
+  marcarNav('inicio');
+  const rot = { afazer: 'A fazer', fazendo: 'Fazendo' };
+  abrirSheet('<h2>Pendências</h2><div class="sheet-sub">' + (p.length ? p.length + ' assunto(s) em aberto no Check-in.' : 'Tudo em dia.') + '</div>' +
+    (p.length ? '<div class="sheet-lista">' + p.slice(0, 8).map(a =>
+      '<button class="sheet-item" onclick="irAba(\'checkin\',\'checkin\')"><span class="ico g-' + (a.status === 'fazendo' ? 'orange' : 'blue') + '">' + _svg('check') +
+      '</span><span><b>' + _esc(a.assunto || 'Sem título') + '</b><small>' + (rot[a.status] || '') + (a.resp ? ' · ' + _esc(a.resp) : '') + '</small></span><span class="chev">' + _svg('chevron-right') + '</span></button>').join('') + '</div>' +
+      (p.length > 8 ? '<div class="sheet-sub" style="margin-top:8px">+ ' + (p.length - 8) + ' no Check-in</div>' : '')
+      : '<div class="sheet-vazio">Nenhum assunto a fazer ou fazendo.</div>'));
+}
+
+// ── perfil ──
+function abrirPerfil() {
+  marcarNav('inicio');
+  let apont = '', obra = '';
+  try { apont = localStorage.getItem('diario_obras_apontador_aparelho') || ''; } catch (e) {}
+  try { obra = (B3Obras.atual() || {}).nome || ''; } catch (e) {}
+  abrirSheet('<h2>Perfil deste aparelho</h2><div class="sheet-sub">O que o BUILDLy lembra neste celular ou computador.</div>' +
+    '<div class="sheet-linha"><span>Apontador</span><b>' + _esc(apont || 'não definido (escolha no RDO)') + '</b></div>' +
+    '<div class="sheet-linha"><span>Obra ativa</span><b>' + _esc(obra || '—') + '</b></div>' +
+    '<div class="sheet-linha"><span>Versão</span><b>BUILDLy Premium v1.0</b></div>' +
+    '<div class="sheet-lista" style="margin-top:12px"><button class="sheet-item" onclick="irAba(\'rdo\',\'diario\')"><span class="ico g-blue">' + _svg('file') +
+    '</span><span><b>Escolher apontador</b><small>No Diário do RDO</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>');
+}
+
+// ── obra atual (cartão da Home) ──
+function atualizarCartaoObra() {
+  try {
+    const id = B3Obras.atualId();
+    const pintar = c => {
+      const reg = B3Obras.porId(id) || {};
+      document.getElementById('obra-card-nome').textContent = (c && c.nome) || reg.nome || 'Obra';
+      document.getElementById('obra-card-local').textContent = (c && c.local) || '';
+    };
+    pintar(B3Obras.config(id));
+    B3Obras.configCarregar(id).then(c => { if (B3Obras.atualId() === id) pintar(c); }).catch(() => {});
+  } catch (e) {}
+}
+function abrirTrocaObra() {
+  marcarNav('inicio');
+  let lista = [], atual = '';
+  try { lista = B3Obras.listar(); atual = B3Obras.atualId(); } catch (e) {}
+  abrirSheet('<h2>Obra atual</h2><div class="sheet-sub">Cada obra tem seu próprio banco de dados. Ao trocar, o app recarrega.</div><div class="sheet-lista">' +
+    lista.map(o => {
+      const c = (function () { try { return B3Obras.config(o.id) || {}; } catch (e) { return {}; } })();
+      return '<button class="sheet-item' + (o.id === atual ? ' atual' : '') + '" onclick="trocarObraDoCartao(\'' + o.id + '\')"><span class="ico g-slate">' + _svg('building') +
+        '</span><span><b>' + _esc(c.nome || o.nome) + '</b><small>' + _esc(c.local || (o.id === atual ? 'Obra ativa' : '')) + '</small></span><span class="chev">' + (o.id === atual ? _svg('check') : '') + '</span></button>';
+    }).join('') + '</div>');
+}
+function trocarObraDoCartao(id) {
+  try {
+    if (id !== B3Obras.atualId()) { B3Obras.trocar(id); location.reload(); return; }
+  } catch (e) {}
+  fecharSheet();
+}
+
+function iniciarCasca() {
+  pintarFavoritos();
+  atualizarSino();
+  atualizarCartaoObra();
+  window.addEventListener('storage', atualizarSino);
+  setInterval(atualizarSino, 20000);
+}
+document.addEventListener('DOMContentLoaded', iniciarCasca);
 
 // ═══════════════════════════════════════════════════════════════
 // OBRA — cada obra é um projeto Supabase independente (banco próprio).
@@ -2395,7 +2625,7 @@ async function checkinEnviarStatusPendentes() {
 
 function checkinCardAssuntoHTML(a) {
   return `
-    <div style="background:#5a6272;border-radius:8px;padding:11px 12px;margin-bottom:8px;border:1px solid var(--line)">
+    <div style="background:var(--bg-card);border-radius:8px;padding:11px 12px;margin-bottom:8px;border:1px solid var(--line)">
       <div style="display:flex;align-items:flex-start;gap:8px">
         <div style="flex:1">
           <div style="font-family:var(--serif);font-weight:700;font-size:15px;margin-bottom:4px">${a.assunto}</div>
@@ -2404,12 +2634,12 @@ function checkinCardAssuntoHTML(a) {
             ${a.setor ? `<span class="badge badge-blue">${a.setor}</span>` : ''}
             <span class="badge ${checkinStatusBadge(a.status)}">${checkinStatusLabel(a.status)}</span>
           </div>
-          <div style="font-size:11px;color:#fff">
+          <div style="font-size:11px;color:var(--ink)">
             ${a.dataLanc ? `📅 Lançamento: ${checkinFormatDate(a.dataLanc)}` : ''}
             ${a.dataTerm ? ` &nbsp;|&nbsp; 🏁 Término: ${checkinFormatDate(a.dataTerm)}` : ''}
           </div>
-          ${a.resp ? `<div style="font-size:11px;color:#fff;margin-top:2px">👤 Resp: ${a.resp}</div>` : ''}
-          ${a.criador ? `<div style="font-size:11px;color:#fff;margin-top:1px">✍️ Criador: ${a.criador}</div>` : ''}
+          ${a.resp ? `<div style="font-size:11px;color:var(--ink);margin-top:2px">👤 Resp: ${a.resp}</div>` : ''}
+          ${a.criador ? `<div style="font-size:11px;color:var(--ink);margin-top:1px">✍️ Criador: ${a.criador}</div>` : ''}
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
           <button class="card-btn" onclick="checkinEditarAssunto('${a.id}')">✏️</button>
@@ -2761,7 +2991,7 @@ function checkinRenderResumo() {
       <div class="ci-box"><div class="ci-box-val yellow">${mediaD}d</div><div class="ci-box-lbl">Tempo Médio</div></div>
     </div>
     <div class="kanban-status-box">
-      <div style="font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:10px">📊 Status</div>
+      <div style="font-size:11px;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:10px">📊 Status</div>
       <div class="ksb-row">
         <div><div class="ksb-val blue">${af}</div><div class="ksb-lbl">🎯 A Fazer</div></div>
         <div><div class="ksb-val yellow">${checkinAssuntos.filter(a => a.status === 'fazendo').length}</div><div class="ksb-lbl">⚡ Fazendo</div></div>
@@ -2803,31 +3033,31 @@ function checkinRenderDashboard() {
   const cores = ['var(--accent)', 'var(--yellow)', 'var(--green)', 'var(--blue)'];
   const maxSetor = Math.max(...Object.values(setorDados), 1);
   cont.innerHTML = `
-    <div class="sec" style="background:var(--bg-dark);color:#ffffff">
-      <div style="font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:12px;text-align:center">🏗️ Visão Geral</div>
+    <div class="sec" style="background:var(--bg-dark);color:var(--ink)">
+      <div style="font-size:11px;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:12px;text-align:center">🏗️ Visão Geral</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div style="background:#454c59;border-radius:8px;padding:12px;text-align:center">
-          <div style="font-family:var(--serif);font-size:32px;font-weight:800;color:#fff">${pct}%</div>
-          <div style="font-size:11px;color:#fff;text-transform:uppercase">Resolvido</div>
+        <div style="background:var(--bg-mid);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-family:var(--serif);font-size:32px;font-weight:800;color:var(--ink)">${pct}%</div>
+          <div style="font-size:11px;color:var(--ink);text-transform:uppercase">Resolvido</div>
         </div>
-        <div style="background:#454c59;border-radius:8px;padding:12px;text-align:center">
-          <div style="font-family:var(--serif);font-size:32px;font-weight:800;color:#fff">${checkinReunioes.length}</div>
-          <div style="font-size:11px;color:#fff;text-transform:uppercase">Reuniões</div>
+        <div style="background:var(--bg-mid);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-family:var(--serif);font-size:32px;font-weight:800;color:var(--ink)">${checkinReunioes.length}</div>
+          <div style="font-size:11px;color:var(--ink);text-transform:uppercase">Reuniões</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:#454c59;border-radius:8px;padding:12px;text-align:center">
+        <div style="background:var(--bg-mid);border-radius:8px;padding:12px;text-align:center">
           <div style="font-family:var(--serif);font-size:28px;font-weight:800;color:#e8a999">${at}</div>
-          <div style="font-size:11px;color:#fff;text-transform:uppercase">⚠️ Atrasados</div>
+          <div style="font-size:11px;color:var(--ink);text-transform:uppercase">⚠️ Atrasados</div>
         </div>
-        <div style="background:#454c59;border-radius:8px;padding:12px;text-align:center">
-          <div style="font-family:var(--serif);font-size:28px;font-weight:800;color:#ffffff">${total}</div>
-          <div style="font-size:11px;color:#fff;text-transform:uppercase">Total</div>
+        <div style="background:var(--bg-mid);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-family:var(--serif);font-size:28px;font-weight:800;color:var(--ink)">${total}</div>
+          <div style="font-size:11px;color:var(--ink);text-transform:uppercase">Total</div>
         </div>
       </div>
     </div>
     <div class="sec">
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#fff;margin-bottom:10px">Assuntos por Setor</div>
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink);margin-bottom:10px">Assuntos por Setor</div>
       ${Object.entries(setorDados).map(([s,v],i) => `
         <div class="dash-bar-row">
           <span class="dash-bar-label">${s}</span>
@@ -2850,7 +3080,7 @@ function abrirCadastroLocais() {
   if (!w || typeof w.abrirEditarLocais !== 'function') {
     return obraNotify('❌ O RDO ainda está carregando. Tente de novo em instantes.');
   }
-  switchTab('rdo', document.querySelectorAll('.tab')[3]);
+  switchTab('rdo');
   const sel = w.document.getElementById('obraAtiva');
   if (sel) sel.value = obraId;
   w.atualizarLocaisDaObra();

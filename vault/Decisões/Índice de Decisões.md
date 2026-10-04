@@ -24,6 +24,7 @@ escreva uma nova nota que substitua a anterior, marcando a antiga como superada.
 | 26/08 | [[Decisões/2026-08-26 Espaço próprio de armazenamento]] | ✅ Decidido |
 | 26/08 | [[Decisões/2026-08-26 Isolamento definitivo entre projetos]] | 🟡 Feito no código, falta despublicar o buildly2 |
 | 27/08 | [[Decisões/2026-08-27 Migração da planilha para o Supabase]] | ❌ Descartada em 28/08 — assunto saiu deste repositório |
+| 04/10 | [[Decisões/2026-10-04 Padrão visual claro]] | ✅ Decidido (falta ver no iPhone) |
 
 ---
 

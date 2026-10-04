@@ -151,6 +151,13 @@ preferências de estilo.
     a tarefa atual toca, antes de considerar uma migração de armazenamento compartilhado
     concluída.
 
+### O tema claro nunca entra na impressão/PDF — e `versionar_estaticos.py` depois de editar o tema
+
+`tema.css` é ligado com `media="screen"`. Sem isso, o PDF do RDO passou de 1 para 2 folhas
+(`test_rdo_pdf.py` pegou). Depois de qualquer edição em `tema.css` ou `supabase-config.js`, rode
+`python3 scripts/versionar_estaticos.py`: sem o `?v=hash`, o Safari mostra o tema velho por até
+10 minutos e a casca fica nova com o app de dentro velho.
+
 ---
 
 ## Relacionado

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#3a3f49">
@@ -92,7 +93,7 @@
     background: var(--bg-dark);
     background-image:
       var(--texture),
-      linear-gradient(180deg, #454c59 0%, #3a3f49 100%);
+      linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-dark) 100%);
     color: #fff;
     padding: 16px 14px 12px;
     box-shadow: 0 3px 16px rgba(0,0,0,0.35);
@@ -189,7 +190,7 @@
     font-size: 12px;
     font-weight: 700;
     font-family: var(--serif);
-    color: #fff;
+    color:var(--ink);
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
@@ -225,7 +226,7 @@
     font-family: var(--serif);
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color:#fff;
+    color:var(--ink);
     cursor: pointer;
     text-align: center;
     transition: all 0.2s;
@@ -290,7 +291,7 @@
   }
   .resumo-stat-label {
     font-size: 9px;
-    color: #fff;
+    color:var(--ink);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 3px;
@@ -320,13 +321,13 @@
   .resumo-ativ-total {
     font-size: 16px;
     font-weight: 700;
-    color: #fff;
+    color:var(--ink);
     font-family: var(--serif);
     white-space: nowrap;
   }
   .resumo-ativ-unid {
     font-size: 11px;
-    color:#fff;
+    color:var(--ink);
     margin-top: 1px;
   }
   .resumo-bar-wrap {
@@ -344,7 +345,7 @@
   }
   .resumo-ativ-detalhe {
     font-size: 11px;
-    color:#fff;
+    color:var(--ink);
     display: flex;
     flex-wrap: wrap;
     gap: 4px 10px;
@@ -358,12 +359,12 @@
     border-radius: 4px;
     padding: 1px 5px;
     font-size: 10px;
-    color:#fff;
+    color:var(--ink);
   }
   .resumo-vazio {
     text-align: center;
     padding: 30px 20px;
-    color:#fff;
+    color:var(--ink);
     font-size: 13px;
     font-style: italic;
   }
@@ -377,7 +378,7 @@
   .resumo-efetivo-titulo {
     font-size: 12px;
     font-weight: 700;
-    color:#fff;
+    color:var(--ink);
     text-transform: uppercase;
     letter-spacing: .6px;
     margin-bottom: 6px;
@@ -385,7 +386,7 @@
   .resumo-efetivo-media {
     font-size: 20px;
     font-weight: 700;
-    color: #fff;
+    color:var(--ink);
     font-family: var(--serif);
   }
 
@@ -416,7 +417,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #fff;
+    color:var(--ink);
     margin-bottom: 12px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--line);
@@ -433,7 +434,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color:#fff;
+    color:var(--ink);
     margin-bottom: 5px;
     margin-top: 12px;
     font-family: var(--serif);
@@ -489,7 +490,7 @@
     letter-spacing: .5px;
     text-transform: uppercase;
     cursor: pointer;
-    color:#fff;
+    color:var(--ink);
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -530,7 +531,7 @@
     font-family: var(--serif);
     font-weight: 700;
     font-size: 14px;
-    color: #fff;
+    color:var(--ink);
     letter-spacing: .5px;
     text-transform: uppercase;
     white-space: nowrap;
@@ -550,7 +551,7 @@
     letter-spacing: .5px;
   }
   .cat-toggle {
-    color: #fff;
+    color:var(--ink);
     font-size: 12px;
     transition: transform 0.2s;
     padding-left: 4px;
@@ -584,7 +585,7 @@
   }
   .ativ-detalhe-dia label {
     font-size: 11px;
-    color:#fff;
+    color:var(--ink);
     display: block;
     margin-bottom: 4px;
   }
@@ -607,7 +608,7 @@
   }
   .item-row.checked .checkbox::after {
     content: '✓';
-    color: white;
+    color:var(--ink);
     font-weight: 700;
     font-size: 14px;
   }
@@ -621,16 +622,16 @@
   }
   .item-meta {
     font-size: 12px;
-    color:#fff;
+    color:var(--ink);
   }
   .item-meta .mat, .item-meta .num {
     font-family: 'SF Mono', Menlo, monospace;
-    color: #fff;
+    color:var(--ink);
     font-weight: 600;
   }
   .item-extra {
     font-size: 11px;
-    color:#fff;
+    color:var(--ink);
     font-style: italic;
     margin-top: 2px;
   }
@@ -641,7 +642,7 @@
     height: 28px;
     border: none;
     background: transparent;
-    color:#fff;
+    color:var(--ink);
     cursor: pointer;
     border-radius: 4px;
     font-size: 14px;
@@ -661,7 +662,7 @@
   }
   .badge-op { background: rgba(45,106,79,0.15); color: var(--green); }
   .badge-pa { background: rgba(193,57,43,0.15); color: var(--red); }
-  .badge-leve { background: rgba(221,178,106,0.22); color: #d9b26a; }
+  .badge-leve { background: rgba(221,178,106,0.22); color: var(--yellow); }
   .badge-med { background: rgba(200,84,31,0.18); color: var(--accent); }
   .badge-grave { background: rgba(193,57,43,0.18); color: var(--red); }
   
@@ -684,7 +685,7 @@
   }
   .btn-primary { background: var(--accent); color: white; box-shadow: 0 2px 6px rgba(200,84,31,0.25); }
   .btn-primary:active { transform: translateY(1px); }
-  .btn-secondary { background: var(--bg-dark); color: white; }
+  .btn-secondary { background: var(--bg-dark); color:var(--ink); }
   .btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
   .btn-whatsapp { background: #25D366; color: white; }
   .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -764,7 +765,7 @@
     text-align: center;
     font-size: 11px;
     font-weight: 600;
-    color:#fff;
+    color:var(--ink);
     background: transparent;
     border: none;
     border-radius: 5px;
@@ -786,21 +787,21 @@
   .op-item:active { background: var(--line-soft); }
   .op-item.selected { background: rgba(45, 106, 79, 0.08); }
   .op-item-name { font-weight: 600; font-size: 14px; }
-  .op-item-meta { font-size: 11px; color:#fff; margin-top: 1px; }
-  .op-item-meta .mat { color: #fff; font-family: 'SF Mono', Menlo, monospace; font-weight: 600; }
+  .op-item-meta { font-size: 11px; color:var(--ink); margin-top: 1px; }
+  .op-item-meta .mat { color:var(--ink); font-family: 'SF Mono', Menlo, monospace; font-weight: 600; }
   .op-cat-label {
     padding: 6px 12px;
     background: var(--line-soft);
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    color:#fff;
+    color:var(--ink);
     font-weight: 700;
   }
   
   /* OUTPUT */
   .output-box {
-    background: #454c59;
+    background: var(--bg-mid);
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 12px;
@@ -833,14 +834,14 @@
     font-family: var(--serif);
     font-size: 20px;
     font-weight: 700;
-    color: #fff;
+    color:var(--ink);
     line-height: 1;
   }
   .stat-label {
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    color:#fff;
+    color:var(--ink);
     margin-top: 3px;
     font-weight: 600;
   }
@@ -858,7 +859,7 @@
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
-    color:#fff;
+    color:var(--ink);
     cursor: pointer;
   }
   .quick-btn:active { background: var(--line-soft); }
@@ -886,7 +887,7 @@
   .empty {
     text-align: center;
     padding: 24px 14px;
-    color:#fff;
+    color:var(--ink);
     font-style: italic;
     font-size: 13px;
   }
@@ -922,7 +923,7 @@
     text-align: center;
     font-size: 11px;
     font-weight: 600;
-    color:#fff;
+    color:var(--ink);
     background: transparent;
     border: none;
     border-radius: 6px;
@@ -972,7 +973,7 @@
     text-align: center;
     font-size: 10px;
     font-weight: 700;
-    color:#fff;
+    color:var(--ink);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 6px 0;
@@ -996,7 +997,7 @@
   .cal-day:active { transform: scale(0.95); }
   .cal-day.empty { background: transparent; border: none; cursor: default; }
   .cal-day.has-data {
-    background: linear-gradient(180deg, #454c59 0%, #453f30 100%);
+    background: linear-gradient(180deg, var(--bg-mid) 0%, var(--tint-yellow) 100%);
     border-color: var(--accent-soft);
   }
   .cal-day.today {
@@ -1006,7 +1007,7 @@
   }
   .cal-day.today.has-data { background: var(--accent); }
   .cal-day.weekend { color: var(--accent); }
-  .cal-day.today.weekend { color: white; }
+  .cal-day.today.weekend { color:var(--ink); }
   .cal-day-dot {
     width: 4px;
     height: 4px;
@@ -1018,7 +1019,7 @@
   .cal-day.today .cal-day-dot { background: white; }
   
   .info-card {
-    background: linear-gradient(135deg, #453f30 0%, #403b2e 100%);
+    background: linear-gradient(135deg, var(--tint-yellow) 0%, var(--tint-yellow) 100%);
     border: 1px solid var(--accent-soft);
     border-radius: 8px;
     padding: 12px 14px;
@@ -1030,7 +1031,7 @@
     color: var(--ink);
   }
   .info-card.editing {
-    background: linear-gradient(135deg, #4a3d33 0%, #463d36 100%);
+    background: linear-gradient(135deg, var(--tint-orange) 0%, var(--tint-red) 100%);
     border-color: var(--accent);
   }
   
@@ -1072,13 +1073,13 @@
   .logo-preview-text {
     flex: 1;
     font-size: 11px;
-    color:#fff;
+    color:var(--ink);
     font-style: italic;
   }
   
   .info-line {
     font-size: 12px;
-    color:#fff;
+    color:var(--ink);
     padding: 8px 12px;
     background: var(--bg);
     border-radius: 6px;
@@ -1088,7 +1089,7 @@
     gap: 6px;
   }
   .dia-semana {
-    color: #fff;
+    color:var(--ink);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1232,18 +1233,19 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=f48c7213"></script>
+<link rel="stylesheet" href="tema.css?v=246eebe8" media="screen">
 </head>
 <body>
 
 <div class="topbar">
 <header class="header" style="height:70px">
   <div class="header-top">
-    <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#fff;align-self:flex-start;margin-top:4px" onclick="voltarParaHome()">⬅️</button>
+    <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:var(--ink);align-self:flex-start;margin-top:4px" onclick="voltarParaHome()">⬅️</button>
     <div class="header-id">
       <div class="header-empresa" id="hdrEmpresa">EMPRESA</div>
       <h1>Diário de Obras</h1>
       <div class="header-obra" id="hdrObra">—</div>
-      <div id="hdrCidade" style="font-size:12px;color:#fff;margin-top:2px;display:none"></div>
+      <div id="hdrCidade" style="font-size:12px;color:var(--ink);margin-top:2px;display:none"></div>
     </div>
     <div class="header-logo" id="hdrLogo">LOGO</div>
   </div>
@@ -1299,7 +1301,7 @@
   <div class="section">
     <div class="section-title"><div class="section-title-text">🌤️ Condições do Tempo</div></div>
     <div style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#fff;margin-bottom:6px">🌅 Manhã (07h–12h)</div>
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink);margin-bottom:6px">🌅 Manhã (07h–12h)</div>
       <div class="tempo-chips" id="tempoChipsManha">
         <div class="tempo-chip" data-periodo="manha" data-tempo="sol">☀️ Sol</div>
         <div class="tempo-chip" data-periodo="manha" data-tempo="nublado">⛅ Nublado</div>
@@ -1314,7 +1316,7 @@
       </div>
     </div>
     <div style="margin-top:12px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#fff;margin-bottom:6px">🌇 Tarde (13h–17h)</div>
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink);margin-bottom:6px">🌇 Tarde (13h–17h)</div>
       <div class="tempo-chips" id="tempoChipsTarde">
         <div class="tempo-chip" data-periodo="tarde" data-tempo="sol">☀️ Sol</div>
         <div class="tempo-chip" data-periodo="tarde" data-tempo="nublado">⛅ Nublado</div>
@@ -1387,7 +1389,7 @@
     <div class="section-title">
       <div class="section-title-text">🔴 Veículos/Equipamentos Parados</div>
     </div>
-    <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+    <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
       Equipamentos e veículos leves cadastrados que não foram selecionados para uso hoje. Informe a justificativa de cada um.
     </p>
     <div id="veiculosParadosList"></div>
@@ -1406,7 +1408,7 @@
       <div class="section-title-text">⏸️ Atividades Paralisadas</div>
       <button class="btn-circular-add" onclick="abrirModalAtivParalisada()" title="Adicionar">+</button>
     </div>
-    <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+    <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
       Atividades do cadastro que estão paralisadas neste dia. Informe a justificativa de cada uma.
     </p>
     <div id="ativParalisadasList"><div class="empty">Nenhuma atividade paralisada</div></div>
@@ -1443,12 +1445,12 @@
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">📷 Fotos do Dia</div>
-      <span id="fotosContador" style="font-size:12px;font-weight:700;color:#fff">0/20</span>
+      <span id="fotosContador" style="font-size:12px;font-weight:700;color:var(--ink)">0/20</span>
     </div>
     <div id="fotosGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px"></div>
     <button class="add-btn-full" onclick="document.getElementById('fotoInput').click()">📷 Adicionar foto</button>
     <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="adicionarFotoDia(event)">
-    <div id="fotoStatus" style="display:none;font-size:12px;color:#fff;margin-top:6px">⏳ Processando foto...</div>
+    <div id="fotoStatus" style="display:none;font-size:12px;color:var(--ink);margin-top:6px">⏳ Processando foto...</div>
   </div>
 
   <div class="section">
@@ -1476,7 +1478,7 @@
   </div>
   <div class="section">
     <div class="section-title"><div class="section-title-text">📊 Acumulado de Serviços</div></div>
-    <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+    <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
       Soma das quantidades registradas diariamente por atividade.
     </p>
     <div class="grid-2" style="gap:8px;margin-bottom:10px">
@@ -1562,7 +1564,7 @@
       <button class="cal-nav-btn" onclick="navegarMes(1)">▶</button>
     </div>
     <div class="cal-grid" id="calGrid"></div>
-    <p style="font-size:11px;color:#fff;margin-top:12px;text-align:center;font-style:italic">
+    <p style="font-size:11px;color:var(--ink);margin-top:12px;text-align:center;font-style:italic">
       Toque numa data com marca dourada para ver/editar o diário.
     </p>
   </div>
@@ -1627,7 +1629,7 @@
     </div>
     <div class="section">
       <div class="section-title"><div class="section-title-text">⏰ Jornada Padrão</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
         Define horários automaticamente conforme o dia da semana. Sextas e sábados: encerramento mais cedo.
       </p>
       <label>Encerramento padrão (seg - qui)</label>
@@ -1644,7 +1646,7 @@
   <div class="config-pane" id="pane-colaboradores">
     <div class="section">
       <div class="section-title"><div class="section-title-text">👷 Colaboradores</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
         Marque quem está presente hoje na caixinha. Use ✏️/🗑️ para editar ou remover do cadastro.
       </p>
       <button class="add-btn-full" onclick="abrirModalCategoria()"><span style="color:var(--accent-soft)">+</span> Adicionar Categoria</button>
@@ -1658,7 +1660,7 @@
   <div class="config-pane" id="pane-equipamentos">
     <div class="section">
       <div class="section-title"><div class="section-title-text">🚜 Equipamentos</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
         Marque os utilizados hoje na caixinha. Use ✏️/🗑️ para editar ou remover do cadastro.
       </p>
       <button class="add-btn-full" onclick="abrirModalEquipamento()"><span style="color:var(--accent-soft)">+</span> Adicionar Equipamento</button>
@@ -1669,7 +1671,7 @@
 
     <div class="section">
       <div class="section-title"><div class="section-title-text">🚗 Veículos Leves</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
         Marque os utilizados hoje na caixinha. Use ✏️/🗑️ para editar ou remover da frota.
       </p>
       <button class="add-btn-full" onclick="abrirModalVeiculoFrota()"><span style="color:var(--accent-soft)">+</span> Adicionar Veículo Leve</button>
@@ -1683,7 +1685,7 @@
   <div class="config-pane" id="pane-atividades">
     <div class="section">
       <div class="section-title"><div class="section-title-text">🛠️ Atividades</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
         Marque as realizadas hoje na caixinha — a quantidade e o local aparecem logo abaixo do item. Use ✏️/🗑️ para editar ou remover do cadastro.
       </p>
       <button class="add-btn-full" onclick="abrirModalAtividade()"><span style="color:var(--accent-soft)">+</span> Adicionar Atividade Padrão</button>
@@ -1701,7 +1703,7 @@
   <div class="config-pane" id="pane-eventosdia">
     <div class="section">
       <div class="section-title"><div class="section-title-text">📌 Eventos do Dia</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:10px;font-style:italic">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
         Marque os que aconteceram hoje — o horário e o detalhe aparecem logo abaixo do item. Use ✏️/🗑️ para editar ou remover do cadastro.
       </p>
       <button class="add-btn-full" onclick="abrirModalEventoCadastro('eventosDia')"><span style="color:var(--accent-soft)">+</span> Adicionar Tipo de Evento</button>
@@ -1735,18 +1737,18 @@
     <!-- Card backup automático -->
     <div class="section">
       <div class="section-title"><div class="section-title-text">🔄 Backup Automático</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:12px;line-height:1.5">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:12px;line-height:1.5">
         Salvo automaticamente no dispositivo a cada relatório gerado ou diário salvo manualmente.
       </p>
       <div id="autoBackupInfo" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:12px;margin-bottom:12px;min-height:44px">
-        <span style="color:#fff;font-size:12px">Nenhum backup automático ainda.</span>
+        <span style="color:var(--ink);font-size:12px">Nenhum backup automático ainda.</span>
       </div>
       <div class="btn-stack">
         <button class="btn btn-primary" onclick="backupAutomatico()">💾 Fazer Backup Agora</button>
         <button class="btn btn-primary" onclick="sincronizarComOutrosAparelhos(true)">🔄 Sincronizar com os outros aparelhos</button>
         <button class="btn btn-primary" onclick="backupNuvem(true)">☁️ Backup na Nuvem (Drive)</button>
         <button class="btn btn-secondary" onclick="if(confirm('Substituir os dados atuais pelo último backup salvo na nuvem?')) restaurarNuvem(false)">☁️ Restaurar da Nuvem</button>
-        <div id="infoBackupNuvem" style="font-size:11px;color:#fff;margin-top:6px"></div>
+        <div id="infoBackupNuvem" style="font-size:11px;color:var(--ink);margin-top:6px"></div>
         <button class="btn btn-ghost" onclick="restaurarAutoBackup()">♻️ Restaurar Backup Automático</button>
       </div>
     </div>
@@ -1754,7 +1756,7 @@
     <!-- Backup manual em arquivo -->
     <div class="section">
       <div class="section-title"><div class="section-title-text">📁 Backup em Arquivo</div></div>
-      <p style="font-size:12px;color:#fff;margin-bottom:12px;line-height:1.5">
+      <p style="font-size:12px;color:var(--ink);margin-bottom:12px;line-height:1.5">
         Exporta um arquivo <strong>.json</strong> para salvar no celular, e-mail ou Google Drive. Recomendado semanalmente.
       </p>
       <div class="btn-stack">
@@ -1763,7 +1765,7 @@
         <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarBackup(event)">
       </div>
       <hr class="divider">
-      <p style="font-size:12px;color:#fff;text-align:center">
+      <p style="font-size:12px;color:var(--ink);text-align:center">
         Histórico: <strong id="histCount">0</strong> diários salvos
       </p>
     </div>
@@ -1826,7 +1828,7 @@
       <input type="checkbox" id="modalEquipMotorista" style="width:18px;height:18px;accent-color:var(--accent)">
       <label for="modalEquipMotorista" style="margin:0;text-transform:none;letter-spacing:normal;font-size:14px;color:var(--ink);cursor:pointer;flex:1;font-weight:500">🚛 É caminhão / requer motorista?</label>
     </div>
-    <p style="font-size:11px;color:#fff;margin-top:6px;font-style:italic">
+    <p style="font-size:11px;color:var(--ink);margin-top:6px;font-style:italic">
       Marcado: lista de motoristas será sugerida.<br>
       Desmarcado: lista de operacionais será sugerida.
     </p>
@@ -2108,7 +2110,7 @@
 <div class="modal-overlay" id="modalConfirm">
   <div class="modal" style="max-width:320px">
     <div class="modal-title" id="modalConfirmTitle" style="font-size:16px">Confirmar</div>
-    <p id="modalConfirmMsg" style="font-size:14px;color:#fff;margin:8px 0 16px;text-align:center;line-height:1.5"></p>
+    <p id="modalConfirmMsg" style="font-size:14px;color:var(--ink);margin:8px 0 16px;text-align:center;line-height:1.5"></p>
     <div class="btn-row">
       <button class="btn btn-ghost" id="modalConfirmNo">Cancelar</button>
       <button class="btn btn-primary" id="modalConfirmYes" style="background:var(--red);border-color:var(--red)">Excluir</button>
@@ -3515,9 +3517,9 @@ function renderFotosDia() {
             style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1.5px solid var(--line);display:block">
         </a>
         <button onclick="removerFotoDia(${i})" title="Remover"
-          style="position:absolute;top:4px;right:4px;width:22px;height:22px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:12px;line-height:1;cursor:pointer">✕</button>
+          style="position:absolute;top:4px;right:4px;width:22px;height:22px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:var(--ink);font-size:12px;line-height:1;cursor:pointer">✕</button>
       </div>
-      <div style="margin-top:4px;font-size:11px;color:#fff">${escapeHtml(legendaFoto(f, i))}</div>
+      <div style="margin-top:4px;font-size:11px;color:var(--ink)">${escapeHtml(legendaFoto(f, i))}</div>
       <select onchange="salvarAtivFoto(${i}, this.value)"
         style="width:100%;margin-top:3px;font-size:11px;padding:4px 4px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
         <option value="">📎 Geral</option>
@@ -4580,7 +4582,7 @@ function renderAtividadesDia() {
               oninput="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
               onchange="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
               onblur="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)">
-            ${unid ? `<span style="font-size:11px;color:#fff;white-space:nowrap">${escapeHtml(unid)}</span>` : ''}
+            ${unid ? `<span style="font-size:11px;color:var(--ink);white-space:nowrap">${escapeHtml(unid)}</span>` : ''}
           </div>
           <select onclick="event.stopPropagation()" onchange="event.stopPropagation();salvarStatusAtividade('${a.id}', this.value)"
             style="flex:1;min-width:0;padding:5px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
@@ -4894,13 +4896,13 @@ function renderEfetivoDia() {
     if (presentes.length > 0) {
       html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
         <div style="font-weight:600;color:var(--ink)">${cat.icon} ${escapeHtml(cat.nome)}</div>
-        <div style="font-size:15px;font-weight:700;color:#fff">${presentes.length}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--ink)">${presentes.length}</div>
       </div>`;
     }
   });
 
   if (totalP === 0) {
-    html += '<p style="color:#fff;text-align:center;padding:20px">Nenhum colaborador selecionado</p>';
+    html += '<p style="color:var(--ink);text-align:center;padding:20px">Nenhum colaborador selecionado</p>';
   }
 
   html += '</div>';
@@ -4940,14 +4942,14 @@ function renderEquipDia() {
   ordenados.forEach(g => {
     html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
       <div style="font-weight:600">${g.isMotorista ? '🚛' : '🚜'} ${escapeHtml(g.desc)}</div>
-      <div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;margin-left:8px">${g.count} un.</div>
+      <div style="font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';
 
   // Horímetros por equipamento (inicial / final / total)
   html += `<div style="margin-top:10px">
-    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#fff;margin-bottom:6px">⏱️ Horímetros (opcional)</div>`;
+    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink);margin-bottom:6px">⏱️ Horímetros (opcional)</div>`;
   const hs = currentDay.horimetros || {};
   selecionados.sort((a, b) => (a.numero + a.desc).localeCompare(b.numero + b.desc, 'pt-BR')).forEach(eq => {
     const hEq = hs[eq.id] || {};
@@ -4959,7 +4961,7 @@ function renderEquipDia() {
           onchange="salvarHorimetro('${eq.id}', 'ini', this.value)" style="flex:1;min-width:0">
         <input type="number" inputmode="decimal" step="0.1" min="0" placeholder="Final" value="${hEq.fim || ''}"
           onchange="salvarHorimetro('${eq.id}', 'fim', this.value)" style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap">${tot !== null ? tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' h' : '— h'}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap">${tot !== null ? tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' h' : '— h'}</div>
       </div>
     </div>`;
   });
@@ -5172,7 +5174,7 @@ function renderVeiculosLevesDia() {
   ordenados.forEach(g => {
     html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
       <div style="font-weight:600">🚗 ${escapeHtml(g.desc)}</div>
-      <div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;margin-left:8px">${g.count} un.</div>
+      <div style="font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';
@@ -6975,7 +6977,7 @@ function renderResumo() {
   if (resumoPeriodo === 'semana') {
     const label = resumoOffset === 0 ? 'Semana Atual' : resumoOffset === -1 ? 'Semana Passada' : '';
     document.getElementById('resumoNavLabel').innerHTML =
-      `${label ? label + '<br>' : ''}<span style="font-weight:400;font-size:12px;color:#fff">${formatDateBR(isoInicio)} → ${formatDateBR(isoFim)}</span>`;
+      `${label ? label + '<br>' : ''}<span style="font-weight:400;font-size:12px;color:var(--ink)">${formatDateBR(isoInicio)} → ${formatDateBR(isoFim)}</span>`;
   } else if (resumoPeriodo === 'mes') {
     const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const label = resumoOffset === 0 ? 'Mês Atual' : resumoOffset === -1 ? 'Mês Passado' : '';
@@ -7144,7 +7146,7 @@ function renderResumo() {
       membros.forEach(c => {
         const linha = document.createElement('div');
         linha.style.cssText = 'font-size:12px;color:#fff;padding:2px 0;display:flex;justify-content:space-between';
-        linha.innerHTML = `<span><span class="mat">${escapeHtml(c.mat)}</span> ${escapeHtml(c.nome)}</span><span style="color:#fff">${presencas[c.id]}d</span>`;
+        linha.innerHTML = `<span><span class="mat">${escapeHtml(c.mat)}</span> ${escapeHtml(c.nome)}</span><span style="color:var(--ink)">${presencas[c.id]}d</span>`;
         el.appendChild(linha);
       });
       listEf.appendChild(el);
@@ -7822,7 +7824,7 @@ function atualizarInfoAutoBackup() {
   if (!el) return;
   const meta = localStorage.getItem(AUTOBACKUP_META_KEY);
   if (!meta) {
-    el.innerHTML = '<span style="color:#fff">Nenhum backup automático ainda.</span>';
+    el.innerHTML = '<span style="color:var(--ink)">Nenhum backup automático ainda.</span>';
     return;
   }
   try {
@@ -7834,7 +7836,7 @@ function atualizarInfoAutoBackup() {
         <span style="font-size:20px">✅</span>
         <div>
           <div style="font-size:13px;font-weight:700;color:var(--ink)">Backup automático salvo</div>
-          <div style="font-size:11px;color:#fff">${dtBR} · ${m.diarios} diário(s)</div>
+          <div style="font-size:11px;color:var(--ink)">${dtBR} · ${m.diarios} diário(s)</div>
         </div>
       </div>
     `;
@@ -7899,11 +7901,11 @@ async function checarRestauracaoAutomatica() {
     banner.id = 'bannerRestaurar';
     banner.style.cssText = 'position:fixed;left:12px;right:12px;bottom:88px;z-index:9998;background:#3a3f49;border:1.5px solid #dda583;border-radius:10px;padding:14px;box-shadow:0 4px 16px rgba(0,0,0,.3)';
     banner.innerHTML = `
-      <div style="color:#dda583;font-weight:800;font-size:13px;margin-bottom:4px">☁️ Dados não encontrados neste aparelho</div>
-      <div style="color:#ffffff;font-size:12px;margin-bottom:10px">Há um backup na nuvem de ${dataBackup}. Restaurar?</div>
+      <div style="color:var(--accent);font-weight:800;font-size:13px;margin-bottom:4px">☁️ Dados não encontrados neste aparelho</div>
+      <div style="color:var(--ink);font-size:12px;margin-bottom:10px">Há um backup na nuvem de ${dataBackup}. Restaurar?</div>
       <div style="display:flex;gap:8px">
         <button onclick="document.getElementById('bannerRestaurar').remove();sessionStorage.setItem('restauracaoDispensada','1')" style="flex:1;padding:9px;border:none;border-radius:6px;background:#555;color:#fff;font-size:12px;font-weight:700">Agora não</button>
-        <button onclick="restaurarNuvem(false).then(()=>document.getElementById('bannerRestaurar')?.remove())" style="flex:1;padding:9px;border:none;border-radius:6px;background:#dda583;color:#1a1a1a;font-size:12px;font-weight:700">☁️ Restaurar</button>
+        <button onclick="restaurarNuvem(false).then(()=>document.getElementById('bannerRestaurar')?.remove())" style="flex:1;padding:9px;border:none;border-radius:6px;background:var(--accent);color:#1a1a1a;font-size:12px;font-weight:700">☁️ Restaurar</button>
       </div>`;
     document.body.appendChild(banner);
   } catch (e) { console.error('checar restauração:', e); }

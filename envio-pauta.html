@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Novo Assunto — BUILDLy Premium</title>
@@ -22,37 +23,38 @@ body{max-width:480px;margin:0 auto;padding:20px 16px 40px}
 .hdr-sub{font-size:13px;color:#fff;margin-top:4px;line-height:1.4}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:16px;margin-bottom:14px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.3)}
-.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 
 .frow{margin-bottom:12px}
-.frow label{display:block;font-size:12px;font-weight:600;color:#fff;margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
-.frow input,.frow select,.frow textarea{width:100%;min-width:0;min-height:38px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#454c59;color:var(--ink);outline:none;-webkit-appearance:none;appearance:none}
+.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow input,.frow select,.frow textarea{width:100%;min-width:0;min-height:38px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:var(--bg-mid);color:var(--ink);outline:none;-webkit-appearance:none;appearance:none}
 .frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
 .frow textarea{resize:vertical;min-height:70px}
 .frow-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .frow-2>.frow{min-width:0}
 
 .pri-group{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}
-.pri-btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:#454c59;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:#fff}
-.pri-btn.sel-alta{background:#4a3d3a;border-color:var(--red);color:var(--red)}
-.pri-btn.sel-media{background:#453f30;border-color:var(--yellow);color:var(--yellow)}
-.pri-btn.sel-baixa{background:#384a3d;border-color:var(--green);color:var(--green)}
+.pri-btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:var(--bg-mid);font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:var(--ink)}
+.pri-btn.sel-alta{background:var(--tint-red);border-color:var(--red);color:var(--red)}
+.pri-btn.sel-media{background:var(--tint-yellow);border-color:var(--yellow);color:var(--yellow)}
+.pri-btn.sel-baixa{background:var(--tint-green);border-color:var(--green);color:var(--green)}
 
 .btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase;background:var(--accent);color:#fff}
-.btn:active{background:#c68f6d}
-.btn:disabled{background:#666f80;cursor:default}
+.btn:active{background:var(--accent-hover)}
+.btn:disabled{background:var(--line);cursor:default}
 
-.confirm-box{display:none;background:#384a3d;border:1.5px solid var(--green);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px}
+.confirm-box{display:none;background:var(--tint-green);border:1.5px solid var(--green);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px}
 .confirm-box.show{display:block}
 .confirm-box-icon{font-size:28px;margin-bottom:4px}
 .confirm-box-txt{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--green)}
-.confirm-box-sub{font-size:12px;color:#fff;margin-top:4px}
+.confirm-box-sub{font-size:12px;color:var(--ink);margin-top:4px}
 
-.erro-box{display:none;background:#4a3d3a;border:1.5px solid var(--red);border-radius:10px;padding:12px;font-size:13px;color:var(--red);margin-bottom:14px}
+.erro-box{display:none;background:var(--tint-red);border:1.5px solid var(--red);border-radius:10px;padding:12px;font-size:13px;color:var(--red);margin-bottom:14px}
 .erro-box.show{display:block}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=f48c7213"></script>
+<link rel="stylesheet" href="tema.css?v=246eebe8" media="screen">
 </head>
 <body>
 

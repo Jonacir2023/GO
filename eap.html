@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EAP — BUILDLy</title>
@@ -12,8 +13,8 @@
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; grid-column: 1 / -1; }
     h1 { font-size: 28px; color: #1a1a1a; }
     .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
-    .btn-primary { background: #007AFF; color: white; }
-    .btn-primary:hover { background: #0051d5; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
     .btn-secondary { background: #e9ecef; color: #333; }
     .btn-secondary:hover { background: #dee2e6; }
     .btn-danger { background: #ff3b30; color: white; }
@@ -21,7 +22,7 @@
     .btn-sm { padding: 6px 12px; font-size: 12px; }
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; grid-column: 1 / -1; }
     .stat-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .stat-card-value { font-size: 24px; font-weight: 700; color: #007AFF; }
+    .stat-card-value { font-size: 24px; font-weight: 700; color: var(--accent); }
     .stat-card-label { font-size: 12px; color: #666; margin-top: 5px; }
     .filters { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
     .filter-group { display: flex; gap: 8px; align-items: center; }
@@ -29,7 +30,7 @@
     .filter-group select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
     .tree-container { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .tree-item { padding: 12px; margin: 8px 0; border-left: 3px solid #ddd; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-    .tree-item:hover { background: #f5f5f5; border-left-color: #007AFF; }
+    .tree-item:hover { background: #f5f5f5; border-left-color: var(--accent); }
     .tree-item.level-1 { margin-left: 0; }
     .tree-item.level-2 { margin-left: 30px; }
     .tree-item.level-3 { margin-left: 60px; }
@@ -64,17 +65,8 @@
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-    @media(prefers-color-scheme: dark) {
-      body { background: #1a1a1a; color: #e0e0e0; }
-      .tree-container, .stat-card, .filters, .sidebar, .modal-content { background: #2a2a2a; }
-      .filter-group select { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
-      .tree-item { border-left-color: #444; }
-      .tree-item:hover { background: #323232; }
-      .tree-item-code { background: #3a3a3a; color: #aaa; }
-      .form-group input, .form-group select, .form-group textarea { background: #3a3a3a; border-color: #4a4a4a; color: #e0e0e0; }
-      .sidebar-value { background: #3a3a3a; }
-    }
   </style>
+<link rel="stylesheet" href="tema.css?v=246eebe8" media="screen">
 </head>
 <body>
 <div class="container">
@@ -294,7 +286,7 @@ function renderizarEAP(itens) {
         <span class="tree-item-name">${item.nome}</span>
         <span class="tree-item-code">${item.codigo}</span>
         ${item.status ? `<span class="tree-item-status status-${item.status}">${item.status.replace('_', ' ')}</span>` : ''}
-        ${item.responsavel ? `<span style="font-size: 10px; background: #007AFF; color: white; padding: 3px 6px; border-radius: 3px; font-weight: 500;">${responsavelAbbr}</span>` : ''}
+        ${item.responsavel ? `<span style="font-size: 10px; background: var(--accent); color: white; padding: 3px 6px; border-radius: 3px; font-weight: 500;">${responsavelAbbr}</span>` : ''}
         <div class="tree-item-actions" onclick="event.stopPropagation()">
           <button class="btn btn-secondary btn-sm" onclick="editarItem('${item.id}')">✎</button>
           <button class="btn btn-danger btn-sm" onclick="removerItem('${item.id}')">✕</button>
