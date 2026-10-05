@@ -96,18 +96,25 @@ principal e o antigo foi **apagado** (o git guarda: commits anteriores a `06cb9a
 - **Layout:** mesma folha A4 e **mesma margem de 10 mm** (o Compartilhar usa 10 mm fixos — não mexer só
   em um lado), fonte 7,5–8 pt, tabelas coladas, duas colunas (clima | jornada; efetivo | equipamentos),
   sem fundos escuros (filetes cinza), sem quebras forçadas de página. Um dia cheio (14 de efetivo, 7 fotos,
-  eventos, SSMA, acumulados) cabe em **1 folha**; o teste `test_rdo_pdf.py` trava isso.
+  eventos, SSMA, acumulados) **sem Kanban** cabe em **1 folha**; com Kanban de poucos assuntos, em até 2
+  (o quadro é conteúdo pedido, não desperdício). O teste `test_rdo_pdf.py` trava os dois casos.
 - **Ordem das seções (pedida pelo usuário):** cabeçalho, indicadores, clima | jornada, efetivo | equipamentos,
-  **atividades do dia logo acima de eventos do dia**, segurança/meio ambiente, acumulados, check-in, fotos,
-  assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
+  **atividades do dia logo acima de eventos do dia**, segurança/meio ambiente, acumulados, fotos,
+  **Kanban de Assuntos do Check-in imediatamente acima das assinaturas**, assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
 - **Conteúdo:** cabeçalho com RDO nº, data, cliente, contrato, local/frente (obra + local do dia);
   faixa de 7 indicadores; clima; jornada e DSS; atividades (com paralisadas e justificativa); efetivo por
   função/empresa; equipamentos e veículos (operando/parados com justificativa); eventos do dia (hora,
   detalhe, fornecedor, valor, transporte); segurança e meio ambiente (gravidade, ação); **acumulados**
-  semana/mês/ano numa tabela só (atividades, eventos por tipo, cargas, m³, ton, valor); pendências do
-  Check-in em lista curta; fotos; assinaturas.
-- **Fotos:** só miniaturas, sempre 8 por linha (com 6 por linha, 3 fotos ocupavam mais que 7). O
-  Kanban do Check-in em página própria e as fotos grandes saíram com o layout antigo.
+  semana/mês/ano numa tabela só (atividades, eventos por tipo, cargas, m³, ton, valor); fotos; **Kanban de
+  Assuntos** (04 colunas); assinaturas.
+- **Fotos:** só miniaturas, sempre 8 por linha (com 6 por linha, 3 fotos ocupavam mais que 7). As
+  fotos grandes saíram com o layout antigo.
+- **Kanban de Assuntos (pedido do usuário em 05/10/2026):** `kanbanAssuntosPdf()` espelha o quadro da
+  tela do Check-in — A FAZER, FAZENDO, CONCLUÍDO, CANCELADO; em A fazer/Fazendo o cartão completo
+  (descrição, prioridade, setor, status, datas, responsável · criador, prazo restante/atrasado), em
+  Concluído/Cancelado só o nome. Lê `chk_assuntos` ao gerar, então sai sempre atualizado; **não filtra por
+  dia** (como a tela), logo um RDO regerado mostra o quadro de hoje. Substituiu a lista curta
+  "Check-in — pendências". Se não houver assuntos, a seção some.
 - Se passar de uma folha, quebra entre linhas de tabela sem partir linha (`tr` com `page-break-inside:
   avoid`; o Compartilhar também evita cortar `tr` e linhas de foto).
 - Armadilha: o símbolo ⏸ não existe na fonte do PDF (sai quadradinho); no PDF use texto.

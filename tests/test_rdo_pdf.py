@@ -96,6 +96,41 @@ with sync_playwright() as p:
           "sem quebras forçadas de página: uma folha contínua")
     page.evaluate("fecharPdfRDO()")
 
+    # ---- Kanban de Assuntos do Check-in, logo acima das assinaturas ----
+    page.evaluate("""() => localStorage.setItem('chk_assuntos', JSON.stringify([
+      {id: 'k1', assunto: 'Liberar frente de concretagem', desc: 'Aguardando projeto revisado', prioridade: 'alta', setor: 'Engenharia',
+       status: 'fazendo', dataLanc: '2026-10-05', dataTerm: '2099-10-10', resp: 'Jonacir Cazelli', criador: 'Marcelo Dias', criadoEm: Date.now()},
+      {id: 'k2', assunto: 'Solicitar aço CA-50', desc: '', prioridade: 'media', setor: 'Suprimentos', status: 'afazer',
+       dataLanc: '2026-10-04', dataTerm: '2020-01-01', resp: '', criador: '', criadoEm: Date.now()},
+      {id: 'k3', assunto: 'Emitir ART da fundação', status: 'concluido', prioridade: 'baixa', criadoEm: Date.now()},
+      {id: 'k4', assunto: 'Compra de formas descartada', status: 'cancelado', prioridade: 'baixa', criadoEm: Date.now()}]))""")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(400)
+    kb = page.locator("#pdfOverlay table.kb")
+    check(kb.count() == 1, "PDF traz o Kanban de Assuntos")
+    check(kb.locator("td").count() == 4, "Kanban com 4 colunas (A fazer, Fazendo, Concluído, Cancelado)")
+    heads = page.evaluate("""() => [...document.querySelectorAll('#pdfOverlay table.kb .kb-hdr')].map(h => h.querySelector('span').textContent.trim() + ' ' + h.querySelector('b').textContent.trim())""")
+    check([h.split(' ')[-1] for h in heads] == ["1", "1", "1", "1"] and "A FAZER" in heads[0] and "CANCELADO" in heads[3], f"colunas e contagens ({heads})")
+    k = page.inner_text("#pdfOverlay table.kb").lower()
+    check("liberar frente de concretagem" in k and "aguardando projeto revisado" in k and "engenharia" in k
+          and "05/10/2026" in k and "10/10/2099" in k and "jonacir cazelli" in k and "restante" in k,
+          "cartão de Fazendo traz descrição, setor, datas, responsável e prazo restante")
+    check("atrasado" in k, "prazo vencido aparece como atrasado")
+    check(page.locator("#pdfOverlay .kb-concluido .kb-card").first.inner_text().strip() == "Emitir ART da fundação",
+          "Concluído mostra só o nome, como na tela do Check-in")
+    pos = page.evaluate("""() => { const d = document.querySelector('#pdfOverlay .pdf-doc'); const f = [...d.children[0].children];
+      const i = f.findIndex(e => e.querySelector && e.querySelector('table.kb') || e.classList.contains('cx-kb'));
+      return [i, f.findIndex(e => e.classList.contains('cx-ass')), f.findIndex(e => e.querySelector && e.querySelector('.cx-fotos'))]; }""")
+    check(pos[0] >= 0 and pos[0] + 1 == pos[1], f"Kanban fica imediatamente acima das assinaturas ({pos})")
+    check(pos[2] < pos[0], "Kanban vem depois do registro fotográfico")
+    check("Check-in — pendências" not in page.inner_text("#pdfOverlay .pdf-doc"), "a lista curta de pendências foi substituída pelo Kanban")
+    page.evaluate("fecharPdfRDO()")
+    # com Kanban pequeno, o dia cheio ainda cabe em 2 folhas (o quadro é conteúdo pedido, não desperdício)
+    n_kb = paginas(page, "gerarPdfRDO()")
+    page.evaluate("fecharPdfRDO()")
+    check(n_kb <= 2, f"dia cheio com Kanban de 4 assuntos cabe em até 2 folhas (obtido: {n_kb})")
+    page.evaluate("localStorage.removeItem('chk_assuntos')")
+
     # ---- economia de papel ----
     n = paginas(page, "gerarPdfRDO()")
     page.evaluate("fecharPdfRDO()")
