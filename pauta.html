@@ -301,6 +301,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 </div>
 
 <script>
+// Data local (a UTC vira "amanhã" depois das 21h em Brasília); todo assunto leva data de lançamento.
+function dataLocalISO(ms){var d=new Date(ms||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dataLancDoAssunto(dl,ms){return dl||dataLocalISO(ms)}
+
 /* ============================================================
    ESPAÇO PRÓPRIO DO BUILDLy — BUILDLY_ESPACO_PROPRIO
 
@@ -452,7 +456,7 @@ function init(){
     agora.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'}) + ' ' +
     agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 
-  document.getElementById('f-data-lanc').value = agora.toISOString().slice(0,10);
+  document.getElementById('f-data-lanc').value = dataLocalISO();
   document.getElementById('cfg-webhook').value = config.webhook || '';
 
   popularSelects();
@@ -504,7 +508,7 @@ async function carregarDoServidor(){
           id: p.id, assunto: p.assunto, desc: p.descricao || '',
           criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
           prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-          dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+          dataLanc: dataLancDoAssunto(p.data_lancamento, p.criado_em ? Date.parse(p.criado_em) : 0), dataTerm: p.data_termino || '',
           criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now()
         };
         assuntos.push(novo);
@@ -597,7 +601,7 @@ function enviarAssunto(){
     id: Date.now().toString(),
     assunto, desc: descricao, criador, resp, setor,
     prioridade: _prioridade, status: _status,
-    dataLanc, dataTerm,
+    dataLanc: dataLancDoAssunto(dataLanc), dataTerm,
     criadoEm: Date.now()
   };
 

@@ -206,6 +206,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 .print-header{display:none}
 </style>
 <script>
+// Data local (a UTC vira "amanhã" depois das 21h em Brasília); todo assunto leva data de lançamento.
+function dataLocalISO(ms){var d=new Date(ms||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dataLancDoAssunto(dl,ms){return dl||dataLocalISO(ms)}
+
 /* ============================================================
    ESPAÇO PRÓPRIO DO BUILDLy — BUILDLY_ESPACO_PROPRIO
 
@@ -561,7 +565,7 @@ async function carregarDaPlanilhaGoogle(manual) {
             id: p.id, assunto: p.assunto, desc: p.descricao || '',
             criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
             prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-            dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+            dataLanc: dataLancDoAssunto(p.data_lancamento, p.criado_em ? Date.parse(p.criado_em) : 0), dataTerm: p.data_termino || '',
             criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now(),
             _origem: origem, _sincronizado: true
           };
@@ -712,7 +716,7 @@ function carregarDaPlanilha(){
 
 function initData(){
   const agora=new Date();
-  document.getElementById('ci-data').value=agora.toISOString().slice(0,10);
+  document.getElementById('ci-data').value=dataLocalISO();
   document.getElementById('ci-hora').value=`${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
   document.getElementById('hdr-date').textContent=agora.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'})+' '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('hdr-obra-label').textContent=config.obra||'— Configure a obra —';
@@ -890,7 +894,7 @@ function abrirModalAssunto(a){
   document.getElementById('a-setor').value=a?a.setor:'';
   document.getElementById('a-resp').value=a?a.resp:'';
   document.getElementById('a-criador').value=a?a.criador||'':S.get('ultimoCriador')||'';
-  document.getElementById('a-data-lanc').value=a?a.dataLanc||'':new Date().toISOString().slice(0,10);
+  document.getElementById('a-data-lanc').value=a?a.dataLanc||'':dataLocalISO();
   document.getElementById('a-data-term').value=a?a.dataTerm||'':'';
   document.getElementById('a-edit-id').value=a?a.id:'';
   popularDatalist('dl-resp',nomesResp);
@@ -918,7 +922,7 @@ function salvarAssunto(){
     setor:document.getElementById('a-setor').value,
     resp:resp,
     criador:criador,
-    dataLanc:document.getElementById('a-data-lanc').value,
+    dataLanc:document.getElementById('a-data-lanc').value||dataLocalISO(),
     dataTerm:document.getElementById('a-data-term').value
   };
   if(editId){
@@ -1028,7 +1032,7 @@ function capturarCheckin(){
       document.body.removeChild(wrapper);
       if(secAcoes) secAcoes.style.display = '';
       var obraSlug = (config.obra || 'Chekin').replace(/[^a-zA-Z0-9]/g, '-');
-      var data = document.getElementById('ci-data').value || new Date().toISOString().slice(0,10);
+      var data = document.getElementById('ci-data').value || dataLocalISO();
       var nomeArquivo = 'Checkin-' + obraSlug + '-' + data + '.png';
 
       canvas.toBlob(function(blob){

@@ -158,6 +158,20 @@ preferências de estilo.
 `python3 scripts/versionar_estaticos.py`: sem o `?v=hash`, o Safari mostra o tema velho por até
 10 minutos e a casca fica nova com o app de dentro velho.
 
+### Assunto da Pauta no Check-in: sempre com data de lançamento, e data é LOCAL — nunca `toISOString()`
+
+O calendário do Check-in agrupa por `dataLanc` (`a.dataLanc === iso`). A sincronização
+Pauta → Check-in (`checkinSincronizarComPauta`) copiava tudo **menos** `dataLanc`: o assunto
+criado hoje na Pauta aparecia no Check-in, mas nunca no dia dele no calendário (relato do
+usuário em 05/10/2026). Regra: todo assunto leva `dataLanc`; se faltar, vale a data de criação
+(`dataLancDoAssunto(dataLanc, criadoEm)`), em todo ponto de entrada (criar na Pauta, importar,
+carregar do servidor, criar no Check-in, link público). `checkinCurarDatasDeLancamento()` corrige
+e reenvia ao servidor o que já veio sem data.
+
+Armadilha irmã: `new Date().toISOString().slice(0,10)` é a data em **UTC** — depois das 21h em
+Brasília já é "amanhã", e o campo "Data de lançamento" nascia com o dia errado. Usar
+`dataLocalISO()`. Teste: `tests/test_pauta_checkin_data.py` (relógio fixo às 22h10 de Brasília).
+
 ---
 
 ## Relacionado

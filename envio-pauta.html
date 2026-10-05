@@ -146,6 +146,10 @@ body{max-width:480px;margin:0 auto;padding:20px 16px 40px}
 </form>
 
 <script>
+// Data local (a UTC vira "amanhã" depois das 21h em Brasília); todo assunto leva data de lançamento.
+function dataLocalISO(ms){var d=new Date(ms||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dataLancDoAssunto(dl,ms){return dl||dataLocalISO(ms)}
+
 // O link enviado ao líder leva ?obra=<id> — sem ele não dá para saber em
 // qual banco Supabase gravar (o navegador de quem recebe o link não tem a
 // obra ativa salva, é um aparelho diferente do de quem gerencia o app).
@@ -162,7 +166,7 @@ function setPrioridade(p, el) {
 (function preencherPadroes() {
   const lider = parametros.get('lider') || '';
   if (lider) document.getElementById('f-lider').value = lider;
-  document.getElementById('f-data-lanc').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-data-lanc').value = dataLocalISO();
   if (!B3Obras.porId(obraParam)) {
     const erroBox = document.getElementById('erroBox');
     erroBox.textContent = '❌ Link sem obra válida — peça um link novo a quem gerencia o app.';
@@ -185,7 +189,7 @@ async function enviarAssunto(ev) {
     setor: document.getElementById('f-setor').value,
     prioridade: prioridade,
     status: 'afazer',
-    dataLanc: document.getElementById('f-data-lanc').value,
+    dataLanc: document.getElementById('f-data-lanc').value || dataLocalISO(),
     dataTerm: document.getElementById('f-data-term').value
   };
 
@@ -221,7 +225,7 @@ async function enviarAssunto(ev) {
     const liderAtual = dados.criador;
     document.getElementById('formAssunto').reset();
     document.getElementById('f-lider').value = liderAtual;
-    document.getElementById('f-data-lanc').value = new Date().toISOString().slice(0,10);
+    document.getElementById('f-data-lanc').value = dataLocalISO();
     setPrioridade('media', document.querySelector('.pri-btn:nth-child(2)'));
     window.scrollTo({top:0, behavior:'smooth'});
   } catch (e) {

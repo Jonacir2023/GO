@@ -1668,7 +1668,7 @@ let pautaStatus = 'afazer';
 
 function pautaInit() {
   document.getElementById('pauta-hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-  document.getElementById('pauta-f-data-lanc').value = new Date().toISOString().slice(0,10);
+  document.getElementById('pauta-f-data-lanc').value = dataLocalISO();
   pautaPopularSelects();
   pautaCarregarMembrosSetores();
   pautaCarregarDoServidor();
@@ -1722,7 +1722,7 @@ async function pautaCarregarDoServidor() {
           id: p.id, assunto: p.assunto, desc: p.descricao || '',
           criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
           prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-          dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+          dataLanc: dataLancDoAssunto(p.data_lancamento, p.criado_em ? Date.parse(p.criado_em) : 0), dataTerm: p.data_termino || '',
           criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now(),
           _sincronizado: true
         };
@@ -1832,7 +1832,7 @@ function pautaEnviarAssunto() {
     id: Date.now().toString(),
     assunto, desc: descricao, criador, resp, setor,
     prioridade: pautaPrioridade, status: pautaStatus,
-    dataLanc, dataTerm,
+    dataLanc: dataLancDoAssunto(dataLanc), dataTerm,
     criadoEm: Date.now()
   };
 
@@ -2172,7 +2172,7 @@ async function checkinCarregarAssuntosDaPauta() {
       id: p.id, assunto: p.assunto, desc: p.descricao || '',
       criador: p.criador || '', resp: p.responsavel || '', setor: p.setor || '',
       prioridade: p.prioridade || 'media', status: p.status || 'afazer',
-      dataLanc: p.data_lancamento || '', dataTerm: p.data_termino || '',
+      dataLanc: dataLancDoAssunto(p.data_lancamento, p.criado_em ? Date.parse(p.criado_em) : 0), dataTerm: p.data_termino || '',
       criadoEm: p.criado_em ? Date.parse(p.criado_em) : Date.now()
     }));
     checkinNotify('✅ Assuntos carregados da Pauta!', '#7cb083');
@@ -2246,7 +2246,7 @@ function checkinGoTab(id, el) {
 function checkinInit() {
   const now = new Date();
   document.getElementById('checkin-hdr-date').textContent = now.toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-  document.getElementById('checkin-ci-data').value = now.toISOString().slice(0,10);
+  document.getElementById('checkin-ci-data').value = dataLocalISO();
   document.getElementById('checkin-ci-hora').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('checkin-hdr-obra-label').textContent = obraCompartilhada().nome || '— Configure em 🏢 Obras —';
   if (window.B3Obras) B3Obras.configCarregar().then(o => {
@@ -2258,6 +2258,7 @@ function checkinInit() {
 
   // Sincronizar Pauta → Check-in automaticamente
   checkinSincronizarComPauta();
+  checkinCurarDatasDeLancamento();
 
   checkinRender();
 
@@ -2299,13 +2300,14 @@ async function checkinCarregarHistoricoDoServidor() {
         if (c.status && existente.status !== c.status && !mudouAqui && !diaFechado) {
           existente.status = c.status; atualizados++;
         }
+        if (!existente.dataLanc) existente.dataLanc = dataLancDoAssunto(c.data_lancamento, existente.criadoEm || (c.criado_em ? Date.parse(c.criado_em) : 0));
         existente._sincronizado = true;
       } else {
         const novo = {
           id: c.id, assunto: c.assunto, desc: c.descricao || '',
           criador: c.criador || '', resp: c.responsavel || '', setor: c.setor || '',
           prioridade: c.prioridade || 'media', status: c.status || 'afazer',
-          dataLanc: c.data_lancamento || '', dataTerm: c.data_termino || '',
+          dataLanc: dataLancDoAssunto(c.data_lancamento, c.criado_em ? Date.parse(c.criado_em) : 0), dataTerm: c.data_termino || '',
           concluidoEm: c.concluido_em ? Date.parse(c.concluido_em) : '',
           criadoEm: c.criado_em ? Date.parse(c.criado_em) : Date.now(),
           _origem: c.origem || 'checkin',
@@ -2365,6 +2367,26 @@ async function checkinEnviarAssuntoParaSupabase(item) {
   } catch (e) {
     console.warn('Check-in: não consegui salvar no Supabase agora — fica pendente:', e.message);
   }
+}
+
+// Assuntos importados da Pauta antes desta correção ficaram sem data de lançamento e não
+// apareciam no calendário. Aqui cada um recebe a data da Pauta (mesmo id) ou, na falta dela,
+// a data de criação — e é reenviado ao servidor para o outro aparelho também enxergar.
+function checkinCurarDatasDeLancamento() {
+  let pauta = [];
+  try { pauta = JSON.parse(localStorage.getItem('pauta_assuntos')) || []; } catch (e) {}
+  const porId = new Map(pauta.map(p => [String(p.id), p]));
+  const curados = [];
+  checkinAssuntos.forEach(a => {
+    if (a.dataLanc) return;
+    const p = porId.get(String(a.id));
+    a.dataLanc = dataLancDoAssunto(p && p.dataLanc, a.criadoEm || (p && p.criadoEm));
+    a._sincronizado = false;
+    curados.push(a);
+  });
+  if (!curados.length) return;
+  checkinS.set('assuntos', checkinAssuntos);
+  curados.forEach(a => { checkinEnviarAssuntoParaSupabase(a); });
 }
 
 function checkinSincronizarComPauta() {
@@ -2428,6 +2450,7 @@ function checkinSincronizarComPauta() {
           setor: pauta.setor || '',
           prioridade: pauta.prioridade || 'média',
           status: 'afazer', // ← Novo sempre começa como "A fazer"
+          dataLanc: dataLancDoAssunto(pauta.dataLanc, pauta.criadoEm),
           dataTerm: pauta.dataTerm || '',
           criadoEm: pauta.criadoEm || Date.now(),
           _origem: 'pauta'
@@ -2670,7 +2693,7 @@ function checkinAbrirModalAssunto(a) {
   document.getElementById('checkin-a-setor').value = a ? a.setor : '';
   document.getElementById('checkin-a-resp').value = a ? a.resp : '';
   document.getElementById('checkin-a-criador').value = a ? a.criador || '' : checkinS.get('ultimoCriador') || '';
-  document.getElementById('checkin-a-data-lanc').value = a ? a.dataLanc || '' : new Date().toISOString().slice(0,10);
+  document.getElementById('checkin-a-data-lanc').value = a ? a.dataLanc || '' : dataLocalISO();
   document.getElementById('checkin-a-data-term').value = a ? a.dataTerm || '' : '';
   document.getElementById('checkin-a-edit-id').value = a ? a.id : '';
   checkinPopularDatalist('checkin-dl-resp', checkinNomesResp);
@@ -2705,7 +2728,7 @@ function checkinSalvarAssunto() {
     status: document.getElementById('checkin-a-status').value,
     setor: document.getElementById('checkin-a-setor').value,
     resp: resp, criador: criador,
-    dataLanc: document.getElementById('checkin-a-data-lanc').value,
+    dataLanc: document.getElementById('checkin-a-data-lanc').value || dataLocalISO(),
     dataTerm: document.getElementById('checkin-a-data-term').value
   };
   if (editId) {
@@ -2807,6 +2830,16 @@ async function checkinSalvarReuniao() {
 }
 
 // Data de hoje no formato AAAA-MM-DD, no fuso do aparelho.
+// Data local (AAAA-MM-DD) de um instante. toISOString() devolve a data em UTC: depois das
+// 21h em Brasília já é "amanhã", e o assunto caía no dia errado do calendário.
+function dataLocalISO(ms) {
+  const d = new Date(ms || Date.now());
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+// Todo assunto precisa de data de lançamento (o calendário do Check-in agrupa por ela).
+// Sem ela, usa a data de criação.
+function dataLancDoAssunto(dataLanc, criadoEm) { return dataLanc || dataLocalISO(criadoEm); }
+
 function checkinDataDeHoje() {
   const d = new Date();
   const tz = d.getTimezoneOffset() * 60000;
@@ -2850,7 +2883,7 @@ function checkinCapturar() {
       document.body.removeChild(wrapper);
       if (secAcoes) secAcoes.style.display = '';
       const obraSlug = (obraCompartilhada().nome || 'Chekin').replace(/[^a-zA-Z0-9]/g, '-');
-      const data = document.getElementById('checkin-ci-data').value || new Date().toISOString().slice(0,10);
+      const data = document.getElementById('checkin-ci-data').value || dataLocalISO();
       const nomeArquivo = 'Checkin-' + obraSlug + '-' + data + '.png';
 
       canvas.toBlob(blob => {

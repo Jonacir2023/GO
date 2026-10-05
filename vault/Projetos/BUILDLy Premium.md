@@ -51,6 +51,13 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ## Histórico
 
+### 05/10/2026 — Assuntos da Pauta sem data no calendário do Check-in
+
+Relato: assunto criado hoje na Pauta aparece no Check-in, mas não no calendário do dia. Causa:
+a sincronização não copiava `dataLanc`; e a data sugerida no formulário usava UTC (dia errado
+à noite). Corrigido nos 4 arquivos que tocam assunto, com cura dos já importados. Detalhe em
+[[Notas/Regras Operacionais Críticas]]. Suíte nova `test_pauta_checkin_data.py` (12 suítes).
+
 ### 04/10/2026 — Padrão visual claro em toda a plataforma
 
 Pedido do usuário com 4 mockups: tema claro, hero com obra ao pôr do sol, cartão Obra Atual,
