@@ -96,6 +96,30 @@ Pontos para o usuário confirmar nesta revisão: (a) **"Mede por"** na subcatego
 unidade) é necessário? (b) fotos: **até quantas por lançamento**? (c) **Fornecedores** e **Porteiros** entram
 no mesmo Cadastro (como no layout)?
 
+## 7. Versão 3 do layout — Planilha e Resumo R$ (pedido do usuário, 05/10/2026)
+
+O usuário mandou o modelo da planilha (11 colunas) e pediu: **preencher a planilha item a item, em ordem
+cronológica, a cada entrada na obra**; **além do Resumo, apresentar a Planilha**; e um botão **Resumo R$**
+para os resumos de **valores**, separando-os dos **quantitativos**. A barra do Custos passa a ter **4 botões**:
+
+| Botão | O que mostra |
+|---|---|
+| **Entrada** | formulário da portaria (Salvar → a linha entra na planilha) |
+| **Planilha** | uma linha por item recebido, **por hora de chegada**: **Hora · Nº nota · Emissão · Fornecedor · Categoria · Subcategoria · Descrição da nota · Un. · Qtde · Preço unit. · Total · Responsável** (= as 11 colunas dele + "Hora"); filtros dia/semana/mês/data, categoria, fornecedor, nº da nota; toque na linha: foto, completar valor, cancelar; total lançado e "sem valor"; exportar .csv e imprimir |
+| **Resumo** | quantitativo: categoria ▸ subcategoria e por descrição (qtde por unidade, nº de cargas, NFs) |
+| **Resumo R$** | valores: total lançado, notas, pendências "sem valor ▸ completar", R$ por categoria/subcategoria com % do total e **preço médio por unidade**, e por fornecedor |
+
+Regras do desenho: a ordem é a de **chegada** (a nota emitida ontem e recebida hoje entra na hora em que
+chegou); **"Hora"** é a única coluna além do modelo (a planilha original não tem como ordenar sem ela) —
+no .csv vai como "Recebido em"; os cabeçalhos corrigem a grafia ("Quantidade", "Preço"); entrada sem
+preço aparece como **"sem valor"** e fica de fora das somas até ser completada; unidades diferentes nunca
+se somam. No computador do escritório a Planilha ocupa a tela toda (todas as colunas visíveis); no celular
+rola na horizontal. O PDF do RDO traz a versão **quantitativa** (Resumo); valores não vão no RDO a menos que o
+usuário peça.
+
+Pontos para confirmar: (a) a coluna **Hora** pode entrar? (b) o RDO leva só quantidades (recomendado) ou também
+valores? (c) "Responsável" = quem recebeu na portaria (recomendado) ou quem comprou?
+
 ## Relacionado
 
 - [[Notas/RDO — Regras do Módulo]]
