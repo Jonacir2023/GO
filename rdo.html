@@ -3864,6 +3864,96 @@ function atualizarKanbanNoPdfAberto() {
   const html = kanbanAssuntosPdf();
   const atual = ov.querySelector('.cx-kb');
   if (atual) { if (html) atual.outerHTML = html; else atual.remove(); return; }
+  const ancora = ov.querySelector('.cx-cust') || ov.querySelector('.cx-ass');
+  if (html && ancora) ancora.insertAdjacentHTML('beforebegin', html);
+}
+
+// ===== Custos do dia (notas fiscais lançadas no módulo Custos, emitidas na data do RDO) =====
+// Mesma lógica do Kanban: servidor (Supabase) + localStorage do módulo Custos (mesma origem,
+// chave custo_notasfiscais). Local vale no mesmo id (traz o ainda não sincronizado).
+let notasCustosServidor = {};  // por data AAAA-MM-DD
+
+async function atualizarCustosDoDiaDoServidor(data) {
+  try {
+    const cli = B3Obras.cliente();
+    const { data: nfs, error } = await cli.from('custos_notas_fiscais').select('*').eq('data_emissao', data);
+    if (error) throw error;
+    const ids = (nfs || []).map(n => String(n.id));
+    let itens = [];
+    if (ids.length) {
+      const r = await cli.from('custos_itens_nf').select('*').in('nf_id', ids);
+      if (r.error) throw r.error;
+      itens = r.data || [];
+    }
+    notasCustosServidor[data] = (nfs || []).map(n => ({
+      id: n.id, numero: n.numero_nf, serie: n.serie || '', data: n.data_emissao || '', fornecedor: n.fornecedor || '',
+      categoria: n.categoria || '', responsavel: n.responsavel || '', total_nf: Number(n.total_nf) || 0,
+      itens: itens.filter(i => String(i.nf_id) === String(n.id)).map(i => ({ descricao: i.descricao, quantidade: Number(i.quantidade), preco_unitario: Number(i.preco_unitario), total: Number(i.total) }))
+    }));
+    return true;
+  } catch (e) {
+    console.warn('RDO: não consegui ler os custos do dia no servidor:', e && e.message);
+    return false;
+  }
+}
+
+function lerNotasDoDia(data) {
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('custo_notasfiscais')) || []; } catch (e) {}
+  const porId = new Map();
+  (notasCustosServidor[data] || []).forEach(n => porId.set(String(n.id), n));
+  local.filter(n => n.data === data).forEach(n => porId.set(String(n.id), n));
+  return [...porId.values()];
+}
+
+// Planilha item a item das mercadorias que entraram no dia (notas fiscais emitidas na data do RDO),
+// em ordem alfabética de categoria e de descrição, com o resumo de quantidade por descrição.
+// Colunas: Categoria | Descrição do item | Qtde | Valor (unitário) | Total | Data | NF.
+function custosDoDiaPdf(data) {
+  const E = escHtml;
+  const notas = lerNotasDoDia(data);
+  if (!notas.length) return '';  // sem entrada de mercadoria no dia, a seção não ocupa papel
+  const num = v => Number(v) || 0;
+  const cmp = (x, y) => String(x).localeCompare(String(y), 'pt-BR', { sensitivity: 'base' });
+  const linhas = [];
+  notas.forEach(n => {
+    const nf = (n.numero || '—') + (n.serie ? '/' + n.serie : '');
+    const itens = (n.itens && n.itens.length) ? n.itens : [{ descricao: '(sem itens)', quantidade: 1, preco_unitario: num(n.total_nf), total: num(n.total_nf) }];
+    itens.forEach(i => linhas.push({
+      cat: n.categoria || 'Sem categoria', desc: i.descricao || '—', qtd: num(i.quantidade),
+      valor: num(i.preco_unitario) || (num(i.quantidade) ? num(i.total) / num(i.quantidade) : 0), total: num(i.total), data: n.data || data, nf
+    }));
+  });
+  linhas.sort((x, y) => cmp(x.cat, y.cat) || cmp(x.desc, y.desc) || cmp(x.data, y.data) || cmp(x.nf, y.nf));
+  const totalDia = linhas.reduce((t, l) => t + l.total, 0);
+  const fq = q => q.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+  const corpo = linhas.map(l => `<tr><td>${E(l.cat)}</td><td>${E(l.desc)}</td><td style="text-align:right">${fq(l.qtd)}</td>
+      <td style="text-align:right;white-space:nowrap">${fmtMoedaBR(l.valor)}</td><td style="text-align:right;white-space:nowrap">${fmtMoedaBR(l.total)}</td>
+      <td style="white-space:nowrap">${formatDateBR(l.data)}</td><td>${E(l.nf)}</td></tr>`).join('');
+  // resumo de quantidade por descrição do item (dentro da categoria)
+  const grupos = new Map();
+  linhas.forEach(l => {
+    const k = l.cat.toLowerCase() + '|' + l.desc.trim().toLowerCase();
+    const g = grupos.get(k) || { cat: l.cat, desc: l.desc.trim(), qtd: 0, total: 0, nfs: new Set() };
+    g.qtd += l.qtd; g.total += l.total; g.nfs.add(l.nf); grupos.set(k, g);
+  });
+  const resumo = [...grupos.values()].sort((x, y) => cmp(x.cat, y.cat) || cmp(x.desc, y.desc));
+  const corpoResumo = resumo.map(g => `<tr><td>${E(g.cat)}</td><td>${E(g.desc)}</td><td style="text-align:right"><b>${fq(g.qtd)}</b></td>
+      <td style="text-align:right;white-space:nowrap">${fmtMoedaBR(g.total)}</td><td style="text-align:right">${g.nfs.size}</td></tr>`).join('');
+  return `<div class="cx-sec cx-cust"><div class="cx-tit">💰 Entrada de mercadorias do dia — ${linhas.length} ite${linhas.length > 1 ? 'ns' : 'm'} · ${notas.length} NF · ${fmtMoedaBR(totalDia)}</div>
+    <table class="cx"><tr><th style="width:15%">Categoria</th><th>Descrição do item</th><th style="width:8%;text-align:right">Qtde</th><th style="width:12%;text-align:right">Valor</th><th style="width:13%;text-align:right">Total</th><th style="width:10%">Data</th><th style="width:9%">NF</th></tr>
+      ${corpo}
+      <tr><td colspan="4" style="text-align:right"><b>TOTAL DO DIA</b></td><td style="text-align:right;white-space:nowrap"><b>${fmtMoedaBR(totalDia)}</b></td><td colspan="2"></td></tr></table>
+    <div class="cx-tit" style="margin-top:3px">Resumo de quantidade por item</div>
+    <table class="cx"><tr><th style="width:15%">Categoria</th><th>Descrição do item</th><th style="width:12%;text-align:right">Qtde total</th><th style="width:15%;text-align:right">Total</th><th style="width:8%;text-align:right">NF</th></tr>${corpoResumo}</table></div>`;
+}
+
+function atualizarCustosNoPdfAberto() {
+  const ov = document.getElementById('pdfOverlay');
+  if (!ov || typeof currentDay === 'undefined' || !currentDay.data) return;
+  const html = custosDoDiaPdf(currentDay.data);
+  const atual = ov.querySelector('.cx-cust');
+  if (atual) { if (html) atual.outerHTML = html; else atual.remove(); return; }
   const ass = ov.querySelector('.cx-ass');
   if (html && ass) ass.insertAdjacentHTML('beforebegin', html);
 }
@@ -4144,6 +4234,8 @@ function gerarPdfRDO() {
   // Kanban de Assuntos do Check-in — o mesmo quadro da tela do Check-in (4 colunas, lido ao
   // vivo do localStorage), logo acima das assinaturas para fechar o RDO do dia.
   const secKanban = kanbanAssuntosPdf();
+  // Resumo de custos do dia, logo abaixo do Kanban
+  const secCustos = custosDoDiaPdf(day.data);
 
   // ----- assinaturas -----
   const nomeApont = day.apontador || 'Apontador responsável';
@@ -4180,6 +4272,7 @@ function gerarPdfRDO() {
       ${secAcum}
       ${secFotos}
       ${secKanban}
+      ${secCustos}
       <table class="cx-ass"><tr>
         <td class="ass-clic" onclick="abrirEscolhaAssinatura('apontador')">${celAss.apontador}<b>${E(nomeApont)}</b><br>Apontador — ${E(state.obra.empresa || '')}<div class="ass-dica" data-html2canvas-ignore="true">✍️ toque para assinar ou escolher</div></td>
         <td class="ass-clic" onclick="abrirEscolhaAssinatura('gerente')">${celAss.gerente}<b>${E(assG.nome || 'Gerente de Obras')}</b><br>${E(ger.cargo)} — ${E(state.obra.empresa || '')}<div class="ass-dica" data-html2canvas-ignore="true">✍️ toque para assinar ou escolher</div></td>
@@ -4190,6 +4283,7 @@ function gerarPdfRDO() {
   montarOverlayPdf(h);
   // dados do Check-in direto do servidor: o Kanban se refaz sozinho quando chegam
   atualizarAssuntosCheckinDoServidor().then(ok => { if (ok) atualizarKanbanNoPdfAberto(); });
+  atualizarCustosDoDiaDoServidor(day.data).then(ok => { if (ok) atualizarCustosNoPdfAberto(); });
 }
 
 // Fração da largura disponível ocupada pela folha na visualização. Abaixo de 1

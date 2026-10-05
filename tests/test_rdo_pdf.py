@@ -205,6 +205,56 @@ with sync_playwright() as p:
     page.evaluate("fecharPdfRDO()")
     page.evaluate("() => { delete currentDay.assinaturas; delete currentDay.assinaturaNomes; }")
     page.evaluate("localStorage.removeItem('diario_assinaturasSalvas')")
+    # ---- Entrada de mercadorias do dia (custos), logo abaixo do Kanban ----
+    page.evaluate("""() => { const d = currentDay.data; const outro = '2020-01-01';
+      localStorage.setItem('chk_assuntos', JSON.stringify([{id: 'kc', assunto: 'Assunto p/ posição', status: 'afazer', prioridade: 'media', criadoEm: Date.now()}]));
+      localStorage.setItem('custo_notasfiscais', JSON.stringify([
+        {id: 1, numero: '200', serie: '1', data: d, fornecedor: 'Ferragens Silva', categoria: 'Material', total_nf: 700, itens: [
+          {id: 'a', descricao: 'Cimento CP-II', quantidade: 10, preco_unitario: 30, total: 300},
+          {id: 'b', descricao: 'Areia fina', quantidade: 4, preco_unitario: 100, total: 400}]},
+        {id: 2, numero: '150', serie: '', data: d, fornecedor: 'Posto X', categoria: 'Combustível', total_nf: 500, itens: [
+          {id: 'c', descricao: 'Diesel S10', quantidade: 100, preco_unitario: 5, total: 500}]},
+        {id: 3, numero: '300', serie: '', data: d, fornecedor: 'Ferragens Silva', categoria: 'Material', total_nf: 150, itens: [
+          {id: 'd', descricao: 'cimento cp-ii', quantidade: 5, preco_unitario: 30, total: 150}]},
+        {id: 4, numero: '999', serie: '', data: outro, fornecedor: 'Outro Dia', categoria: 'Material', total_nf: 77, itens: [
+          {id: 'e', descricao: 'Item de outro dia', quantidade: 1, preco_unitario: 77, total: 77}]}])); }""")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(400)
+    check(page.locator("#pdfOverlay .cx-cust").count() == 1, "PDF traz a seção de custos do dia")
+    heads = page.evaluate("""() => [...document.querySelectorAll('#pdfOverlay .cx-cust table.cx')[0].rows[0].cells].map(c => c.textContent.trim())""")
+    check(heads == ["Categoria", "Descrição do item", "Qtde", "Valor", "Total", "Data", "NF"], f"colunas da planilha ({heads})")
+    rows = page.evaluate("""() => [...document.querySelectorAll('#pdfOverlay .cx-cust table.cx')[0].rows].slice(1, -1).map(r => [...r.cells].map(c => c.textContent.trim()))""")
+    ordem = [(r[0], r[1].lower()) for r in rows]
+    check(ordem == sorted(ordem), f"itens em ordem alfabética de categoria e descrição ({ordem})")
+    check(len(rows) == 4 and rows[0][0] == "Combustível", "só as notas emitidas no dia (4 itens; a de outro dia fica de fora)")
+    txt = page.inner_text("#pdfOverlay .cx-cust")
+    check("Item de outro dia" not in txt, "nota de outro dia não entra")
+    check("R$ 1.350,00" in txt, "total do dia soma todos os itens (R$ 1.350,00)")
+    resumo = page.evaluate("""() => [...document.querySelectorAll('#pdfOverlay .cx-cust table.cx')[1].rows].slice(1).map(r => [...r.cells].map(c => c.textContent.trim()))""")
+    cim = [r for r in resumo if "cimento" in r[1].lower()]
+    check(len(cim) == 1 and cim[0][2] == "15" and cim[0][4] == "2", f"resumo junta o mesmo item de NFs diferentes (15 un, 2 NF): {cim}")
+    pos3 = page.evaluate("""() => { const f = [...document.querySelector('#pdfOverlay .pdf-doc').children[0].children];
+      return [f.findIndex(e => e.classList.contains('cx-kb')), f.findIndex(e => e.classList.contains('cx-cust')), f.findIndex(e => e.classList.contains('cx-ass'))]; }""")
+    check(pos3[0] >= 0 and pos3[0] + 1 == pos3[1] and pos3[1] + 1 == pos3[2], f"custos ficam logo abaixo do Kanban e acima das assinaturas ({pos3})")
+    page.evaluate("fecharPdfRDO()")
+    # vindo do servidor quando o aparelho não tem as notas
+    page.evaluate("""() => { localStorage.removeItem('custo_notasfiscais'); window.__cliOrig = B3Obras.cliente;
+      const nfs = [{id: 's1', numero_nf: '77', serie: '', data_emissao: currentDay.data, fornecedor: 'Forn Servidor', categoria: 'Aluguel', total_nf: 90}];
+      const itens = [{id: 'i1', nf_id: 's1', descricao: 'Locação de andaime', quantidade: 3, preco_unitario: 30, total: 90}];
+      const q = linhas => { const o = { eq: () => o, in: () => o, then: (res) => res({ data: linhas, error: null }) }; return o; };
+      B3Obras.cliente = () => ({ from: t => ({ select: () => q(t === 'custos_notas_fiscais' ? nfs : t === 'custos_itens_nf' ? itens : []) }) }); }""")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(1000)
+    check(page.locator("#pdfOverlay .cx-cust").count() == 1 and "Locação de andaime" in page.inner_text("#pdfOverlay .cx-cust"),
+          "sem notas no aparelho, os custos do dia vêm do servidor")
+    page.evaluate("() => { B3Obras.cliente = window.__cliOrig; }")
+    page.evaluate("fecharPdfRDO()")
+    page.evaluate("localStorage.removeItem('custo_notasfiscais'); localStorage.removeItem('chk_assuntos'); notasCustosServidor = {}; assuntosCheckinServidor = null")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(300)
+    check(page.locator("#pdfOverlay .cx-cust").count() == 0, "dia sem notas: a seção não aparece (não gasta papel)")
+    page.evaluate("fecharPdfRDO()")
+
     # com Kanban pequeno, o dia cheio ainda cabe em 2 folhas (o quadro é conteúdo pedido, não desperdício)
     n_kb = paginas(page, "gerarPdfRDO()")
     page.evaluate("fecharPdfRDO()")

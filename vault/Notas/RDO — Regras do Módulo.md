@@ -100,7 +100,7 @@ principal e o antigo foi **apagado** (o git guarda: commits anteriores a `06cb9a
   (o quadro é conteúdo pedido, não desperdício). O teste `test_rdo_pdf.py` trava os dois casos.
 - **Ordem das seções (pedida pelo usuário):** cabeçalho, indicadores, clima | jornada, efetivo | equipamentos,
   **atividades do dia logo acima de eventos do dia**, segurança/meio ambiente, acumulados, fotos,
-  **Kanban de Assuntos do Check-in imediatamente acima das assinaturas**, assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
+  **Kanban de Assuntos do Check-in**, **entrada de mercadorias do dia (custos)**, assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
 - **Conteúdo:** cabeçalho com RDO nº, data, cliente, contrato, local/frente (obra + local do dia);
   faixa de 7 indicadores; clima; jornada e DSS; atividades (com paralisadas e justificativa); efetivo por
   função/empresa; equipamentos e veículos (operando/parados com justificativa); eventos do dia (hora,
@@ -201,6 +201,19 @@ A imagem padrão é `assinatura-gerente.png` (PNG transparente tratado da foto e
 Limites: a lista de assinaturas é **por aparelho** (não sincroniza); o repositório é público, então a
 imagem da assinatura é acessível a qualquer um — decisão do usuário ao fornecê-la. Testes em
 `test_rdo_pdf.py`.
+
+### Entrada de mercadorias do dia no PDF (pedido do usuário, 05/10/2026)
+
+Logo **abaixo do Kanban** e acima das assinaturas, `custosDoDiaPdf()` imprime uma planilha **item a
+item** das mercadorias que entraram no dia — notas fiscais do módulo Custos com **data de emissão
+igual à data do RDO** (`data_emissao`; a data de lançamento não conta). Colunas: **Categoria |
+Descrição do item | Qtde | Valor (unitário) | Total | Data | NF**, em ordem alfabética de categoria e
+depois de descrição, com **TOTAL DO DIA**. Abaixo, o **Resumo de quantidade por item**: soma de Qtde e
+Total por categoria + descrição (ignora maiúsculas), com o nº de NFs. A categoria é a da **nota**
+(os itens não têm categoria própria). Fonte: Supabase (`custos_notas_fiscais` + `custos_itens_nf`,
+buscado ao gerar) junto com `custo_notasfiscais` local (local vale no mesmo id), como no Kanban. Dia
+sem notas: a seção **não aparece** (não gasta papel). Não há botão de baixar planilha (.csv/.xlsx) —
+é uma tabela dentro do PDF. Testes em `test_rdo_pdf.py`.
 
 ---
 
