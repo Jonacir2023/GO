@@ -71,6 +71,31 @@ As tabelas antigas (`custos_notas_fiscais`, `custos_itens_nf`) ficam intactas.
 5. Exportar .csv; cadastro do catálogo e dos porteiros.
 6. Testes (entrada, kit, resumo, cancelamento, duplicidade, offline, RDO) + cofre + registro.
 
+## 6. Revisão do layout (pedido do usuário, 05/10/2026) — 6 telas no mockup
+
+O usuário pediu: **botão de foto**, **＋ para Categoria e Subcategoria** na própria tela e um **Cadastro**
+para criar categorias, subcategorias e descrições de NF. Incluído no layout (ainda sem código):
+
+1. **Entrada rápida:** chips de categoria e subcategoria com **＋ Nova** (abre painel "Nova subcategoria"
+   na hora, já selecionada depois de salvar); **＋** ao lado do fornecedor; **📷 Tirar foto** e **🖼 Galeria**
+   com miniaturas (nota, verso; × remove); botão **⚙️ Cadastro** no topo.
+2. **Nota com vários itens:** além de categoria/subcategoria, **Descrição da nota** escolhida no
+   cadastro (Kit material elétrico, Kit iluminação, Quadro de comando…) + complemento livre; várias fotos
+   (páginas da nota).
+3. **Câmera:** moldura de enquadramento, flash, "Página 2 de 2", galeria, "Usar 2 fotos". Fotos ficam anexadas
+   ao lançamento. (Leitura automática do nº da nota por OCR fica fora desta fase — já era item em aberto.)
+4. **＋ Nova subcategoria (rápida):** categoria, nome, unidade padrão e "mede por" (carga/viagem/peso/unidade).
+5. **⚙️ Cadastro** (abas **Materiais · Descrições NF · Fornecedores · Porteiros**): árvore categoria →
+   subcategoria com unidade padrão, ativar/desativar, editar, ＋ Subcategoria dentro de cada categoria, ＋ Nova
+   categoria. 🗑 só **desativa** (histórico mantido).
+6. **Resumo:** período (Hoje/Ontem/Semana/Mês/data) × visão **Por categoria ▸ subcategoria**, **Por
+   descrição** ou **Lista do dia**; totais por unidade (ex.: "60 m³ · 48 t" — unidades diferentes nunca são
+   somadas), nº de cargas e NFs de origem; valor em segundo plano; exportar .csv.
+
+Pontos para o usuário confirmar nesta revisão: (a) **"Mede por"** na subcategoria (carga/viagem/peso/
+unidade) é necessário? (b) fotos: **até quantas por lançamento**? (c) **Fornecedores** e **Porteiros** entram
+no mesmo Cadastro (como no layout)?
+
 ## Relacionado
 
 - [[Notas/RDO — Regras do Módulo]]
