@@ -25,7 +25,7 @@ da portaria**: cada item que chega vira **uma linha** de planilha, em **ordem de
 - **Sem valor** (`preco_unitario`/`total` nulos) fica fora das somas de R$ e aparece como "—"/"sem valor".
 - Cancelar = `status='cancelado'` + motivo; nunca apaga (mesma regra do RDO).
 - Foto: JPEG ≤1024 px, qualidade 0,62; fica no aparelho só até subir (depois é lida do servidor sob demanda).
-- **O RDO leva só quantidades** (ver [[Notas/RDO — Regras do Módulo]]); valores ficam no Custos.
+- **O RDO leva a planilha do dia inteira + o resumo de quantidades** (com valores na planilha) — ver [[Notas/RDO — Regras do Módulo]].
 - Seed do cadastro com **ids determinísticos** (`cat-agregados`, `sub-agregados-areia`…): dois aparelhos que
   semeiam não duplicam nada ao sincronizar.
 

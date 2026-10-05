@@ -205,32 +205,44 @@ with sync_playwright() as p:
     page.evaluate("fecharPdfRDO()")
     page.evaluate("() => { delete currentDay.assinaturas; delete currentDay.assinaturaNomes; }")
     page.evaluate("localStorage.removeItem('diario_assinaturasSalvas')")
-    # ---- Entrada de materiais do dia (módulo Custos), logo abaixo do Kanban — só quantidades ----
+    # ---- Notas recebidas no dia (módulo Custos): planilha completa + resumo, logo abaixo do Kanban ----
     page.evaluate("""() => { const d = currentDay.data;
       localStorage.setItem('chk_assuntos', JSON.stringify([{id: 'kc', assunto: 'Assunto p/ posição', status: 'afazer', prioridade: 'media', criadoEm: Date.now()}]));
-      const e = (id, nf, cat, sub, un, q, mede, st, dia) => ({id, numero_nf: nf, categoria: cat, subcategoria: sub, unidade: un, quantidade: q, mede_por: mede, status: st || 'ativo', data_recebimento: dia || d});
+      const e = (id, hh, nf, forn, cat, sub, desc, un, q, pu, mede, st, dia, em) => ({id, recebido_em: (dia || d) + 'T' + hh + ':00', numero_nf: nf, data_emissao: em || d, fornecedor: forn, categoria: cat, subcategoria: sub,
+        descricao: desc, unidade: un, quantidade: q, preco_unitario: pu, total: pu == null ? null : pu * q, responsavel: 'Carlos', mede_por: mede, status: st || 'ativo', data_recebimento: dia || d});
       localStorage.setItem('custo_entradas', JSON.stringify([
-        e('1', '2340', 'Agregados', 'Areia', 'm³', 12, 'carga'), e('2', '2345', 'Agregados', 'Areia', 'm³', 12, 'carga'),
-        e('3', '2341', 'Agregados', 'Brita 1', 'm³', 12, 'carga'), e('4', '8891', 'Elétrico', 'Kit elétrico', 'kit', 1, 'unidade'),
-        e('5', '77', 'Água', 'Caminhão-pipa', 'm³', 10, 'viagem', 'cancelado'), e('6', '999', 'Terra', 'Saibro', 'm³', 8, 'carga', 'ativo', '2020-01-01')])); }""")
+        e('4', '10:20', '8891', 'Elétrica Central', 'Elétrico', 'Kit elétrico', 'Kit material elétrico – QD-02', 'kit', 1, 4320, 'unidade'),
+        e('1', '07:42', '2340', 'Pedreira Boa Vista', 'Agregados', 'Areia', 'Areia média lavada', 'm³', 12, 85, 'carga'),
+        e('3', '08:15', '2341', 'Pedreira Boa Vista', 'Agregados', 'Brita 1', 'Brita 1', 'm³', 12, 95, 'carga'),
+        e('2', '09:05', '2345', 'Pedreira Boa Vista', 'Agregados', 'Areia', 'Areia média lavada', 'm³', 12, 85, 'carga', 'ativo', null, '2020-01-01'),
+        e('5', '11:00', '77', 'Águas do Vale', 'Água', 'Caminhão-pipa', 'Água', 'm³', 10, null, 'viagem', 'cancelado'),
+        e('7', '12:00', '78', 'Águas do Vale', 'Água', 'Caminhão-pipa', 'Água p/ umectação', 'm³', 10, null, 'viagem'),
+        e('6', '08:00', '999', 'Outro Dia', 'Terra', 'Saibro', 'Saibro', 'm³', 8, 40, 'carga', 'ativo', '2020-01-01')])); }""")
     page.evaluate("gerarPdfRDO()")
     page.wait_for_timeout(400)
-    check(page.locator("#pdfOverlay .cx-cust").count() == 1, "PDF traz a seção de entrada de materiais do dia")
-    heads = page.evaluate("""() => [...document.querySelector('#pdfOverlay .cx-cust table.cx').rows[0].cells].map(c => c.textContent.trim())""")
-    check(heads == ["Categoria", "Subcategoria", "Quantidade", "Cargas", "NF"], f"colunas do resumo de entrada ({heads})")
-    rows = page.evaluate("""() => [...document.querySelector('#pdfOverlay .cx-cust table.cx').rows].slice(1).map(r => [...r.cells].map(c => c.textContent.trim()))""")
-    check([r[:2] for r in rows] == [["Agregados", "Areia"], ["Agregados", "Brita 1"], ["Elétrico", "Kit elétrico"]], f"alfabético por categoria e subcategoria; cancelada e outro dia fora ({[r[:2] for r in rows]})")
-    check(rows[0][2] == "24 m³" and rows[0][3] == "2 cargas" and "2340" in rows[0][4], f"areia soma 24 m³ em 2 cargas ({rows[0]})")
-    check(rows[2][2] == "1 kit", "kit em unidades")
-    txt = page.inner_text("#pdfOverlay .cx-cust")
-    check("R$" not in txt, "o RDO leva só quantidades, sem valores")
+    check(page.locator("#pdfOverlay .cx-cust").count() == 1, "PDF traz a seção de notas recebidas no dia")
+    heads = page.evaluate("""() => [...document.querySelector('#pdfOverlay .cx-cust table.cx-plan').rows[0].cells].map(c => c.textContent.trim())""")
+    check(heads == ["Hora", "Nº nota", "Emissão", "Fornecedor", "Categoria", "Subcateg.", "Descrição da nota", "Un.", "Qtde", "Preço unit.", "Total", "Respons."], f"colunas da planilha ({heads})")
+    rows = page.evaluate("""() => [...document.querySelector('#pdfOverlay .cx-cust table.cx-plan').rows].slice(1, -1).map(r => [...r.cells].map(c => c.textContent.trim()))""")
+    check([r[1] for r in rows] == ["2340", "2341", "2345", "8891", "78"], f"planilha em ordem de chegada; cancelada e outro dia fora ({[r[1] for r in rows]})")
+    check(rows[2][2] == "01/01" and rows[0][0] == "07:42", "emissão e hora de chegada por linha")
+    check(rows[0][8] == "12" and rows[0][9] == "85,00" and rows[0][10] == "1.020,00", f"qtde, preço unitário e total da linha ({rows[0]})")
+    check(rows[4][9] == "—" and rows[4][10] == "—", "sem valor aparece como —")
+    ptxt = page.inner_text("#pdfOverlay .cx-cust")
+    check("total lançado" in ptxt.lower() and "7.500,00" in ptxt and "1 sem valor" in ptxt.lower(), "total lançado e itens sem valor")
+    res = page.evaluate("""() => [...document.querySelectorAll('#pdfOverlay .cx-cust table.cx')[1].rows].slice(1).map(r => [...r.cells].map(c => c.textContent.trim()))""")
+    check([r[:2] for r in res] == [["Agregados", "Areia"], ["Agregados", "Brita 1"], ["Água", "Caminhão-pipa"], ["Elétrico", "Kit elétrico"]] or [r[:2] for r in res] == [["Água", "Caminhão-pipa"], ["Agregados", "Areia"], ["Agregados", "Brita 1"], ["Elétrico", "Kit elétrico"]],
+          f"resumo por categoria e subcategoria ({[r[:2] for r in res]})")
+    areia = next(r for r in res if r[1] == "Areia")
+    check(areia[2] == "24 m³" and areia[3] == "2 cargas" and "2340" in areia[4], f"resumo soma a mesma subcategoria (24 m³, 2 cargas) ({areia})")
+    check(next(r for r in res if r[1] == "Kit elétrico")[2] == "1 kit", "kit em unidades")
     pos3 = page.evaluate("""() => { const f = [...document.querySelector('#pdfOverlay .pdf-doc').children[0].children];
       return [f.findIndex(e => e.classList.contains('cx-kb')), f.findIndex(e => e.classList.contains('cx-cust')), f.findIndex(e => e.classList.contains('cx-ass'))]; }""")
-    check(pos3[0] >= 0 and pos3[0] + 1 == pos3[1] and pos3[1] + 1 == pos3[2], f"entrada de materiais fica logo abaixo do Kanban e acima das assinaturas ({pos3})")
+    check(pos3[0] >= 0 and pos3[0] + 1 == pos3[1] and pos3[1] + 1 == pos3[2], f"notas recebidas ficam logo abaixo do Kanban e acima das assinaturas ({pos3})")
     page.evaluate("fecharPdfRDO()")
     # vindo do servidor quando o aparelho não tem as entradas
     page.evaluate("""() => { localStorage.removeItem('custo_entradas'); window.__cliOrig = B3Obras.cliente;
-      const rows = [{id: 's1', data_recebimento: currentDay.data, numero_nf: '77', categoria: 'Água', subcategoria: 'Caminhão-pipa', unidade: 'm³', quantidade: 30, mede_por: 'viagem', status: 'ativo'}];
+      const rows = [{id: 's1', recebido_em: currentDay.data + 'T10:00:00-03:00', data_recebimento: currentDay.data, numero_nf: '77', data_emissao: currentDay.data, fornecedor: 'Águas do Vale', categoria: 'Água', subcategoria: 'Caminhão-pipa', descricao: 'Água p/ umectação', unidade: 'm³', quantidade: 30, preco_unitario: null, total: null, responsavel: 'Carlos', mede_por: 'viagem', status: 'ativo'}];
       const q = linhas => { const o = { eq: () => o, in: () => o, then: (res) => res({ data: linhas, error: null }) }; return o; };
       B3Obras.cliente = () => ({ from: t => ({ select: () => q(t === 'custos_entradas' ? rows : []) }) }); }""")
     page.evaluate("gerarPdfRDO()")
@@ -246,6 +258,11 @@ with sync_playwright() as p:
     page.evaluate("fecharPdfRDO()")
 
     # com Kanban pequeno, o dia cheio ainda cabe em 2 folhas (o quadro é conteúdo pedido, não desperdício)
+    page.evaluate("""() => localStorage.setItem('chk_assuntos', JSON.stringify([
+      {id: 'k1', assunto: 'Liberar frente de concretagem', desc: 'Aguardando projeto revisado', prioridade: 'alta', setor: 'Engenharia', status: 'fazendo', dataLanc: '2026-10-05', dataTerm: '2099-10-10', resp: 'Jonacir Cazelli', criador: 'Marcelo Dias', criadoEm: Date.now()},
+      {id: 'k2', assunto: 'Solicitar aço CA-50', prioridade: 'media', setor: 'Suprimentos', status: 'afazer', dataTerm: '2020-01-01', criadoEm: Date.now()},
+      {id: 'k3', assunto: 'Emitir ART da fundação', status: 'concluido', prioridade: 'baixa', criadoEm: Date.now()},
+      {id: 'k4', assunto: 'Compra descartada', status: 'cancelado', prioridade: 'baixa', criadoEm: Date.now()}]))""")
     n_kb = paginas(page, "gerarPdfRDO()")
     page.evaluate("fecharPdfRDO()")
     check(n_kb <= 2, f"dia cheio com Kanban de 4 assuntos cabe em até 2 folhas (obtido: {n_kb})")

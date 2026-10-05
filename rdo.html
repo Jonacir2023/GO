@@ -1158,6 +1158,8 @@
 .pdf-doc.pdf-compacto .cx-duas > tbody > tr > td:last-child { padding-left: 4px; }
 .pdf-doc.pdf-compacto .cx-duas .cx-sec { margin-bottom: 0; }
 .pdf-doc.pdf-compacto .cx-txt { font-size: 7.5pt; line-height: 1.3; }
+.pdf-doc.pdf-compacto table.cx-plan th, .pdf-doc.pdf-compacto table.cx-plan td { font-size: 6.3pt; padding: 1px 2px; word-break: break-word; }
+.pdf-doc.pdf-compacto table.cx-plan th { font-size: 5.4pt; letter-spacing: 0; white-space: nowrap; }
 .pdf-doc.pdf-compacto .cx-fotos { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; }
 .pdf-doc.pdf-compacto .cx-fotos td { width: 16.66%; vertical-align: top; padding: 0; }
 .pdf-doc.pdf-compacto .cx-fotos img { width: 100%; height: auto; border: 0.5px solid #b8b8b8; display: block; }
@@ -3868,8 +3870,8 @@ function atualizarKanbanNoPdfAberto() {
   if (html && ancora) ancora.insertAdjacentHTML('beforebegin', html);
 }
 
-// ===== Entrada de materiais do dia (módulo Custos — planilha de entradas da portaria) =====
-// O RDO leva só as QUANTIDADES por categoria ▸ subcategoria (valores ficam no Custos).
+// ===== Notas recebidas no dia (módulo Custos — planilha de entradas da portaria) =====
+// O RDO leva a PLANILHA do dia (item a item, em ordem de chegada, com valores) e o RESUMO de quantidades.
 // "Do dia" = recebido na obra naquele dia (data_recebimento). Mesma lógica do Kanban: servidor
 // (Supabase, tabela custos_entradas) + localStorage do Custos (custo_entradas); local vale no mesmo id.
 let entradasMateriaisServidor = {};  // por data AAAA-MM-DD
@@ -3879,8 +3881,10 @@ async function atualizarEntradasDoDiaDoServidor(data) {
     const { data: rows, error } = await B3Obras.cliente().from('custos_entradas').select('*').eq('data_recebimento', data);
     if (error) throw error;
     entradasMateriaisServidor[data] = (rows || []).map(r => ({
-      id: r.id, data_recebimento: r.data_recebimento, numero_nf: r.numero_nf, categoria: r.categoria, subcategoria: r.subcategoria,
-      unidade: r.unidade, quantidade: Number(r.quantidade) || 0, mede_por: r.mede_por, status: r.status
+      id: r.id, recebido_em: r.recebido_em, data_recebimento: r.data_recebimento, numero_nf: r.numero_nf, data_emissao: r.data_emissao,
+      fornecedor: r.fornecedor, categoria: r.categoria, subcategoria: r.subcategoria, descricao: r.descricao, unidade: r.unidade,
+      quantidade: Number(r.quantidade) || 0, preco_unitario: r.preco_unitario == null ? null : Number(r.preco_unitario),
+      total: r.total == null ? null : Number(r.total), responsavel: r.responsavel, mede_por: r.mede_por, status: r.status
     }));
     return true;
   } catch (e) {
@@ -3900,10 +3904,17 @@ function lerEntradasDoDia(data) {
 
 function custosDoDiaPdf(data) {
   const E = escHtml;
-  const l = lerEntradasDoDia(data);
+  const l = lerEntradasDoDia(data).slice().sort((a, b) => String(a.recebido_em || '').localeCompare(String(b.recebido_em || '')) || String(a.id).localeCompare(String(b.id)));
   if (!l.length) return '';  // sem entrada de material no dia, a seção não ocupa papel
   const cmpPt = (x, y) => String(x).localeCompare(String(y), 'pt-BR', { sensitivity: 'base' });
   const fq = q => q.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+  const nm = v => v == null ? '<b style="color:#c62828">—</b>' : fmtMoedaBR(v).replace('R$ ', '');
+  const hora = iso => { if (!iso) return ''; const d = new Date(iso); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  const dm = iso => iso ? String(iso).slice(8, 10) + '/' + String(iso).slice(5, 7) : '';
+  const total = l.reduce((t, e) => t + (Number(e.total) || 0), 0), semValor = l.filter(e => e.total == null).length;
+  const planilha = l.map(e => `<tr><td>${hora(e.recebido_em)}</td><td>${E(e.numero_nf)}</td><td>${dm(e.data_emissao)}</td><td>${E(e.fornecedor || '')}</td><td>${E(e.categoria)}</td><td>${E(e.subcategoria)}</td>
+      <td>${E(e.descricao || '')}</td><td>${E(e.unidade || '')}</td><td style="text-align:right">${fq(Number(e.quantidade) || 0)}</td><td style="text-align:right;white-space:nowrap">${nm(e.preco_unitario)}</td>
+      <td style="text-align:right;white-space:nowrap">${nm(e.total)}</td><td>${E(e.responsavel || '')}</td></tr>`).join('');
   const rot = { carga: ['carga', 'cargas'], viagem: ['viagem', 'viagens'], peso: ['pesagem', 'pesagens'], unidade: ['lançamento', 'lançamentos'] };
   const grupos = new Map();
   l.forEach(e => {
@@ -3912,15 +3923,17 @@ function custosDoDiaPdf(data) {
     g.un.set(e.unidade, (g.un.get(e.unidade) || 0) + (Number(e.quantidade) || 0));
     g.nfs.add(String(e.numero_nf)); g.n++; grupos.set(k, g);
   });
-  const lista = [...grupos.values()].sort((a, b) => cmpPt(a.cat, b.cat) || cmpPt(a.sub, b.sub));
-  const corpo = lista.map(g => {
-    const r = rot[g.mede] || rot.unidade;
-    const nfs = [...g.nfs];
+  const resumo = [...grupos.values()].sort((a, b) => cmpPt(a.cat, b.cat) || cmpPt(a.sub, b.sub)).map(g => {
+    const r = rot[g.mede] || rot.unidade, nfs = [...g.nfs];
     return `<tr><td>${E(g.cat)}</td><td>${E(g.sub)}</td><td style="text-align:right"><b>${[...g.un.entries()].map(([u, q]) => fq(q) + ' ' + E(u)).join(' + ')}</b></td>
-      <td>${g.n} ${g.n === 1 ? r[0] : r[1]}</td><td>${E(nfs.slice(0, 5).join(', '))}${nfs.length > 5 ? ' +' + (nfs.length - 5) : ''}</td></tr>`;
+      <td>${g.n} ${g.n === 1 ? r[0] : r[1]}</td><td>${E(nfs.slice(0, 6).join(', '))}${nfs.length > 6 ? ' +' + (nfs.length - 6) : ''}</td></tr>`;
   }).join('');
-  return `<div class="cx-sec cx-cust"><div class="cx-tit">📦 Entrada de materiais do dia — ${l.length} lançamento${l.length > 1 ? 's' : ''}</div>
-    <table class="cx"><tr><th style="width:18%">Categoria</th><th style="width:24%">Subcategoria</th><th style="width:20%;text-align:right">Quantidade</th><th style="width:16%">Cargas</th><th>NF</th></tr>${corpo}</table></div>`;
+  return `<div class="cx-sec cx-cust"><div class="cx-tit">📦 Notas recebidas no dia — ${l.length} item${l.length > 1 ? 'ns' : ''} · ${fmtMoedaBR(total)}${semValor ? ' (' + semValor + ' sem valor)' : ''}</div>
+    <table class="cx cx-plan"><tr><th style="width:5%">Hora</th><th style="width:6%">Nº nota</th><th style="width:7%">Emissão</th><th style="width:12%">Fornecedor</th><th style="width:9%">Categoria</th><th style="width:9%">Subcateg.</th><th>Descrição da nota</th><th style="width:4%">Un.</th><th style="width:6%;text-align:right">Qtde</th><th style="width:8%;text-align:right">Preço unit.</th><th style="width:9%;text-align:right">Total</th><th style="width:9%">Respons.</th></tr>
+      ${planilha}
+      <tr><td colspan="10" style="text-align:right"><b>TOTAL LANÇADO</b></td><td style="text-align:right;white-space:nowrap"><b>${fmtMoedaBR(total).replace('R$ ', '')}</b></td><td></td></tr></table>
+    <div class="cx-tit" style="margin-top:3px">Resumo de quantidade por categoria e subcategoria</div>
+    <table class="cx"><tr><th style="width:18%">Categoria</th><th style="width:24%">Subcategoria</th><th style="width:20%;text-align:right">Quantidade</th><th style="width:16%">Cargas</th><th>NF</th></tr>${resumo}</table></div>`;
 }
 
 function atualizarCustosNoPdfAberto() {

@@ -100,7 +100,7 @@ principal e o antigo foi **apagado** (o git guarda: commits anteriores a `06cb9a
   (o quadro é conteúdo pedido, não desperdício). O teste `test_rdo_pdf.py` trava os dois casos.
 - **Ordem das seções (pedida pelo usuário):** cabeçalho, indicadores, clima | jornada, efetivo | equipamentos,
   **atividades do dia logo acima de eventos do dia**, segurança/meio ambiente, acumulados, fotos,
-  **Kanban de Assuntos do Check-in**, **entrada de materiais do dia (Custos)**, assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
+  **Kanban de Assuntos do Check-in**, **notas recebidas no dia (planilha + resumo, do Custos)**, assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
 - **Conteúdo:** cabeçalho com RDO nº, data, cliente, contrato, local/frente (obra + local do dia);
   faixa de 7 indicadores; clima; jornada e DSS; atividades (com paralisadas e justificativa); efetivo por
   função/empresa; equipamentos e veículos (operando/parados com justificativa); eventos do dia (hora,
@@ -202,15 +202,23 @@ Limites: a lista de assinaturas é **por aparelho** (não sincroniza); o reposit
 imagem da assinatura é acessível a qualquer um — decisão do usuário ao fornecê-la. Testes em
 `test_rdo_pdf.py`.
 
-### Entrada de materiais do dia no PDF (substitui a planilha item a item de 05/10/2026)
+### Notas recebidas no dia no PDF (pedido do usuário, 05/10/2026)
 
-Logo **abaixo do Kanban** e acima das assinaturas, `custosDoDiaPdf()` imprime o **resumo quantitativo** da
-entrada de materiais do dia, vindo do módulo Custos (tabela `custos_entradas`): colunas **Categoria |
-Subcategoria | Quantidade | Cargas | NF**, em ordem alfabética, somando por **unidade** (24 m³, 1 kit; unidades
-diferentes nunca se somam), com o nº de cargas/viagens conforme o "mede por" da subcategoria. "Do dia" =
-**recebido na obra** no dia do RDO (`data_recebimento`). **Só quantidades** — valores (R$) ficam no Custos.
-Lançamentos cancelados não entram. Fonte: Supabase + `custo_entradas` local (local vale no mesmo id), como no
-Kanban. Dia sem entradas: a seção **não aparece**. Detalhes do módulo: [[Notas/Custos — Entrada de Materiais]].
+Logo **abaixo do Kanban** e acima das assinaturas, `custosDoDiaPdf()` imprime **a planilha inteira das notas
+recebidas no dia** e o **resumo**, vindos do módulo Custos (`custos_entradas`):
+
+1. **Planilha** item a item, em **ordem de chegada**, com as colunas do Custos: Hora · Nº nota · Emissão ·
+   Fornecedor · Categoria · Subcateg. · Descrição da nota · Un. · Qtde · Preço unit. · Total · Respons.; item
+   sem preço aparece como "—" (em vermelho); linha **TOTAL LANÇADO** e, no título, quantos itens estão sem valor.
+2. **Resumo de quantidade por categoria e subcategoria**: Categoria | Subcategoria | Quantidade | Cargas | NF,
+   alfabético, somando por **unidade** (24 m³, 1 kit; nunca mistura unidades) e contando cargas/viagens pelo
+   "mede por" da subcategoria.
+
+"Do dia" = **recebido na obra** no dia do RDO (`data_recebimento`). Cancelados não entram. Fonte: Supabase +
+`custo_entradas` local (local vale no mesmo id), como no Kanban; se o aparelho não tem as entradas, o PDF se
+refaz quando o servidor responde. Dia sem entradas: a seção **não aparece**. Fonte pequena (6,3 pt) para caber:
+um dia com muitas entradas pode levar o RDO a 2 folhas. (Substitui a versão "só quantidades", que durou horas.)
+Detalhes do módulo: [[Notas/Custos — Entrada de Materiais]].
 
 ---
 
