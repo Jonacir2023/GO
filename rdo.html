@@ -1191,6 +1191,20 @@
 .pdf-doc.pdf-compacto .kb-vazio { font-size: 6.5pt; color: #777; text-align: center; border: 0.5px dashed #c5cbd8; border-radius: 4px; padding: 3px; }
 .pdf-doc.pdf-compacto .cx-ass { width: 100%; border-collapse: separate; border-spacing: 12px 0; table-layout: fixed; margin-top: 6px; page-break-inside: avoid; }
 .pdf-doc.pdf-compacto .cx-ass td { width: 50%; text-align: center; border-top: 0.75px solid #222; padding-top: 1px; font-size: 7pt; vertical-align: top; }
+.pdf-doc.pdf-compacto .cx-ass .ass-clic { cursor: pointer; }
+.pdf-doc.pdf-compacto .cx-ass .ass-dica { margin-top: 2px; font-size: 6pt; color: #7a8497; border: 0.5px dashed #b9c1d1; border-radius: 3px; padding: 1px 3px; }
+#escAssOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+#escAssOverlay .esc-box { background: #fff; border-radius: 12px; padding: 14px; width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; color: #1a1a1a; }
+#escAssOverlay .esc-tit { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+#escAssOverlay .esc-sub { font-size: 12px; color: #666; margin-bottom: 10px; }
+#escAssOverlay .esc-item { display: flex; align-items: center; gap: 10px; border: 1.5px solid #dfe3ea; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; cursor: pointer; background: #fff; }
+#escAssOverlay .esc-item.atual { border-color: #2f9e3f; background: #f1faf3; }
+#escAssOverlay .esc-item img { height: 38px; max-width: 120px; object-fit: contain; background: #fff; }
+#escAssOverlay .esc-item b { flex: 1; font-size: 13px; }
+#escAssOverlay .esc-item .esc-del { border: 0; background: #fde2e2; color: #c62828; border-radius: 8px; padding: 6px 9px; cursor: pointer; }
+#escAssOverlay .esc-btn { display: block; width: 100%; padding: 12px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+#padAssOverlay .pad-nome { width: 100%; box-sizing: border-box; margin-top: 8px; padding: 9px; border: 1.5px solid #ccd; border-radius: 8px; font-size: 14px; }
+#padAssOverlay .pad-guardar { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 6px; color: #333; }
 .pdf-doc.pdf-compacto .cx-ass img { height: 28px; display: block; margin: 0 auto -2px; }
 .pdf-doc.pdf-compacto .cx-rodape { margin-top: 3px; text-align: center; font-size: 6pt; color: #777; }
 
@@ -1205,6 +1219,7 @@
   html, body, #pdfOverlay { background: #fff !important; }
   #pdfOverlay { position: static !important; overflow: visible !important; }
   .pdf-toolbar { display: none !important; }
+  .ass-dica { display: none !important; }
   .ass-vazia { visibility: hidden !important; }
   /* O app é um PWA estreito: body tem max-width de 480px. Na impressão isso
      espremia o relatório a 127mm em vez dos 190mm úteis da folha, quebrando o
@@ -3891,7 +3906,24 @@ function montarOverlayPdf(h) {
 // ============================================================
 // Quem fecha o RDO: o Apontador (nome vem do dia) e o Gerente de Obras (fixo). A imagem da
 // assinatura do gerente, quando houver, vai em `assinatura` (URL ou dataURL).
-const GERENTE_OBRA = { nome: 'Jonacir Cazelli', cargo: 'Gerente de Obras', assinatura: 'assinatura-gerente.png' };
+const GERENTE_OBRA = { nome: 'Jonacir Cazelli', cargo: 'Gerência', assinatura: 'assinatura-gerente.png' };
+
+// Assinaturas do RDO: duas posições — 'apontador' (esquerda) e 'gerente' (direita, Gerência).
+// Cada posição pode vir de: (a) escolha do dia (currentDay.assinaturas[slot]; '' = linha em branco
+// de propósito), (b) padrão — só o gerente tem (a assinatura do Jonacir). Toque no campo do PDF
+// abre a escolha: assinaturas guardadas no aparelho, desenhar uma nova ou deixar em branco.
+function assinaturasGuardadas() {
+  const g = S.get('assinaturasSalvas') || {};
+  return { apontador: g.apontador || [], gerente: g.gerente || [] };
+}
+function assinaturaDoSlot(day, slot) {
+  const as = day.assinaturas || {}, nomes = day.assinaturaNomes || {};
+  if (as[slot] !== undefined) {
+    return { img: as[slot], nome: nomes[slot] || '' };
+  }
+  if (slot === 'gerente') return { img: GERENTE_OBRA.assinatura, nome: GERENTE_OBRA.nome };
+  return { img: '', nome: '' };
+}
 
 // Kanban de Assuntos do Check-in para a folha do RDO. Espelha checkinRenderKanban(): colunas
 // A FAZER / FAZENDO / CONCLUÍDO / CANCELADO; em A fazer e Fazendo o cartão completo (descrição,
@@ -4114,10 +4146,11 @@ function gerarPdfRDO() {
   const secKanban = kanbanAssuntosPdf();
 
   // ----- assinaturas -----
-  const sigs = day.assinaturas || {};
-  const img = slot => sigs[slot] ? `<img src="${sigs[slot]}" alt="assinatura">` : '<div style="height:24px"></div>';
   const nomeApont = day.apontador || 'Apontador responsável';
   const ger = GERENTE_OBRA;
+  const assA = assinaturaDoSlot(day, 'apontador'), assG = assinaturaDoSlot(day, 'gerente');
+  const imgAss = a => a.img ? `<img src="${a.img}" alt="assinatura">` : '<div style="height:24px"></div>';
+  const celAss = { apontador: imgAss(assA), gerente: imgAss(assG) };
 
   const h = `
     <div class="pdf-page" style="padding:0;box-sizing:border-box">
@@ -4148,8 +4181,8 @@ function gerarPdfRDO() {
       ${secFotos}
       ${secKanban}
       <table class="cx-ass"><tr>
-        <td>${img('apontador')}<b>${E(nomeApont)}</b><br>Apontador — ${E(state.obra.empresa || '')}</td>
-        <td>${ger.assinatura ? `<img src="${ger.assinatura}" alt="assinatura">` : img('gerente')}<b>${E(ger.nome)}</b><br>${E(ger.cargo)} — ${E(state.obra.empresa || '')}</td>
+        <td class="ass-clic" onclick="abrirEscolhaAssinatura('apontador')">${celAss.apontador}<b>${E(nomeApont)}</b><br>Apontador — ${E(state.obra.empresa || '')}<div class="ass-dica" data-html2canvas-ignore="true">✍️ toque para assinar ou escolher</div></td>
+        <td class="ass-clic" onclick="abrirEscolhaAssinatura('gerente')">${celAss.gerente}<b>${E(assG.nome || 'Gerente de Obras')}</b><br>${E(ger.cargo)} — ${E(state.obra.empresa || '')}<div class="ass-dica" data-html2canvas-ignore="true">✍️ toque para assinar ou escolher</div></td>
       </tr></table>
       <div class="cx-rodape">RDO Nº ${num} · ${E(state.obra.nome || '')} · Gerado pelo App Diário de Obras</div>
     </div>`;
@@ -4454,13 +4487,16 @@ let padAssSlot = null;
 
 function abrirPadAssinatura(slot) {
   padAssSlot = slot;
-  const titulo = slot === 'apontador' ? 'Assinatura do Apontador' : 'Assinatura do Gerente de Obras';
+  const titulo = slot === 'apontador' ? 'Assinatura do Apontador' : 'Assinatura da Gerência';
+  const nomeSugerido = slot === 'apontador' ? ((currentDay && currentDay.apontador) || '').replace(/^\s*\d+\s*[–-]\s*/, '').replace(/\s*\(.*$/, '') : '';
   const ov = document.createElement('div');
   ov.id = 'padAssOverlay';
   ov.innerHTML = `
     <div class="pad-box">
       <div style="font-weight:800;font-size:15px;margin-bottom:8px;color:#1a1a1a">${titulo}</div>
       <canvas id="padAssCanvas"></canvas>
+      <input id="padAssNome" class="pad-nome" placeholder="Nome de quem assina" value="${nomeSugerido.replace(/"/g, '&quot;')}">
+      <label class="pad-guardar"><input type="checkbox" id="padAssGuardar" checked> Guardar na lista de assinaturas deste aparelho</label>
       <div class="pad-btns">
         <button style="background:#eee;color:#1a1a1a" onclick="limparPadAssinatura()">Limpar</button>
         <button style="background:#555;color:#fff" onclick="fecharPadAssinatura()">Cancelar</button>
@@ -4525,14 +4561,86 @@ function fecharPadAssinatura() {
 function salvarPadAssinatura() {
   const canvas = document.getElementById('padAssCanvas');
   if (!canvas._temTraco()) { toast('Assine antes de salvar (ou Cancelar)'); return; }
-  currentDay.assinaturas = currentDay.assinaturas || {};
-  currentDay.assinaturas[padAssSlot] = canvas.toDataURL('image/png');
-  salvarDiarioDia(false);
+  const nome = (document.getElementById('padAssNome').value || '').trim();
+  const guardar = document.getElementById('padAssGuardar').checked;
+  if (guardar && !nome) { toast('Informe o nome de quem assina para guardar'); return; }
+  const img = canvas.toDataURL('image/png');
+  if (guardar) {
+    const g = assinaturasGuardadas();
+    g[padAssSlot] = g[padAssSlot].filter(a => a.nome.toLowerCase() !== nome.toLowerCase());
+    g[padAssSlot].push({ id: 'a' + Date.now(), nome, img });
+    S.set('assinaturasSalvas', g);
+  }
+  aplicarAssinatura(padAssSlot, img, nome);
   fecharPadAssinatura();
-  // Regenerar o PDF em tela com a assinatura aplicada
+  toast('✅ Assinatura registrada');
+}
+
+// Aplica a assinatura escolhida ao dia ('' = linha em branco) e refaz o PDF mantendo a rolagem.
+function aplicarAssinatura(slot, img, nome) {
+  currentDay.assinaturas = currentDay.assinaturas || {};
+  currentDay.assinaturaNomes = currentDay.assinaturaNomes || {};
+  if (img === undefined) { delete currentDay.assinaturas[slot]; delete currentDay.assinaturaNomes[slot]; }
+  else { currentDay.assinaturas[slot] = img; currentDay.assinaturaNomes[slot] = nome || ''; }
+  salvarDiarioDia(false);
+  // refaz o PDF sem perder o ponto de rolagem (o que rola é o próprio overlay ou o palco)
+  const rola = () => [document.getElementById('pdfOverlay'), document.querySelector('#pdfOverlay .pdf-stage')].filter(Boolean);
+  const topos = rola().map(e => e.scrollTop);
   fecharPdfRDO();
   gerarPdfRDO();
-  toast('✅ Assinatura registrada');
+  rola().forEach((e, i) => { e.scrollTop = topos[i] || 0; });
+}
+
+// Escolha da assinatura de uma posição (toque no campo do PDF).
+function abrirEscolhaAssinatura(slot) {
+  const rotulo = slot === 'apontador' ? 'Apontador' : 'Gerência';
+  const atual = assinaturaDoSlot(currentDay, slot);
+  const lista = [];
+  if (slot === 'gerente') lista.push({ id: 'padrao', nome: GERENTE_OBRA.nome + ' (padrão)', nomeReal: GERENTE_OBRA.nome, img: GERENTE_OBRA.assinatura, fixa: true });
+  assinaturasGuardadas()[slot].forEach(a => lista.push({ id: a.id, nome: a.nome, nomeReal: a.nome, img: a.img }));
+  const ov = document.createElement('div');
+  ov.id = 'escAssOverlay';
+  ov.innerHTML = `<div class="esc-box">
+    <div class="esc-tit">Assinatura — ${rotulo}</div>
+    <div class="esc-sub">Escolha uma assinatura guardada, desenhe uma nova ou deixe a linha em branco.</div>
+    ${lista.map(a => `<div class="esc-item ${a.img === atual.img && a.img ? 'atual' : ''}" data-id="${a.id}">
+        <img src="${a.img}" alt=""><b>${escHtml(a.nome)}</b>${a.fixa ? '' : '<button class="esc-del" data-del="' + a.id + '" title="Apagar da lista">🗑️</button>'}</div>`).join('')
+      || '<div class="esc-sub">Nenhuma assinatura guardada ainda.</div>'}
+    <button class="esc-btn" style="background:#f5b334;color:#1a1a1a" data-acao="nova">✍️ Desenhar nova assinatura</button>
+    <button class="esc-btn" style="background:#eee;color:#1a1a1a" data-acao="branco">Deixar em branco (assinar a mão no papel)</button>
+    ${slot === 'gerente' ? '<button class="esc-btn" style="background:#eee;color:#1a1a1a" data-acao="padrao">Voltar ao padrão (' + escHtml(GERENTE_OBRA.nome) + ')</button>' : ''}
+    <button class="esc-btn" style="background:#555;color:#fff" data-acao="fechar">Cancelar</button>
+  </div>`;
+  document.body.appendChild(ov);
+  const fechar = () => ov.remove();
+  ov.addEventListener('click', ev => {
+    const del = ev.target.closest('[data-del]');
+    if (del) {
+      ev.stopPropagation();
+      const g = assinaturasGuardadas();
+      g[slot] = g[slot].filter(a => a.id !== del.dataset.del);
+      S.set('assinaturasSalvas', g);
+      fechar(); abrirEscolhaAssinatura(slot);
+      return;
+    }
+    const item = ev.target.closest('.esc-item');
+    if (item) {
+      const a = lista.find(x => x.id === item.dataset.id);
+      fechar();
+      if (a.fixa) aplicarAssinatura(slot, undefined); else aplicarAssinatura(slot, a.img, a.nomeReal);
+      return;
+    }
+    const btn = ev.target.closest('[data-acao]');
+    if (btn) {
+      const ac = btn.dataset.acao;
+      fechar();
+      if (ac === 'nova') abrirPadAssinatura(slot);
+      else if (ac === 'branco') aplicarAssinatura(slot, '', '');
+      else if (ac === 'padrao') aplicarAssinatura(slot, undefined);
+      return;
+    }
+    if (ev.target === ov) fechar();
+  });
 }
 
 // Atividades do dia em texto corrido, incluindo as paralisadas — usado no

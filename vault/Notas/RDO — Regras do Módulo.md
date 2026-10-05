@@ -188,13 +188,19 @@ Ver [[Decisões/2026-08-25 Sincronização entre aparelhos]].
 
 ### Assinaturas do RDO (pedido do usuário, 05/10/2026)
 
-O PDF fecha com duas assinaturas: **Apontador** (nome do dia, linha para assinar) e **Gerente de
-Obras — Jonacir Cazelli**, esta com a imagem da assinatura já impressa (`assinatura-gerente.png`, PNG
-transparente tratado a partir da foto enviada pelo usuário; constante `GERENTE_OBRA` em `rdo.html`).
-Saiu a antiga "Fiscalização / Cliente". O slot de assinatura na tela passou de `fiscal` para `gerente`
-(a tela de assinatura em tela não está ligada a nenhum botão hoje). Para trocar o gerente: editar
-`GERENTE_OBRA` e substituir o PNG. O repositório é público: a imagem da assinatura fica acessível a
-qualquer um — decisão do usuário ao fornecê-la.
+Documento de **levantamento interno da empresa**: o PDF fecha com duas assinaturas — **Apontador**
+(esquerda) e **Gerência** (direita, padrão Jonacir Cazelli, `GERENTE_OBRA`). Saiu a "Fiscalização /
+Cliente". **Tocar no campo** (na tela do PDF) abre a escolha: assinaturas guardadas neste aparelho
+(`diario_assinaturasSalvas`: `{apontador: [], gerente: []}`; o padrão do Jonacir é fixo e não some),
+**desenhar nova** (quadro de assinatura com nome e "guardar na lista"), **deixar em branco** (assinar à
+mão no papel) ou, na Gerência, **voltar ao padrão**; cada item da lista pode ser apagado. A escolha vale
+**só para o dia** (`currentDay.assinaturas[slot]` = imagem, `''` = em branco de propósito, ausente = padrão;
+`assinaturaNomes[slot]` = nome impresso). Nada é assinado automaticamente pelo apontador: ele escolhe a
+cada dia. A dica "toque para assinar" é só de tela (`@media print` e `data-html2canvas-ignore`).
+A imagem padrão é `assinatura-gerente.png` (PNG transparente tratado da foto enviada pelo usuário).
+Limites: a lista de assinaturas é **por aparelho** (não sincroniza); o repositório é público, então a
+imagem da assinatura é acessível a qualquer um — decisão do usuário ao fornecê-la. Testes em
+`test_rdo_pdf.py`.
 
 ---
 
