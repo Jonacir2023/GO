@@ -123,6 +123,13 @@ with sync_playwright() as p:
       return [i, f.findIndex(e => e.classList.contains('cx-ass')), f.findIndex(e => e.querySelector && e.querySelector('.cx-fotos'))]; }""")
     check(pos[0] >= 0 and pos[0] + 1 == pos[1], f"Kanban fica imediatamente acima das assinaturas ({pos})")
     check(pos[2] < pos[0], "Kanban vem depois do registro fotográfico")
+    ass = page.inner_text("#pdfOverlay .cx-ass")
+    check("Jonacir Cazelli" in ass and "Gerente de Obras" in ass and "Marcelo Dias" in ass and "Apontador" in ass,
+          "assinaturas do RDO: Apontador e Gerente de Obras (Jonacir Cazelli)")
+    page.wait_for_timeout(300)
+    check(page.evaluate("() => { const i = document.querySelector('#pdfOverlay .cx-ass img'); return !!i && i.complete && i.naturalWidth > 100; }"),
+          "assinatura do Gerente de Obras (imagem) carrega no PDF")
+    check("Fiscalização" not in ass and "Cliente" not in ass, "a assinatura de Fiscalização/Cliente saiu")
     check("Check-in — pendências" not in page.inner_text("#pdfOverlay .pdf-doc"), "a lista curta de pendências foi substituída pelo Kanban")
     page.evaluate("fecharPdfRDO()")
     # com Kanban pequeno, o dia cheio ainda cabe em 2 folhas (o quadro é conteúdo pedido, não desperdício)

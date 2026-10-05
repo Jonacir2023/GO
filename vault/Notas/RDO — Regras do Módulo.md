@@ -185,6 +185,17 @@ Ver [[Decisões/2026-08-25 Sincronização entre aparelhos]].
   chegava a numerar duas vezes (`3. Foto 3 - …`). O campo de legenda livre foi removido; a
   legenda antiga de fotos já tiradas continua sendo respeitada quando não há atividade.
 
+
+### Assinaturas do RDO (pedido do usuário, 05/10/2026)
+
+O PDF fecha com duas assinaturas: **Apontador** (nome do dia, linha para assinar) e **Gerente de
+Obras — Jonacir Cazelli**, esta com a imagem da assinatura já impressa (`assinatura-gerente.png`, PNG
+transparente tratado a partir da foto enviada pelo usuário; constante `GERENTE_OBRA` em `rdo.html`).
+Saiu a antiga "Fiscalização / Cliente". O slot de assinatura na tela passou de `fiscal` para `gerente`
+(a tela de assinatura em tela não está ligada a nenhum botão hoje). Para trocar o gerente: editar
+`GERENTE_OBRA` e substituir o PNG. O repositório é público: a imagem da assinatura fica acessível a
+qualquer um — decisão do usuário ao fornecê-la.
+
 ---
 
 ## Relacionado

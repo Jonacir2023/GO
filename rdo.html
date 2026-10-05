@@ -2413,7 +2413,7 @@ const EMPTY_DAY = () => ({
   pratTarde: '',
   pratNoite: '',
   horimetros: {},  // equipId -> {ini, fim}
-  assinaturas: {}, // {apontador: dataURL, fiscal: dataURL}
+  assinaturas: {}, // {apontador: dataURL, gerente: dataURL}
   cafeInicio: '06:30', cafeFim: '07:00',
   almocoInicio: '12:00', almocoFim: '13:00',
   encerramento: '17:00',
@@ -3846,6 +3846,10 @@ function montarOverlayPdf(h) {
 // segurança e meio ambiente, eventos do dia com cargas e os acumulados de
 // semana/mês/ano numa tabela só; as pendências do Check-in são uma lista curta.
 // ============================================================
+// Quem fecha o RDO: o Apontador (nome vem do dia) e o Gerente de Obras (fixo). A imagem da
+// assinatura do gerente, quando houver, vai em `assinatura` (URL ou dataURL).
+const GERENTE_OBRA = { nome: 'Jonacir Cazelli', cargo: 'Gerente de Obras', assinatura: 'assinatura-gerente.png' };
+
 // Kanban de Assuntos do Check-in para a folha do RDO. Espelha checkinRenderKanban(): colunas
 // A FAZER / FAZENDO / CONCLUÍDO / CANCELADO; em A fazer e Fazendo o cartão completo (descrição,
 // prioridade, setor, status, datas, responsável, prazo restante); em Concluído e Cancelado só o
@@ -4070,6 +4074,7 @@ function gerarPdfRDO() {
   const sigs = day.assinaturas || {};
   const img = slot => sigs[slot] ? `<img src="${sigs[slot]}" alt="assinatura">` : '<div style="height:24px"></div>';
   const nomeApont = day.apontador || 'Apontador responsável';
+  const ger = GERENTE_OBRA;
 
   const h = `
     <div class="pdf-page" style="padding:0;box-sizing:border-box">
@@ -4101,7 +4106,7 @@ function gerarPdfRDO() {
       ${secKanban}
       <table class="cx-ass"><tr>
         <td>${img('apontador')}<b>${E(nomeApont)}</b><br>Apontador — ${E(state.obra.empresa || '')}</td>
-        <td>${img('fiscal')}<b>Fiscalização / Cliente</b><br>${E(state.obra.cliente || '')}</td>
+        <td>${ger.assinatura ? `<img src="${ger.assinatura}" alt="assinatura">` : img('gerente')}<b>${E(ger.nome)}</b><br>${E(ger.cargo)} — ${E(state.obra.empresa || '')}</td>
       </tr></table>
       <div class="cx-rodape">RDO Nº ${num} · ${E(state.obra.nome || '')} · Gerado pelo App Diário de Obras</div>
     </div>`;
@@ -4180,7 +4185,7 @@ let _pdfParaCompartilhar = null;
 // só falta esperar o navegador decodificá-las antes do html2canvas desenhar
 // o overlay — sem isso, uma foto ainda decodificando pode sair em branco.
 async function prepararFotosParaCaptura(overlay) {
-  const imgs = [...overlay.querySelectorAll('.pdf-foto img, .cx-fotos img')];
+  const imgs = [...overlay.querySelectorAll('.pdf-foto img, .cx-fotos img, .cx-ass img')];
   if (!imgs.length) return;
   await Promise.all(imgs.map(im => (im.decode ? im.decode().catch(() => {}) : null)));
 }
@@ -4404,7 +4409,7 @@ let padAssSlot = null;
 
 function abrirPadAssinatura(slot) {
   padAssSlot = slot;
-  const titulo = slot === 'apontador' ? 'Assinatura do Apontador' : 'Assinatura da Fiscalização / Cliente';
+  const titulo = slot === 'apontador' ? 'Assinatura do Apontador' : 'Assinatura do Gerente de Obras';
   const ov = document.createElement('div');
   ov.id = 'padAssOverlay';
   ov.innerHTML = `
