@@ -45,6 +45,12 @@ for arq, v in re.findall(r'<iframe[^>]*\bsrc="([A-Za-z0-9_-]+\.html)\?v=([0-9a-f
     if hashlib.md5(open(os.path.join(RAIZ, arq), "rb").read()).hexdigest()[:8] != v:
         velhos.append(arq)
 check(not velhos, f"hash dos iframes está em dia — rode scripts/versionar_estaticos.py ({velhos})")
+import importlib.util
+_sp = importlib.util.spec_from_file_location("versionar", os.path.join(RAIZ, "scripts", "versionar_estaticos.py"))
+_vz = importlib.util.module_from_spec(_sp); _sp.loader.exec_module(_vz)
+bid_casca = (re.search(r'window\.BUILD_ID="([0-9a-f]+)"', casca) or [None, ""])[1]
+bid_json = json.load(open(os.path.join(RAIZ, "versao.json")))["v"]
+check(bid_casca == bid_json == _vz.build_id(), f"carimbo de build em dia: casca={bid_casca} versao.json={bid_json} calculado={_vz.build_id()} — rode scripts/versionar_estaticos.py")
 check(not sem_detector, f"toda página tem o detector de iframe ({sem_detector})")
 
 with sync_playwright() as p:
@@ -163,6 +169,21 @@ with sync_playwright() as p:
           "desktop: hero ocupa a largura útil")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
     check(visiveis == 14, f"desktop mostra os 14 cartões ({visiveis})")
+
+    # ---- auto-atualização: versao.json diferente do carimbo => recarrega uma única vez ----
+    velha = ctx.new_page()
+    velha.route("**/versao.json*", lambda r: r.fulfill(status=200, content_type="application/json", body='{"v":"deadbeef"}'))
+    velha.on("dialog", lambda d: d.dismiss())
+    velha.goto(f"{BASE}/buildly-completo.html")
+    velha.wait_for_timeout(2500)
+    check("b=deadbeef" in velha.url, f"casca desatualizada se recarrega sozinha numa URL nova ({velha.url})")
+    n_antes = velha.url
+    velha.wait_for_timeout(1500)
+    check(velha.url == n_antes, "e só recarrega uma vez (sem laço)")
+    ok = ctx.new_page()
+    ok.goto(f"{BASE}/buildly-completo.html")
+    ok.wait_for_timeout(1500)
+    check("b=" not in ok.url, "casca em dia não recarrega")
 
     check(not erros, f"sem erros de JS ({erros[:3]})")
     b.close()

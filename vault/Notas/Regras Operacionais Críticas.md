@@ -174,6 +174,26 @@ Armadilha irmã: `new Date().toISOString().slice(0,10)` é a data em **UTC** —
 Brasília já é "amanhã", e o campo "Data de lançamento" nascia com o dia errado. Usar
 `dataLocalISO()`. Teste: `tests/test_pauta_checkin_data.py` (relógio fixo às 22h10 de Brasília).
 
+### O app se atualiza sozinho: `versao.json` + `BUILD_ID` da casca
+
+O Pages demora a publicar (um run ficou 9+ minutos "queued" em 05/10/2026) e o Safari ainda guarda
+o arquivo antigo por até 10 min. A casca agora carrega `window.BUILD_ID` (hash de páginas, tema,
+config e imagens, calculado por `versionar_estaticos.py`) e, ao abrir, confere com `versao.json`
+buscado sem cache; se forem diferentes, recarrega **uma vez** numa URL nova (`?b=hash`, com trava em
+`sessionStorage` contra laço). Vale só para o que vier depois dessa versão: a primeira vez exige
+reabrir o app. **Rode o versionador antes de todo commit que mexa em HTML/CSS/imagem** — a suíte
+`padrao_visual` falha se `versao.json`, o `BUILD_ID` ou os `?v=` dos iframes estiverem velhos.
+Antes de achar que um deploy "não pegou", conferir se o run do Pages terminou
+(`actions/runs`: `status` deve ser `completed`).
+
+### Kanban do PDF do RDO vem do servidor, não só do localStorage
+
+`rdo.html` lia só `chk_assuntos` (preenchido quando a aba Check-in é aberta). Em aparelho novo ou
+janela privada que abre o RDO sem passar pelo Check-in, o Kanban saía vazio e a seção sumia
+(print do usuário, 05/10/2026). Agora `lerAssuntosCheckin()` junta o Supabase (`checkin_assuntos`,
+buscado ao gerar o PDF; o Kanban se refaz quando os dados chegam) com o `chk_assuntos` local (vale no
+mesmo id; traz o ainda não sincronizado) e respeita `chk_removidos`.
+
 ---
 
 ## Relacionado

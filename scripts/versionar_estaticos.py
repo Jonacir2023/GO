@@ -30,6 +30,26 @@ def hash_de(nome):
     return hashlib.md5((RAIZ / nome).read_bytes()).hexdigest()[:8]
 
 
+ARQUIVOS_DO_BUILD = ['tema.css', 'supabase-config.js', 'assinatura-gerente.png', 'hero-obra.svg']
+BUILD_RE = re.compile(r'window\.BUILD_ID="[0-9a-f]*"')
+
+
+def build_id():
+    """Hash de tudo que o usuário enxerga: páginas (a casca com o BUILD_ID zerado), tema, config e imagens."""
+    h = hashlib.md5()
+    for p in sorted(RAIZ.glob('*.html')):
+        if p.name == 'index.html':
+            continue
+        t = p.read_text(encoding='utf-8')
+        if p.name == 'buildly-completo.html':
+            t = BUILD_RE.sub('window.BUILD_ID=""', t)
+        h.update(p.name.encode() + t.encode('utf-8'))
+    for n in ARQUIVOS_DO_BUILD:
+        if (RAIZ / n).exists():
+            h.update(n.encode() + (RAIZ / n).read_bytes())
+    return h.hexdigest()[:8]
+
+
 def main():
     hashes = {n: hash_de(n) for n in ESTATICOS if (RAIZ / n).exists()}
     alteradas = []
@@ -75,6 +95,23 @@ def main():
             casca.write_text(novo, encoding='utf-8')
             if casca.name not in alteradas:
                 alteradas.append(casca.name)
+    # carimbo do build: a casca carrega BUILD_ID e confere com versao.json (que o navegador não
+    # guarda em cache). Se diferirem, ela recarrega sozinha — acaba com "publiquei e não apareceu".
+    if casca.exists():
+        t = casca.read_text(encoding='utf-8')
+        marca = '<script>/*build*/window.BUILD_ID=""</script>'
+        if '/*build*/' not in t:
+            t = re.sub(r'(<head[^>]*>)', lambda m: m.group(1) + '\n' + marca, t, count=1)
+            casca.write_text(t, encoding='utf-8')
+        bid = build_id()
+        novo = BUILD_RE.sub(f'window.BUILD_ID="{bid}"', t)
+        if novo != t:
+            casca.write_text(novo, encoding='utf-8')
+            if casca.name not in alteradas:
+                alteradas.append(casca.name)
+        versao = '{"v":"%s"}\n' % bid
+        if not (RAIZ / 'versao.json').exists() or (RAIZ / 'versao.json').read_text(encoding='utf-8') != versao:
+            (RAIZ / 'versao.json').write_text(versao, encoding='utf-8')
     print('hashes:', ', '.join(f'{n}={h}' for n, h in hashes.items()))
     print(f'{len(alteradas)} página(s) atualizada(s)' + (': ' + ', '.join(alteradas) if alteradas else ''))
     return 0

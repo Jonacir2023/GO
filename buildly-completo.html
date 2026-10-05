@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>/*build*/window.BUILD_ID="bdb5b138"</script>
+<script>/*autoatualizar*/
+// Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
+// uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
+(function () {
+  try {
+    if (!/^https?:$/.test(location.protocol) || !window.BUILD_ID) return;
+    fetch('versao.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.v || j.v === window.BUILD_ID) return;
+        var chave = 'buildly3_recarga_' + j.v;
+        try { if (sessionStorage.getItem(chave)) return; sessionStorage.setItem(chave, '1'); } catch (e) { return; }
+        var u = new URL(location.href); u.searchParams.set('b', j.v); location.replace(u.toString());
+      })
+      .catch(function () {});
+  } catch (e) {}
+})();
+</script>
 <script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -830,7 +849,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 
 <!-- RDO PAGE (Diário de Obras) -->
 <div class="page" id="page-rdo">
-  <iframe id="rdo-iframe" src="rdo.html?v=ecafd3a0" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="rdo-iframe" src="rdo.html?v=0403cde3" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- REUNIÃO PAGE (Ata de Reunião) -->

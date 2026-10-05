@@ -138,6 +138,34 @@ with sync_playwright() as p:
     check(n_kb <= 2, f"dia cheio com Kanban de 4 assuntos cabe em até 2 folhas (obtido: {n_kb})")
     page.evaluate("localStorage.removeItem('chk_assuntos')")
 
+    # ---- aparelho que nunca abriu o Check-in: o Kanban vem do servidor (Supabase) ----
+    servidor = [
+        {"id": "s1", "assunto": "Assunto só no servidor", "descricao": "veio do Supabase", "prioridade": "alta", "setor": "Engenharia",
+         "status": "fazendo", "data_lancamento": "2026-10-05", "data_termino": "2099-01-01", "responsavel": "Jonacir Cazelli",
+         "criador": "Marcelo Dias", "criado_em": "2026-10-05T12:00:00Z"},
+        {"id": "s2", "assunto": "Concluído no servidor", "status": "concluido", "prioridade": "baixa", "criado_em": "2026-10-04T12:00:00Z"}]
+    # o CDN do supabase-js é bloqueado no ambiente de teste: troca o cliente por um falso que devolve as linhas
+    page.evaluate("""(linhas) => { window.__clienteOriginal = B3Obras.cliente;
+      B3Obras.cliente = () => ({ from: () => ({ select: async () => ({ data: linhas, error: null }) }) }); }""", servidor)
+    page.evaluate("localStorage.removeItem('rdo_chk_servidor'); assuntosCheckinServidor = null")
+    page.evaluate("gerarPdfRDO()")
+    page.wait_for_timeout(1200)
+    k2 = page.inner_text("#pdfOverlay table.kb") if page.locator("#pdfOverlay table.kb").count() else ""
+    check("Assunto só no servidor" in k2 and "Concluído no servidor" in k2,
+          "sem Check-in local, o Kanban do PDF vem do servidor (e se refaz quando os dados chegam)")
+    pos2 = page.evaluate("""() => { const d = document.querySelector('#pdfOverlay .pdf-doc').children[0]; const f = [...d.children];
+      return [f.findIndex(e => e.classList.contains('cx-kb')), f.findIndex(e => e.classList.contains('cx-ass'))]; }""")
+    check(pos2[0] >= 0 and pos2[0] + 1 == pos2[1], f"Kanban vindo do servidor também fica acima das assinaturas ({pos2})")
+    page.evaluate("fecharPdfRDO()")
+    # o que está só no Check-in local (ainda não sincronizado) soma ao do servidor
+    page.evaluate("""() => localStorage.setItem('chk_assuntos', JSON.stringify([{id: 'l1', assunto: 'Só local', status: 'afazer', prioridade: 'media', criadoEm: Date.now()}]))""")
+    check(page.evaluate("lerAssuntosCheckin().map(a => a.assunto).sort().join('|')") == "Assunto só no servidor|Concluído no servidor|Só local",
+          "Kanban junta o servidor com o que só existe no Check-in local")
+    page.evaluate("localStorage.setItem('chk_removidos', JSON.stringify(['s2']))")
+    check("Concluído no servidor" not in page.evaluate("lerAssuntosCheckin().map(a => a.assunto).join('|')"), "assunto apagado no Check-in não volta pelo servidor")
+    page.evaluate("() => { B3Obras.cliente = window.__clienteOriginal; }")
+    page.evaluate("localStorage.removeItem('chk_assuntos'); localStorage.removeItem('chk_removidos'); localStorage.removeItem('rdo_chk_servidor'); assuntosCheckinServidor = null")
+
     # ---- economia de papel ----
     n = paginas(page, "gerarPdfRDO()")
     page.evaluate("fecharPdfRDO()")

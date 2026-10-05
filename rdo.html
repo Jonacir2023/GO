@@ -3801,13 +3801,56 @@ function calcResumoPeriodoPDF(isoInicio, isoFim) {
   return { dias, acum, eventos, totalEventos, somaEfetivo, diasComEfetivo };
 }
 
-// O Check-in vive no buildly-completo.html, mas as duas paginas sao servidas da
-// mesma origem e portanto dividem o localStorage. Ler daqui dispensa
-// postMessage entre iframe e pagina-mae. Quando o rdo.html roda sozinho, sem o
-// Check-in ao lado, a chave simplesmente nao existe e o bloco e omitido.
+// Assuntos do Check-in para o Kanban do PDF. Duas fontes, mescladas:
+//  1) o Supabase da obra (tabela checkin_assuntos) — sem isto, quem abre o RDO sem ter passado
+//     antes pela aba Check-in (aparelho novo, janela privada) via o Kanban VAZIO;
+//  2) o localStorage do Check-in (mesma origem, chave chk_assuntos): vale sobre o servidor no
+//     mesmo id, porque traz mudanças ainda não sincronizadas, e traz os itens só-locais.
+let assuntosCheckinServidor = null;
+
+function _assuntoDoServidor(c) {
+  return {
+    id: c.id, assunto: c.assunto, desc: c.descricao || '', criador: c.criador || '', resp: c.responsavel || '',
+    setor: c.setor || '', prioridade: c.prioridade || 'media', status: c.status || 'afazer',
+    dataLanc: c.data_lancamento || '', dataTerm: c.data_termino || '',
+    concluidoEm: c.concluido_em ? Date.parse(c.concluido_em) : '',
+    criadoEm: c.criado_em ? Date.parse(c.criado_em) : 0
+  };
+}
+
+async function atualizarAssuntosCheckinDoServidor() {
+  try {
+    const { data, error } = await B3Obras.cliente().from('checkin_assuntos').select('*');
+    if (error) throw error;
+    assuntosCheckinServidor = (data || []).map(_assuntoDoServidor);
+    try { localStorage.setItem('rdo_chk_servidor', JSON.stringify(assuntosCheckinServidor)); } catch (e) {}
+    return true;
+  } catch (e) {
+    console.warn('RDO: não consegui ler os assuntos do Check-in no servidor:', e && e.message);
+    return false;
+  }
+}
+
 function lerAssuntosCheckin() {
-  try { return JSON.parse(localStorage.getItem('chk_assuntos')) || []; }
-  catch (e) { return []; }
+  let local = [], servidor = assuntosCheckinServidor, removidos = [];
+  try { local = JSON.parse(localStorage.getItem('chk_assuntos')) || []; } catch (e) {}
+  if (!servidor) { try { servidor = JSON.parse(localStorage.getItem('rdo_chk_servidor')) || []; } catch (e) { servidor = []; } }
+  try { removidos = (JSON.parse(localStorage.getItem('chk_removidos')) || []).map(String); } catch (e) {}
+  const porId = new Map();
+  servidor.forEach(a => { if (!removidos.includes(String(a.id))) porId.set(String(a.id), a); });
+  local.forEach(a => porId.set(String(a.id), a));
+  return [...porId.values()];
+}
+
+// Com o PDF já aberto, refaz só o Kanban quando os dados do servidor chegam.
+function atualizarKanbanNoPdfAberto() {
+  const ov = document.getElementById('pdfOverlay');
+  if (!ov) return;
+  const html = kanbanAssuntosPdf();
+  const atual = ov.querySelector('.cx-kb');
+  if (atual) { if (html) atual.outerHTML = html; else atual.remove(); return; }
+  const ass = ov.querySelector('.cx-ass');
+  if (html && ass) ass.insertAdjacentHTML('beforebegin', html);
 }
 
 // Monta o Kanban do Check-in para o A4, remontado em HTML em vez de imagem: o
@@ -4112,6 +4155,8 @@ function gerarPdfRDO() {
     </div>`;
 
   montarOverlayPdf(h);
+  // dados do Check-in direto do servidor: o Kanban se refaz sozinho quando chegam
+  atualizarAssuntosCheckinDoServidor().then(ok => { if (ok) atualizarKanbanNoPdfAberto(); });
 }
 
 // Fração da largura disponível ocupada pela folha na visualização. Abaixo de 1
