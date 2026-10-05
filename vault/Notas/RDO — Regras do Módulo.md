@@ -218,6 +218,7 @@ recebidas no dia** e o **resumo**, vindos do módulo Custos (`custos_entradas`):
 `custo_entradas` local (local vale no mesmo id), como no Kanban; se o aparelho não tem as entradas, o PDF se
 refaz quando o servidor responde. Dia sem entradas: a seção **não aparece**. Fonte pequena (6,3 pt) para caber:
 um dia com muitas entradas pode levar o RDO a 2 folhas. (Substitui a versão "só quantidades", que durou horas.)
+**WhatsApp (texto) leva o mesmo conteúdo**: bloco "📦 Notas Recebidas no Dia" depois dos Eventos do Dia e antes dos resumos acumulados — cada item numerado (hora, NF, emissão, fornecedor, categoria ▸ subcategoria — descrição, `qtde × preço = total`, responsável), "Total lançado" e o resumo de quantidade por categoria/subcategoria (`agruparEntradas()`, o mesmo agrupamento do PDF). `gerarRelatorio()` busca as entradas no servidor e atualiza a caixa do texto quando chegam; o texto copiado/enviado usa o que já estava carregado (entradas lançadas neste aparelho sempre entram). Dia sem entradas: sem bloco.
 Detalhes do módulo: [[Notas/Custos — Entrada de Materiais]].
 
 ---

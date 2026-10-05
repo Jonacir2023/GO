@@ -3902,9 +3902,29 @@ function lerEntradasDoDia(data) {
   return [...porId.values()].filter(n => n.status !== 'cancelado');
 }
 
+const ROT_MEDIDA_ENT = { carga: ['carga', 'cargas'], viagem: ['viagem', 'viagens'], peso: ['pesagem', 'pesagens'], unidade: ['lançamento', 'lançamentos'] };
+// Lançamentos do dia em ordem de chegada (a planilha)
+function entradasDoDiaOrdenadas(data) {
+  return lerEntradasDoDia(data).slice().sort((a, b) => String(a.recebido_em || '').localeCompare(String(b.recebido_em || '')) || String(a.id).localeCompare(String(b.id)));
+}
+// Resumo por categoria ▸ subcategoria: soma por unidade (nunca mistura), cargas e NFs — usado no PDF e no WhatsApp
+function agruparEntradas(l) {
+  const cmpPt = (x, y) => String(x).localeCompare(String(y), 'pt-BR', { sensitivity: 'base' });
+  const grupos = new Map();
+  l.forEach(e => {
+    const k = e.categoria + '|' + e.subcategoria;
+    const g = grupos.get(k) || { cat: e.categoria, sub: e.subcategoria, un: new Map(), nfs: new Set(), n: 0, mede: e.mede_por || 'unidade' };
+    g.un.set(e.unidade, (g.un.get(e.unidade) || 0) + (Number(e.quantidade) || 0));
+    g.nfs.add(String(e.numero_nf)); g.n++; grupos.set(k, g);
+  });
+  return [...grupos.values()].sort((a, b) => cmpPt(a.cat, b.cat) || cmpPt(a.sub, b.sub));
+}
+const qtdTxtEntrada = g => [...g.un.entries()].map(([u, q]) => q.toLocaleString('pt-BR', { maximumFractionDigits: 3 }) + ' ' + u).join(' + ');
+const contagemEntrada = g => { const r = ROT_MEDIDA_ENT[g.mede] || ROT_MEDIDA_ENT.unidade; return g.n + ' ' + (g.n === 1 ? r[0] : r[1]); };
+
 function custosDoDiaPdf(data) {
   const E = escHtml;
-  const l = lerEntradasDoDia(data).slice().sort((a, b) => String(a.recebido_em || '').localeCompare(String(b.recebido_em || '')) || String(a.id).localeCompare(String(b.id)));
+  const l = entradasDoDiaOrdenadas(data);
   if (!l.length) return '';  // sem entrada de material no dia, a seção não ocupa papel
   const cmpPt = (x, y) => String(x).localeCompare(String(y), 'pt-BR', { sensitivity: 'base' });
   const fq = q => q.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
@@ -3915,18 +3935,10 @@ function custosDoDiaPdf(data) {
   const planilha = l.map(e => `<tr><td>${hora(e.recebido_em)}</td><td>${E(e.numero_nf)}</td><td>${dm(e.data_emissao)}</td><td>${E(e.fornecedor || '')}</td><td>${E(e.categoria)}</td><td>${E(e.subcategoria)}</td>
       <td>${E(e.descricao || '')}</td><td>${E(e.unidade || '')}</td><td style="text-align:right">${fq(Number(e.quantidade) || 0)}</td><td style="text-align:right;white-space:nowrap">${nm(e.preco_unitario)}</td>
       <td style="text-align:right;white-space:nowrap">${nm(e.total)}</td><td>${E(e.responsavel || '')}</td></tr>`).join('');
-  const rot = { carga: ['carga', 'cargas'], viagem: ['viagem', 'viagens'], peso: ['pesagem', 'pesagens'], unidade: ['lançamento', 'lançamentos'] };
-  const grupos = new Map();
-  l.forEach(e => {
-    const k = e.categoria + '|' + e.subcategoria;
-    const g = grupos.get(k) || { cat: e.categoria, sub: e.subcategoria, un: new Map(), nfs: new Set(), n: 0, mede: e.mede_por || 'unidade' };
-    g.un.set(e.unidade, (g.un.get(e.unidade) || 0) + (Number(e.quantidade) || 0));
-    g.nfs.add(String(e.numero_nf)); g.n++; grupos.set(k, g);
-  });
-  const resumo = [...grupos.values()].sort((a, b) => cmpPt(a.cat, b.cat) || cmpPt(a.sub, b.sub)).map(g => {
-    const r = rot[g.mede] || rot.unidade, nfs = [...g.nfs];
-    return `<tr><td>${E(g.cat)}</td><td>${E(g.sub)}</td><td style="text-align:right"><b>${[...g.un.entries()].map(([u, q]) => fq(q) + ' ' + E(u)).join(' + ')}</b></td>
-      <td>${g.n} ${g.n === 1 ? r[0] : r[1]}</td><td>${E(nfs.slice(0, 6).join(', '))}${nfs.length > 6 ? ' +' + (nfs.length - 6) : ''}</td></tr>`;
+  const resumo = agruparEntradas(l).map(g => {
+    const nfs = [...g.nfs];
+    return `<tr><td>${E(g.cat)}</td><td>${E(g.sub)}</td><td style="text-align:right"><b>${E(qtdTxtEntrada(g))}</b></td>
+      <td>${contagemEntrada(g)}</td><td>${E(nfs.slice(0, 6).join(', '))}${nfs.length > 6 ? ' +' + (nfs.length - 6) : ''}</td></tr>`;
   }).join('');
   return `<div class="cx-sec cx-cust"><div class="cx-tit">📦 Notas recebidas no dia — ${l.length} item${l.length > 1 ? 'ns' : ''} · ${fmtMoedaBR(total)}${semValor ? ' (' + semValor + ' sem valor)' : ''}</div>
     <table class="cx cx-plan"><tr><th style="width:5%">Hora</th><th style="width:6%">Nº nota</th><th style="width:7%">Emissão</th><th style="width:12%">Fornecedor</th><th style="width:9%">Categoria</th><th style="width:9%">Subcateg.</th><th>Descrição da nota</th><th style="width:4%">Un.</th><th style="width:6%;text-align:right">Qtde</th><th style="width:8%;text-align:right">Preço unit.</th><th style="width:9%;text-align:right">Total</th><th style="width:9%">Respons.</th></tr>
@@ -7138,6 +7150,28 @@ function buildRelatorio(day) {
     });
   }
 
+  // Notas recebidas no dia (planilha do módulo Custos) + resumo de quantidades
+  const _ents = entradasDoDiaOrdenadas(day.data);
+  if (_ents.length > 0) {
+    const brl = v => v == null ? 'sem valor' : fmtMoedaBR(v);
+    const hh = iso => { if (!iso) return ''; const d = new Date(iso); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+    const totEnt = _ents.reduce((t, e) => t + (Number(e.total) || 0), 0), semEnt = _ents.filter(e => e.total == null).length;
+    txt += `\n${divisor}\n\n`;
+    txt += `*📦 Notas Recebidas no Dia — ${_ents.length} ite${_ents.length > 1 ? 'ns' : 'm'}*\n`;
+    _ents.forEach((e, i) => {
+      const q = (Number(e.quantidade) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+      txt += `\n${i + 1}. ${hh(e.recebido_em) ? hh(e.recebido_em) + ' — ' : ''}NF ${e.numero_nf}${e.data_emissao ? ' (emissão ' + formatDateBR(e.data_emissao).slice(0, 5) + ')' : ''} · ${e.fornecedor || '—'}\n`;
+      txt += `   ${e.categoria} ▸ ${e.subcategoria}${e.descricao && e.descricao !== e.subcategoria ? ' — ' + e.descricao : ''}\n`;
+      txt += `   *${q} ${e.unidade || ''}* × ${brl(e.preco_unitario)} = *${brl(e.total)}*${e.responsavel ? ' · ' + e.responsavel : ''}\n`;
+    });
+    txt += `\n*Total lançado: ${fmtMoedaBR(totEnt)}*${semEnt ? ' (' + semEnt + ' sem valor)' : ''}\n`;
+    txt += `\n_Resumo de quantidade por categoria e subcategoria_\n`;
+    agruparEntradas(_ents).forEach(g => {
+      const nfs = [...g.nfs];
+      txt += `• ${g.cat} ▸ ${g.sub}: *${qtdTxtEntrada(g)}* (${contagemEntrada(g)} · NF ${nfs.slice(0, 6).join(', ')}${nfs.length > 6 ? ' +' + (nfs.length - 6) : ''})\n`;
+    });
+  }
+
   // Resumos acumulados — semana, mês e ano do dia do relatório (não de "hoje"),
   // para que um RDO de data passada traga os acumulados daquele período
   const fmtISOwa = (d) => {
@@ -7657,6 +7691,12 @@ function gerarRelatorio() {
   if (descEl)  currentDay.descricaoLocal = descEl.value;
   const txt = buildRelatorio(currentDay);
   document.getElementById('output').textContent = txt;
+  // traz as entradas de material do servidor e, se mudar o texto, atualiza a caixa
+  atualizarEntradasDoDiaDoServidor(currentDay.data).then(ok => {
+    if (!ok) return;
+    const novo = buildRelatorio(currentDay), box = document.getElementById('output');
+    if (box && box.textContent === txt && novo !== txt) box.textContent = novo;
+  });
   // Salvar no histórico local (substitui o registro da mesma data + apontador)
   salvarDiarioDia(false);
   toast('✅ Relatório gerado — diário salvo');

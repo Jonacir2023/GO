@@ -239,6 +239,15 @@ with sync_playwright() as p:
     pos3 = page.evaluate("""() => { const f = [...document.querySelector('#pdfOverlay .pdf-doc').children[0].children];
       return [f.findIndex(e => e.classList.contains('cx-kb')), f.findIndex(e => e.classList.contains('cx-cust')), f.findIndex(e => e.classList.contains('cx-ass'))]; }""")
     check(pos3[0] >= 0 and pos3[0] + 1 == pos3[1] and pos3[1] + 1 == pos3[2], f"notas recebidas ficam logo abaixo do Kanban e acima das assinaturas ({pos3})")
+    # WhatsApp: o mesmo conteúdo em texto
+    wa = page.evaluate("buildRelatorio(currentDay)")
+    check("Notas Recebidas no Dia — 5 itens" in wa, "WhatsApp traz o bloco Notas Recebidas no Dia (5 itens)")
+    check("1. 07:42 — NF 2340" in wa and "Pedreira Boa Vista" in wa and "Agregados ▸ Areia — Areia média lavada" in wa, "WhatsApp: item a item com hora, NF, fornecedor, categoria ▸ subcategoria e descrição")
+    check("*12 m³* × R$ 85,00 = *R$ 1.020,00*" in wa and "sem valor" in wa, "WhatsApp: quantidade × preço = total e itens sem valor")
+    check("Total lançado: R$ 7.500,00* (1 sem valor)" in wa, "WhatsApp: total lançado")
+    check("Agregados ▸ Areia: *24 m³* (2 cargas · NF 2340, 2345)" in wa and "Elétrico ▸ Kit elétrico: *1 kit*" in wa, "WhatsApp: resumo de quantidade por categoria e subcategoria")
+    check(wa.index("Eventos do Dia") < wa.index("Notas Recebidas no Dia") if "Eventos do Dia" in wa else True, "bloco vem depois dos eventos do dia")
+    check("Outro Dia" not in wa and "Água ▸ Caminhão-pipa: *10 m³* (1 viagem" in wa, "WhatsApp: cancelado e outro dia fora; viagem contada")
     page.evaluate("fecharPdfRDO()")
     # vindo do servidor quando o aparelho não tem as entradas
     page.evaluate("""() => { localStorage.removeItem('custo_entradas'); window.__cliOrig = B3Obras.cliente;
@@ -255,6 +264,7 @@ with sync_playwright() as p:
     page.evaluate("gerarPdfRDO()")
     page.wait_for_timeout(300)
     check(page.locator("#pdfOverlay .cx-cust").count() == 0, "dia sem entradas: a seção não aparece (não gasta papel)")
+    check("Notas Recebidas" not in page.evaluate("buildRelatorio(currentDay)"), "dia sem entradas: o WhatsApp também não traz o bloco")
     page.evaluate("fecharPdfRDO()")
 
     # com Kanban pequeno, o dia cheio ainda cabe em 2 folhas (o quadro é conteúdo pedido, não desperdício)
