@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Entrada de Materiais"/>
-<title>Custos — Entrada de Materiais — BUILDLy Premium</title>
+<title>Entradas — Controle de Materiais — BUILDLy Premium</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -130,7 +130,7 @@ html.embutido .hdr .hdr-settings{color:#101828!important;width:auto!important;he
     <div style="display:flex;align-items:center;gap:10px">
       <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#fff" onclick="voltarParaHome()">⬅️</button>
       <div>
-        <div class="hdr-logo">CUS<span>TOS</span></div>
+        <div class="hdr-logo">ENTRA<span>DAS</span></div>
         <div style="font-size:11px;color:#cbd5e1">Entrada de materiais · Portaria</div>
       </div>
     </div>
@@ -287,7 +287,7 @@ html.embutido .hdr .hdr-settings{color:#101828!important;width:auto!important;he
   }
 })();
 </script><script>
-/* ============ Custos — Entrada de materiais (portaria) ============
+/* ============ Entradas — controle de entrada de materiais (portaria) ============
    Cada item que entra na obra vira UMA linha da planilha (ordem de chegada). Funciona sem
    internet: grava no aparelho e envia ao Supabase da obra quando puder. */
 const S = {
@@ -876,7 +876,7 @@ async function enviarEntrada(e) {
       delete fotosLocais[e.id]; S.set('fotos', fotosLocais);
     }
     e._sinc = true; S.set('entradas', entradas);
-  } catch (err) { console.warn('Custos: entrada fica pendente de envio:', err && err.message); }
+  } catch (err) { console.warn('Entradas: entrada fica pendente de envio:', err && err.message); }
   finally { _emVoo.delete(e.id); }
 }
 async function enviarCatalogo(r) {
@@ -884,7 +884,7 @@ async function enviarCatalogo(r) {
     const { error } = await B3Obras.cliente().from('custos_catalogo').upsert({ id: r.id, tipo: r.tipo, nome: r.nome, pai_id: r.pai_id || null, unidade: r.unidade || null, mede_por: r.mede_por || null, ativo: r.ativo !== false, ordem: r.ordem || 0, atualizado_em: r.atualizado_em || new Date().toISOString() });
     if (error) throw error;
     r._sinc = true; S.set('catalogo', catalogo);
-  } catch (err) { console.warn('Custos: cadastro fica pendente de envio:', err && err.message); }
+  } catch (err) { console.warn('Entradas: cadastro fica pendente de envio:', err && err.message); }
 }
 async function carregarDoServidor() {
   try {
@@ -909,7 +909,7 @@ async function carregarDoServidor() {
     for (const r of catalogo.filter(x => !x._sinc)) await enviarCatalogo(r);
     for (const e of entradas.filter(x => !x._sinc)) await enviarEntrada(e);
     if (mudou) atualizarTelas();
-  } catch (err) { console.warn('Custos: não foi possível buscar do Supabase:', err && err.message); }
+  } catch (err) { console.warn('Entradas: não foi possível buscar do Supabase:', err && err.message); }
 }
 async function carregarNotasAntigas() {
   try {

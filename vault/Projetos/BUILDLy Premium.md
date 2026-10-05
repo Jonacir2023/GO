@@ -30,7 +30,7 @@ não foi migrado e vai responder com dados cada vez mais antigos.
 | Backend (dados dos módulos) | Um projeto Supabase por obra — Obra 1 `ivssgstckfcuiyetxdze`, Obra 2 `lwjbuzubnxnzkofcrhah`. Registro em `supabase-config.js`. |
 | Planilha "Buildly3" (`19SDuzU_...`) + Apps Script | Só o recurso de IA (🤖) ainda depende disso — ver [[Notas/Contrato do Backend]] (desatualizada, aponta pro Sheets como se fosse tudo) |
 
-Módulos: Pauta, Check-in, RDO, Custos, Reunião, Resumo do Tempo, Medições, Documentos,
+Módulos: Pauta, Check-in, RDO, Entradas, Reunião, Resumo do Tempo, Medições, Documentos,
 Manutenção. Ver [[Notas/Arquitetura do App]].
 
 ---
@@ -87,7 +87,7 @@ completando nesta sessão (ambiente de teste não alcança `supabase.co`, ver re
 [[Notas/Regras Operacionais Críticas]]), mas o schema da tabela `obra_config` foi conferido
 direto no Postgres via `execute_sql` e bate exatamente com o que o código grava.
 
-Pendente: migrar Pauta, Check-in, RDO, Custos, Medições, Documentos, Manutenção e Reunião
+Pendente: migrar Pauta, Check-in, RDO, Entradas, Medições, Documentos, Manutenção e Reunião
 (hoje ainda no Apps Script/Sheets ou só no navegador) — [[Notas/Contrato do Backend]] e
 [[Notas/Arquitetura do App]] só serão atualizadas quando isso terminar, pra não descrever um
 backend que só existe pela metade.
@@ -103,9 +103,9 @@ Supabase (`checkinEnviarStatus`/`enviarStatusParaPauta` atualizam `pauta_assunto
 reunião (`checkin_reunioes`) e cadastro de assunto (`checkin_assuntos`) passam a persistir de
 verdade pela primeira vez — antes só viviam no navegador.
 
-Custos migrado (`custos.html`). Era o único módulo que nunca falava com o backend por conta
+Entradas migrado (`custos.html`). Era o único módulo que nunca falava com o backend por conta
 própria — o `sincronizarComGoogleSheets()` compartilhado em `buildly-completo.html` é quem lia
-seu `localStorage` de fora do iframe. Com Pauta/Check-in/Custos migrados essa função (e o
+seu `localStorage` de fora do iframe. Com Pauta/Check-in/Entradas migrados essa função (e o
 polling de 2 em 2 minutos) ficou sem função e foi removida; `custos.html` ganhou seu próprio
 par carregar/enviar, no mesmo padrão.
 
@@ -426,7 +426,7 @@ Já estão no ar (mesclados em 24/08), mas nenhum foi visto num aparelho de verd
       passado?" em seguida. Barato e o usuário sente.
 - [ ] **Tools no robô.** Hoje ele responde mas não age — com tools, criaria pauta ou lançaria
       apontamento a partir da conversa.
-- [ ] **Ligar Custos à planilha.** `custos/salvar` existe no backend; nenhum front-end chama.
+- [ ] **Ligar Entradas à planilha.** `custos/salvar` existe no backend; nenhum front-end chama.
       Hoje as notas fiscais vivem só no aparelho. **Levar o shim do código de acesso junto** —
       `custos.html` ainda não o tem.
 - [ ] **OCR de nota fiscal** — depende de escolher API de visão. O robô já usa Anthropic, então

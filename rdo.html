@@ -3870,7 +3870,7 @@ function atualizarKanbanNoPdfAberto() {
   if (html && ancora) ancora.insertAdjacentHTML('beforebegin', html);
 }
 
-// ===== Notas recebidas no dia (módulo Custos — planilha de entradas da portaria) =====
+// ===== Notas recebidas no dia (módulo Entradas — planilha da portaria) =====
 // O RDO leva a PLANILHA do dia (item a item, em ordem de chegada, com valores) e o RESUMO de quantidades.
 // "Do dia" = recebido na obra naquele dia (data_recebimento). Mesma lógica do Kanban: servidor
 // (Supabase, tabela custos_entradas) + localStorage do Custos (custo_entradas); local vale no mesmo id.
@@ -7150,7 +7150,7 @@ function buildRelatorio(day) {
     });
   }
 
-  // Notas recebidas no dia (planilha do módulo Custos) + resumo de quantidades
+  // Notas recebidas no dia (planilha do módulo Entradas) + resumo de quantidades
   const _ents = entradasDoDiaOrdenadas(day.data);
   if (_ents.length > 0) {
     const brl = v => v == null ? 'sem valor' : fmtMoedaBR(v);

@@ -43,7 +43,7 @@ sem login), não é uma regressão.
 
 Dois padrões coexistem, cada um escolhido pelo que o módulo já fazia antes:
 
-**Gravação imediata + reenvio do pendente** (Pauta, Check-in, Custos, Manutenção,
+**Gravação imediata + reenvio do pendente** (Pauta, Check-in, Entradas, Manutenção,
 Documentos, Reunião, Medições): cada criar/editar/remover chama Supabase na hora
 (`upsert`/`delete`); se falhar (rede fora), o item fica marcado `_sincronizado` ausente e é
 reenviado na próxima busca do servidor (`carregarXDoServidor()`, chamado no início de cada
@@ -65,8 +65,8 @@ sozinho antes de existir Supabase (`mesclarDaNuvem`, `aplicarRegraRdo`,
 | `pauta_membros`, `pauta_setores` | Pauta (Admin) | Chave natural em `nome` (índice único, upsert por nome) |
 | `checkin_assuntos` | Check-in | Mesmo `id` texto de `pauta_assuntos` quando o assunto veio de lá |
 | `checkin_reunioes` | Check-in | `assuntos_snapshot` jsonb — ata da reunião, insert simples (sem upsert) |
-| `custos_notas_fiscais`, `custos_itens_nf` | Custos | NF não tem edição (só criar/deletar); itens entram uma vez só, junto com a NF |
-| `custos_catalogo`, `custos_entradas`, `custos_entradas_fotos` | Custos (entrada de materiais) | **Pendente de aplicar** (`sql/007_custos_entradas.sql`). Entrada = 1 linha por item, `id` texto, upsert; cancelar = `status`; fotos em tabela à parte (≤4). Ver [[Notas/Custos — Entrada de Materiais]] |
+| `custos_notas_fiscais`, `custos_itens_nf` | Entradas | NF não tem edição (só criar/deletar); itens entram uma vez só, junto com a NF |
+| `custos_catalogo`, `custos_entradas`, `custos_entradas_fotos` | Entradas (entrada de materiais) | **Pendente de aplicar** (`sql/007_custos_entradas.sql`). Entrada = 1 linha por item, `id` texto, upsert; cancelar = `status`; fotos em tabela à parte (≤4). Ver [[Notas/Entradas — Controle de Materiais]] |
 | `documentos`, `documento_notas_manuais` | Documentos | |
 | `manutencao_mural` | Manutenção | |
 | `reuniao_atas` | Reunião | `participantes`/`pauta`/`topicos`/`plano_acao` como jsonb |
@@ -85,7 +85,7 @@ não por convenção de código.
 Continua em `apps-script/BuildlyBackend.gs`, chamado de `buildly-completo.html`
 (`fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', ...)`), mas **não lê mais a planilha
 como fonte principal**. Desde 20/09, o front-end manda tudo dentro de `contextoLocal`:
-Medições/Documentos/Mural (só existem no navegador, `montarContextoLocal()`) e RDO/Custos/
+Medições/Documentos/Mural (só existem no navegador, `montarContextoLocal()`) e RDO/Entradas/
 Pauta/Check-in (buscados no Supabase da obra ativa, `montarContextoNuvem()` — RDO e Notas
 Fiscais com recorte de 3 meses, fotos/assinaturas removidas). `montarContextoParaIA` no
 Apps Script usa esses campos quando vêm, e só lê a planilha (`lerAbaParaIA`) como

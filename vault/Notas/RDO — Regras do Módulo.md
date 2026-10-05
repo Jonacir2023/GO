@@ -100,7 +100,7 @@ principal e o antigo foi **apagado** (o git guarda: commits anteriores a `06cb9a
   (o quadro é conteúdo pedido, não desperdício). O teste `test_rdo_pdf.py` trava os dois casos.
 - **Ordem das seções (pedida pelo usuário):** cabeçalho, indicadores, clima | jornada, efetivo | equipamentos,
   **atividades do dia logo acima de eventos do dia**, segurança/meio ambiente, acumulados, fotos,
-  **Kanban de Assuntos do Check-in**, **notas recebidas no dia (planilha + resumo, do Custos)**, assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
+  **Kanban de Assuntos do Check-in**, **notas recebidas no dia (planilha + resumo, do Entradas)**, assinaturas. O teste `test_rdo_pdf.py` trava Atividades imediatamente antes de Eventos.
 - **Conteúdo:** cabeçalho com RDO nº, data, cliente, contrato, local/frente (obra + local do dia);
   faixa de 7 indicadores; clima; jornada e DSS; atividades (com paralisadas e justificativa); efetivo por
   função/empresa; equipamentos e veículos (operando/parados com justificativa); eventos do dia (hora,
@@ -205,9 +205,9 @@ imagem da assinatura é acessível a qualquer um — decisão do usuário ao for
 ### Notas recebidas no dia no PDF (pedido do usuário, 05/10/2026)
 
 Logo **abaixo do Kanban** e acima das assinaturas, `custosDoDiaPdf()` imprime **a planilha inteira das notas
-recebidas no dia** e o **resumo**, vindos do módulo Custos (`custos_entradas`):
+recebidas no dia** e o **resumo**, vindos do módulo Entradas (`custos_entradas`):
 
-1. **Planilha** item a item, em **ordem de chegada**, com as colunas do Custos: Hora · Nº nota · Emissão ·
+1. **Planilha** item a item, em **ordem de chegada**, com as colunas do Entradas: Hora · Nº nota · Emissão ·
    Fornecedor · Categoria · Subcateg. · Descrição da nota · Un. · Qtde · Preço unit. · Total · Respons.; item
    sem preço aparece como "—" (em vermelho); linha **TOTAL LANÇADO** e, no título, quantos itens estão sem valor.
 2. **Resumo de quantidade por categoria e subcategoria**: Categoria | Subcategoria | Quantidade | Cargas | NF,
@@ -219,7 +219,7 @@ recebidas no dia** e o **resumo**, vindos do módulo Custos (`custos_entradas`):
 refaz quando o servidor responde. Dia sem entradas: a seção **não aparece**. Fonte pequena (6,3 pt) para caber:
 um dia com muitas entradas pode levar o RDO a 2 folhas. (Substitui a versão "só quantidades", que durou horas.)
 **WhatsApp (texto) leva o mesmo conteúdo**: bloco "📦 Notas Recebidas no Dia" depois dos Eventos do Dia e antes dos resumos acumulados — cada item numerado (hora, NF, emissão, fornecedor, categoria ▸ subcategoria — descrição, `qtde × preço = total`, responsável), "Total lançado" e o resumo de quantidade por categoria/subcategoria (`agruparEntradas()`, o mesmo agrupamento do PDF). `gerarRelatorio()` busca as entradas no servidor e atualiza a caixa do texto quando chegam; o texto copiado/enviado usa o que já estava carregado (entradas lançadas neste aparelho sempre entram). Dia sem entradas: sem bloco.
-Detalhes do módulo: [[Notas/Custos — Entrada de Materiais]].
+Detalhes do módulo: [[Notas/Entradas — Controle de Materiais]].
 
 ---
 

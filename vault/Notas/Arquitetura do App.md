@@ -28,7 +28,7 @@ e essa diferença importa para qualquer mudança de layout:
 
 | Aba | Elemento | Arquivo |
 |---|---|---|
-| Custos | `#page-custos` | `custos.html` |
+| Entradas | `#page-custos` | `custos.html` |
 | RDO | `#page-rdo` | `rdo.html` |
 | Reunião | `#page-reuniao` | `reuniao.html` |
 | Resumo do Tempo | `#page-resumo-tempo` | `resumo-tempo.html` |

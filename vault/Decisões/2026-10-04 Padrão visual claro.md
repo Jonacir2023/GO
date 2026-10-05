@@ -16,7 +16,7 @@ foto do cabeçalho **ilustração própria**.
 - Casca: hero escuro com ilustração SVG de obra ao pôr do sol (`hero-obra.svg`), logo com
   guindaste, sino (ponto vermelho) e perfil; cartão branco **Obra Atual** sobre o hero.
 - Home: grade de cartões (ícone em gradiente, título, descrição, chevron, barra colorida);
-  3 colunas no celular e 5 no desktop, **sempre os 14 cartões** (correção do mesmo dia: a 1ª versão escondia 5 no celular e o usuário reclamou de botões faltando). Selo "Ativo" no Custos e rodapé "v1.0 | BUILDLy Premium" mantidos como antes.
+  3 colunas no celular e 5 no desktop, **sempre os 14 cartões** (correção do mesmo dia: a 1ª versão escondia 5 no celular e o usuário reclamou de botões faltando). Selo "Ativo" no Entradas e rodapé "v1.0 | BUILDLy Premium" mantidos como antes.
 - Barra inferior flutuante: **Início, Favoritos, Relatórios, Mais**.
 - Módulo aberto: hero compacto fixo (`#hero-mod`) com voltar + cartão do título; o app em
   iframe esconde o próprio cabeçalho (`html.embutido`) e cola as abas em pílula no topo.
@@ -51,7 +51,7 @@ foto do cabeçalho **ilustração própria**.
 
 7. **Botões de ação do cabeçalho do app não podem sumir no modo embutido.** O `html.embutido`
    esconde `.header/.hdr`, mas EAP (Nova EAP), Planejamento (Novo Cronograma), Suprimentos (Nova
-   Requisição) e Custos (⚙️ Configurar) tinham o botão principal lá dentro e ficaram sem ele. O
+   Requisição) e Entradas (⚙️ Configurar) tinham o botão principal lá dentro e ficaram sem ele. O
    `tema.css` agora mantém esses botões (`.header:has(> .btn)`, `.hdr:has(.hdr-settings)`). Ao criar
    módulo novo com botão no cabeçalho, conferir no iframe — `test_padrao_visual.py` cobre os 4 atuais.
 

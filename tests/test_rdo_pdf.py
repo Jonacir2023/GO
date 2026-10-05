@@ -205,7 +205,7 @@ with sync_playwright() as p:
     page.evaluate("fecharPdfRDO()")
     page.evaluate("() => { delete currentDay.assinaturas; delete currentDay.assinaturaNomes; }")
     page.evaluate("localStorage.removeItem('diario_assinaturasSalvas')")
-    # ---- Notas recebidas no dia (módulo Custos): planilha completa + resumo, logo abaixo do Kanban ----
+    # ---- Notas recebidas no dia (módulo Entradas): planilha completa + resumo, logo abaixo do Kanban ----
     page.evaluate("""() => { const d = currentDay.data;
       localStorage.setItem('chk_assuntos', JSON.stringify([{id: 'kc', assunto: 'Assunto p/ posição', status: 'afazer', prioridade: 'media', criadoEm: Date.now()}]));
       const e = (id, hh, nf, forn, cat, sub, desc, un, q, pu, mede, st, dia, em) => ({id, recebido_em: (dia || d) + 'T' + hh + ':00', numero_nf: nf, data_emissao: em || d, fornecedor: forn, categoria: cat, subcategoria: sub,

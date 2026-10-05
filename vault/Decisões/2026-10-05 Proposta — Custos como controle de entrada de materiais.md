@@ -6,15 +6,15 @@ status: aprovada e implementada em 05/10/2026 — falta aplicar sql/007 nas duas
 
 # Proposta — Custos vira controle de entrada de materiais (portaria)
 
-**Origem (05/10/2026):** o Custos atual exige cabeçalho de NF + itens, é pesado para quem está na
+**Origem (05/10/2026):** o Entradas atual exige cabeçalho de NF + itens, é pesado para quem está na
 portaria e só soma dinheiro. O usuário quer: formulário **curto**, 1 item ou **kit** (nota com muitos
 itens), uso **em tempo real pela portaria**, e resumo **por quantidade, por categoria e subcategoria**
 (areia, brita, rachão, água, argila, saibro…) para controlar a entrada diária de material.
-**Aprovada pelo usuário em 05/10/2026 ("ok coloque em prática") e implementada** — ver [[Notas/Custos — Entrada de Materiais]]. Perguntas abertas resolvidas pela recomendação: Hora na planilha = sim; RDO só quantidades; Responsável = quem recebeu; "mede por" incluído; até 4 fotos; Fornecedores e Porteiros no Cadastro. Mockup: 3 telas (entrada rápida, kit, resumo).
+**Aprovada pelo usuário em 05/10/2026 ("ok coloque em prática") e implementada** — ver [[Notas/Entradas — Controle de Materiais]]. Perguntas abertas resolvidas pela recomendação: Hora na planilha = sim; RDO só quantidades; Responsável = quem recebeu; "mede por" incluído; até 4 fotos; Fornecedores e Porteiros no Cadastro. Mockup: 3 telas (entrada rápida, kit, resumo).
 
 ## 1. Processo da portaria
 
-1. Caminhão/entrega chega → porteiro abre **Custos → Rápida**.
+1. Caminhão/entrega chega → porteiro abre **Entradas → Rápida**.
 2. Toca **Categoria** (botões grandes) e **Subcategoria** (ex.: Agregados → Brita 1). A **unidade** já
    vem preenchida pela subcategoria (m³, t, un, kit…).
 3. Digita **Quantidade**, **Nº da nota/ticket**, **Fornecedor** (lista dos recentes), **Placa** (opcional).
@@ -100,7 +100,7 @@ no mesmo Cadastro (como no layout)?
 
 O usuário mandou o modelo da planilha (11 colunas) e pediu: **preencher a planilha item a item, em ordem
 cronológica, a cada entrada na obra**; **além do Resumo, apresentar a Planilha**; e um botão **Resumo R$**
-para os resumos de **valores**, separando-os dos **quantitativos**. A barra do Custos passa a ter **4 botões**:
+para os resumos de **valores**, separando-os dos **quantitativos**. A barra do Entradas passa a ter **4 botões**:
 
 | Botão | O que mostra |
 |---|---|

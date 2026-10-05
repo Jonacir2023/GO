@@ -3,9 +3,11 @@ criado: 2026-10-05
 tags: [nota, custos, portaria]
 ---
 
-# Custos — Entrada de Materiais (portaria)
+# Entradas — controle de entrada de materiais (portaria)
 
-Aprovado em 05/10/2026 (proposta: [[Decisões/2026-10-05 Proposta — Custos como controle de entrada de materiais]]).
+**Nome da aba/módulo: "Entradas"** (renomeado de "Custos" em 05/10/2026 a pedido do usuário, em todo texto visível: cartão da home, título, Favoritos, cabeçalho). **Os identificadores internos continuam `custos`** (`switchTab('custos')`, `custos.html`, `#page-custos`, chaves `custo_*`, tabelas `custos_*`) — mudar isso quebraria dados já gravados e links.
+
+Aprovado em 05/10/2026 (proposta: [[Decisões/2026-10-05 Proposta — Entradas como controle de entrada de materiais]]).
 `custos.html` deixou de ser "cadastro de nota fiscal com itens" e virou o **controle de entrada de material
 da portaria**: cada item que chega vira **uma linha** de planilha, em **ordem de chegada**.
 

@@ -17,7 +17,7 @@ problemas.
 |---|---|---|
 | Pauta | `pauta_*` (`pauta_assuntos`, …) | Sim |
 | Check-in | `chk_*` (`chk_assuntos`, `chk_removidos`) | Sim |
-| Custos | `custo_*` (`custo_notasfiscais`, …) | **Não** (endpoint existe, front-end não chama) |
+| Entradas | `custo_*` (`custo_notasfiscais`, …) | **Não** (endpoint existe, front-end não chama) |
 | RDO | `diario_obras_v4_state`, `diario_obras_v4_history_<obra>`, `diario_obras_aparelho_id` | Sim |
 | Obra (compartilhado) | `b3_obra` | — |
 | Medições | `med_contratos` | **Não** |
@@ -99,7 +99,7 @@ Fotos guardadas como data URI dentro do `localStorage` consomem muito espaço e 
 sem aviso — o `setItem` lança exceção e, se ninguém tratar, **o registro que o usuário acabou
 de preencher se perde em silêncio**.
 
-Regra: onde o registro pode carregar imagem embutida (Custos, RDO), envolva a gravação em
+Regra: onde o registro pode carregar imagem embutida (Entradas, RDO), envolva a gravação em
 `try/catch` e avise o usuário em vez de deixar falhar quieto. Ver
 [[Decisões/2026-08-21 Escaneamento de nota fiscal]].
 

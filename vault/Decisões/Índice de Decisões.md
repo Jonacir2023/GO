@@ -33,7 +33,7 @@ escreva uma nova nota que substitua a anterior, marcando a antiga como superada.
 
 Estas continuam em aberto — ver [[Projetos/BUILDLy Premium]] para o contexto de cada uma:
 
-- Ligar Custos à planilha (endpoint existe, front-end não chama)
+- Ligar Entradas à planilha (endpoint existe, front-end não chama)
 - OCR de nota fiscal
 - Rate limit no `ia/perguntar` (ver [[Notas/Maturidade de Produção]])
 - Memória multi-turno e tools no robô
