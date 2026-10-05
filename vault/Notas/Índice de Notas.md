@@ -16,6 +16,7 @@ Conhecimento técnico durável sobre o sistema — o que não muda a cada sessã
 
 ## Avaliação
 
+- [[Notas/Custos — Entrada de Materiais]] — Custos como controle de entrada de material da portaria: telas, regras, tabelas
 - [[Notas/Maturidade de Produção]] — onde o app está contra a checklist de produção de IA, e o
   que vale ou não perseguir
 

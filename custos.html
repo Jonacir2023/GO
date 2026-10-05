@@ -5,109 +5,116 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-title" content="Controle de Custos"/>
-<title>Controle de Custos — BUILDLy Premium</title>
+<meta name="apple-mobile-web-app-title" content="Entrada de Materiais"/>
+<title>Custos — Entrada de Materiais — BUILDLy Premium</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#4a5162;--bg-card:#5a6272;--bg-dark:#3a3f49;--bg-mid:#454c59;
-  --ink:#ffffff;--ink-soft:#9aa4b2;--ink-faint:#7b8290;
-  --accent:#dda583;--accent2:#89ab9d;--line:#666f80;
-  --green:#7cb083;--red:#d98a7c;--blue:#8ea3c9;--yellow:#d9b26a;
-  --serif:'Barlow Condensed','Arial Narrow',sans-serif;
-  --sans:'Barlow',-apple-system,sans-serif;
-  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.12)
+  --bg:#f3f5f9;--bg-card:#ffffff;--bg-dark:#0f1b34;--bg-mid:#eef1f6;
+  --ink:#101828;--ink-soft:#667085;--ink-faint:#98a2b3;
+  --accent:#d79d6e;--accent-hover:#c88a55;--accent-ink:#8a5a2b;--line:#dfe3ea;--line-soft:#e6e9f0;
+  --green:#2f9e3f;--red:#c62828;--blue:#2a6df0;--yellow:#b17a0a;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;--serif:var(--sans);
+  --radius:14px;--shadow:0 3px 12px rgba(16,24,40,.07)
 }
-html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh;width:100%}
-body{max-width:480px;margin:0 auto;padding:0 0 82px 0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;min-height:100vh;width:100%}
+body{max-width:480px;margin:0 auto;padding:0 0 90px 0}
 
-.hdr{background:var(--bg-dark);color:#fff;padding:16px 16px 12px;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent);width:100%;max-width:480px}
-.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.hdr-logo{font-family:var(--serif);font-size:26px;font-weight:800;letter-spacing:1px;color:#fff}
+.hdr{background:#0f1b34;color:#fff;padding:14px 16px 12px;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:100;width:100%;max-width:480px;border-bottom:3px solid var(--accent)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between}
+.hdr-logo{font-size:24px;font-weight:800;letter-spacing:1px}
 .hdr-logo span{color:var(--accent)}
-.hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
-.hdr-settings{background:none;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:14px;padding:6px 8px;border-radius:6px;cursor:pointer}
-.hdr-settings:hover{background:rgba(255,255,255,.08)}
+.hdr-date{font-size:12px;font-weight:600;color:#cbd5e1;text-align:right}
+.hdr-settings{background:rgba(255,255,255,.12);border:0;color:#fff;font-size:13px;font-weight:700;padding:7px 10px;border-radius:9px;cursor:pointer}
 
-.tabs{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:99;width:100%;max-width:480px;display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
-.tabs::-webkit-scrollbar{display:none}
-.tab{background:none;border:none;flex:none;padding:14px 16px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;color:var(--ink);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
-.tab.active{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:99;width:100%;max-width:480px;display:flex;gap:2px;background:#fff;padding:4px;border-bottom:1px solid var(--line-soft)}
+.tab{background:none;border:none;flex:1;padding:10px 4px;font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--ink-soft);border-radius:10px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab.active{color:var(--ink);background:#f1f3f8;border-bottom-color:var(--accent)}
 
-.page{display:none;padding:0 16px}
-.page.active{display:block;padding-top:140px}
+.page{display:none;padding:0 14px}
+.page.active{display:block;padding-top:132px}
 
-.sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);margin-bottom:12px}
-
-.frow{margin-bottom:10px}
-.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
-.frow input,.frow select,.frow textarea{width:100%;min-width:0;min-height:38px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:var(--bg-mid);color:var(--ink);transition:border .2s;outline:none;-webkit-appearance:none;appearance:none}
-.frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
-.frow textarea{resize:vertical;min-height:60px}
-.frow-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.frow-3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px}
-
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:var(--accent-hover)}
-.btn-secondary{background:var(--bg-dark);color:var(--ink)}
-.btn-full{width:100%;justify-content:center;margin-bottom:8px}
-.btn-sm{padding:6px 12px;font-size:12px}
-
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--serif);letter-spacing:.4px;text-transform:uppercase}
-.badge-red{background:var(--tint-red);color:var(--red)}
-.badge-blue{background:var(--tint-blue);color:var(--blue)}
-.badge-green{background:var(--tint-green);color:var(--green)}
-
-.notif{position:fixed;top:60px;left:16px;right:16px;padding:12px;border-radius:8px;background:var(--green);color:white;font-size:13px;font-weight:600;z-index:200;display:none}
+.sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--line-soft)}
+.sec-title{font-size:15px;font-weight:800;margin-bottom:10px}
+.lb{font-size:11px;font-weight:800;color:#475467;letter-spacing:.4px;text-transform:uppercase;margin:11px 0 5px;display:flex;justify-content:space-between;align-items:center}
+.lb a{color:var(--accent-ink);text-transform:none;letter-spacing:0;font-weight:700;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 11px;border-radius:11px;background:#fff;border:1.5px solid var(--line);font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);font-family:var(--sans)}
+.chip.on{background:#fbf3ea;border-color:var(--accent);color:var(--accent-ink)}
+.chip.plus{border:1.5px dashed var(--accent);color:var(--accent-ink);background:#fffaf4}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input,select,textarea{width:100%;min-height:42px;padding:10px 11px;border:1.5px solid var(--line);border-radius:11px;font-family:var(--sans);font-size:14px;background:#fff;color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 16px;border-radius:12px;font-family:var(--sans);font-size:14px;font-weight:800;letter-spacing:.3px;cursor:pointer;border:0}
+.btn-primary{background:linear-gradient(180deg,#e2ab7d,#d29560);color:#fff;box-shadow:0 6px 14px rgba(199,133,82,.28)}
+.btn-dark{background:#0f1b34;color:#fff}
+.btn-light{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn-danger{background:#fde2e2;color:var(--red)}
+.btn-full{width:100%;margin-top:8px}
+.btn-sm{padding:8px 11px;font-size:12px;border-radius:10px}
+.fotos{display:flex;gap:8px}.fotos .btn{flex:1}
+.th{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.th div{position:relative;width:62px;height:62px;border-radius:9px;overflow:hidden;border:1.5px solid var(--line)}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th button{position:absolute;top:2px;right:2px;width:20px;height:20px;border:0;border-radius:50%;background:rgba(198,40,40,.92);color:#fff;font-size:12px;line-height:20px;cursor:pointer}
+.bar{background:#fff;border-radius:12px;padding:9px 11px;margin-top:10px;font-size:12px;border:1px solid var(--line-soft);color:#475467}
+.sm{font-size:11px;color:var(--ink-soft)}
+.notif{position:fixed;top:78px;left:14px;right:14px;padding:12px;border-radius:10px;background:var(--green);color:#fff;font-size:13px;font-weight:700;z-index:600;display:none;text-align:center}
 .notif.show{display:block}
 
-.card{background:var(--bg-card);border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid var(--bg-mid)}
-.card-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.card-desc{font-size:12px;color:var(--ink);margin-bottom:6px}
-.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
-.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--bg-card);font-size:11px;color:var(--ink)}
+.fil{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.fil .chip{padding:6px 10px;font-size:12px}
+.fil select,.fil input{width:auto;min-height:34px;padding:6px 8px;font-size:12px;border-radius:9px}
+.tw{overflow-x:auto;border:1px solid #c9cfda;border-radius:10px;background:#fff;-webkit-overflow-scrolling:touch}
+table.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.tbl th{background:#0f1b34;color:#fff;font-weight:700;padding:7px 6px;text-align:left;white-space:nowrap;position:sticky;top:0}
+.tbl td{border:1px solid #d5dae4;padding:6px;white-space:nowrap}
+.tbl tbody tr:nth-child(even) td{background:#f7f8fb}
+.tbl tbody tr{cursor:pointer}
+.tbl .r{text-align:right}.tbl .sv{color:var(--red);font-weight:800}
+.tbl tr.cancel td{text-decoration:line-through;color:#98a2b3}
+.tbl tr.tot td{background:#eef1f6!important;font-weight:800;cursor:default}
+.tbl td.c1,.tbl th.c1{position:sticky;left:0;z-index:1}
+.tbl td.c1{background:#fff}.tbl tbody tr:nth-child(even) td.c1{background:#f7f8fb}
+.tag{font-size:10px;background:#fdecea;color:var(--red);border-radius:7px;padding:1px 6px;font-weight:800}
+.card{background:#fff;border-radius:14px;padding:12px;margin-bottom:9px;border:1px solid #eef1f6;box-shadow:0 3px 12px rgba(16,24,40,.06)}
+.card h4{font-size:13.5px;margin-bottom:5px;display:flex;justify-content:space-between;gap:8px}.card h4 span{color:#475467;font-size:12px;font-weight:700}
+.li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #f0f2f6;font-size:13px}
+.li i{font-style:normal;color:var(--ink-soft);font-size:11px;display:block}.li b{font-size:15px;text-align:right;white-space:nowrap}
+.bar2{height:5px;background:#eef1f6;border-radius:4px;margin-top:3px;overflow:hidden;width:150px}.bar2 u{display:block;height:100%;background:var(--accent)}
+.kpi{display:flex;gap:8px;margin-bottom:9px}.kpi .card{flex:1;margin:0;text-align:center;padding:10px 6px}.kpi b{font-size:18px;display:block}.kpi small{color:var(--ink-soft);font-size:11px}
+.seg{display:flex;background:#fff;border-radius:12px;padding:3px;border:1px solid var(--line-soft);margin-bottom:9px}
+.seg div{flex:1;text-align:center;padding:9px 3px;font-size:12px;font-weight:700;color:var(--ink-soft);border-radius:9px;cursor:pointer}
+.seg .on{background:#f1f3f8;color:var(--ink);border-bottom:2.5px solid var(--accent)}
+.ic{background:none;border:0;font-size:15px;cursor:pointer;padding:3px 5px}
+.sw{display:inline-block;width:34px;height:19px;border-radius:10px;background:var(--green);position:relative;cursor:pointer;border:0;vertical-align:middle}
+.sw::after{content:"";position:absolute;right:2px;top:2px;width:15px;height:15px;border-radius:50%;background:#fff}.sw.off{background:#cbd2dd}.sw.off::after{right:auto;left:2px}
+.add{border:1.5px dashed var(--accent);color:var(--accent-ink);border-radius:11px;padding:9px;text-align:center;font-weight:800;font-size:13px;margin-top:6px;background:#fffaf4;cursor:pointer}
+.off-row{opacity:.5}
 
-.item-row{background:var(--bg-mid);padding:10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)}
-.item-row-header{display:flex;justify-content:space-between;margin-bottom:6px}
-.item-row-title{font-weight:700;color:var(--ink)}
-.item-row-actions{display:flex;gap:4px}
-.item-row-actions button{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--red)}
+.ov{position:fixed;inset:0;background:rgba(16,24,40,.55);display:none;align-items:flex-end;justify-content:center;z-index:500}
+.ov.open{display:flex}
+.sheet{background:#fff;border-radius:22px 22px 0 0;padding:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.sheet h3{font-size:17px;margin-bottom:2px}
+.sheet img.big{width:100%;border-radius:10px;margin-top:6px;border:1px solid var(--line)}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;border-bottom:1px solid #f0f2f6}.kv span{color:var(--ink-soft)}.kv b{text-align:right}
 
-.stat-box{background:var(--bg-card);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid var(--line)}
-.stat-label{font-size:11px;color:var(--ink);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--ink);margin-top:4px}
-
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:var(--bg-dark);color:var(--ink);padding:8px;text-align:left;font-weight:700}
-td{padding:8px;border-bottom:1px solid var(--line)}
-tr:hover{background:var(--bg-mid)}
-
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;overflow-y:auto}
-.modal.open{display:flex}
-.modal-content{background:var(--bg-card);border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative;margin:auto}
-.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink)}
-.modal-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:15px}
-
-/* ══════════════════════════════════════════════════════════════
-   DESKTOP — acima de 900px o app ocupa a tela em vez de ficar numa
-   coluna de 480px (tamanho de celular). No celular nada muda.
-   ══════════════════════════════════════════════════════════════ */
-/* 860 e nao 900: o iframe pode ficar alguns pixels mais estreito que a
-   janela (barra de rolagem, bordas). Com o mesmo numero dos dois lados,
-   o app de dentro corria o risco de continuar em formato de celular
-   enquanto o de fora ja estava em desktop. */
+html.embutido .hdr .hdr-settings{color:#101828!important;width:auto!important;height:38px!important;padding:0 12px!important;font-size:13px!important;font-weight:700!important}
 @media (min-width: 860px) {
-  body { max-width: 1100px; }
-  .hdr, .tabs { max-width: 1100px !important; }
-  .page.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); gap: 0 14px; align-items: start; }
-  .page.active > * { max-width: none; }
-  .page.active > .card, .page.active > .section { align-self: stretch; }
-  .page.active input:not([type="checkbox"]):not([type="radio"]),
-  .page.active textarea,
-  .page.active select { max-width: 660px; }
-  .modal { max-width: 560px; }
+  body { max-width: 1280px; }
+  .hdr, .tabs { max-width: 1280px !important; }
+  .page.active { max-width: 1240px; margin: 0 auto; }
+  .sheet { border-radius: 22px; margin-bottom: 40px; }
+  .ov { align-items: center; }
+  #page-entrada .formcol { max-width: 560px; margin: 0 auto; }
+  table.tbl { font-size: 12.5px; }
+}
+@media print {
+  body{background:#fff;max-width:none;padding:0}
+  .hdr,.tabs,.notif,.fil,.acoes,.ov,.nao-imprime{display:none!important}
+  .page{display:none!important}#page-planilha{display:block!important;padding:0!important}
+  .tw{border:0;overflow:visible}.tbl th{position:static;background:#e5e5e5;color:#000}
+  .tbl{font-size:9pt}.tbl td.c1{position:static}
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -121,163 +128,108 @@ tr:hover{background:var(--bg-mid)}
 <header class="hdr" style="height:70px">
   <div class="hdr-top">
     <div style="display:flex;align-items:center;gap:10px">
-      <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:var(--ink)" onclick="voltarParaHome()">⬅️</button>
+      <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#fff" onclick="voltarParaHome()">⬅️</button>
       <div>
         <div class="hdr-logo">CUS<span>TOS</span></div>
-        <div style="font-size:11px;color:var(--ink)">Controle de Notas Fiscais</div>
+        <div style="font-size:11px;color:#cbd5e1">Entrada de materiais · Portaria</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="hdr-date" id="hdr-date"></div>
-      <button class="hdr-settings" onclick="abrirConfig()">⚙️</button>
+      <button class="hdr-settings" onclick="abrirCadastro()" title="Cadastro de materiais, fornecedores e porteiros">⚙️ Cadastro</button>
     </div>
   </div>
 </header>
 
 <nav class="tabs" style="top:70px">
-  <button class="tab active" onclick="abrir('nova',this)">➕ Nova NF</button>
-  <button class="tab" onclick="abrir('listar',this)">📋 Listar</button>
-  <button class="tab" onclick="abrir('resumo',this)">📊 Resumo</button>
+  <button class="tab active" data-pg="entrada" onclick="abrir('entrada',this)">Entrada</button>
+  <button class="tab" data-pg="planilha" onclick="abrir('planilha',this)">Planilha</button>
+  <button class="tab" data-pg="resumo" onclick="abrir('resumo',this)">Resumo</button>
+  <button class="tab" data-pg="valores" onclick="abrir('valores',this)">Resumo R$</button>
 </nav>
 
-<!-- Nova Nota Fiscal -->
-<div class="page active" id="page-nova">
+<!-- ENTRADA -->
+<div class="page active" id="page-entrada"><div class="formcol">
   <div class="sec">
-    <div class="sec-title">📄 Dados da Nota Fiscal</div>
-    <div class="frow-2">
-      <div class="frow">
-        <label>Número NF</label>
-        <input type="text" id="nf-numero" placeholder="Ex: 12345"/>
-      </div>
-      <div class="frow">
-        <label>Série</label>
-        <input type="text" id="nf-serie" placeholder="Ex: A"/>
-      </div>
+    <div class="lb" style="margin-top:0">Categoria</div>
+    <div class="chips" id="f-cats"></div>
+    <div class="lb">Subcategoria</div>
+    <div class="chips" id="f-subs"></div>
+    <div class="lb">Descrição da nota <a onclick="novaDescricaoRapida()">＋ cadastrar</a></div>
+    <select id="f-desc" onchange="aoMudarDescricao()"></select>
+    <input id="f-desc-livre" placeholder="Complemento livre (opcional) — ex.: QD-02" style="margin-top:6px"/>
+    <div class="row2">
+      <div><div class="lb">Quantidade</div><input id="f-qtd" type="number" inputmode="decimal" step="any" placeholder="0"/></div>
+      <div><div class="lb">Unidade</div><select id="f-un"></select></div>
     </div>
-    <div class="frow-2">
-      <div class="frow">
-        <label>Data Emissão</label>
-        <input type="date" id="nf-data"/>
-      </div>
-      <div class="frow">
-        <label>Fornecedor</label>
-        <input type="text" id="nf-fornecedor" placeholder="Ex: Loja do Zé"/>
-      </div>
+    <div class="row2">
+      <div><div class="lb">Nº nota / ticket</div><input id="f-nf" placeholder="ex.: 2345 (ou S/N)"/></div>
+      <div><div class="lb">Data de emissão</div><input id="f-emissao" type="date"/></div>
     </div>
-    <div class="frow">
-      <label>Categoria</label>
-      <select id="nf-categoria"></select>
+    <div class="lb">Fornecedor <a onclick="novoFornecedorRapido()">＋ novo</a></div>
+    <input id="f-forn" list="dl-forn" placeholder="Digite ou escolha" autocomplete="off"/>
+    <datalist id="dl-forn"></datalist>
+    <div class="row2">
+      <div><div class="lb">Preço unit. (opcional)</div><input id="f-preco" type="number" inputmode="decimal" step="any" placeholder="R$ —"/></div>
+      <div><div class="lb">Recebido por</div><select id="f-resp"></select></div>
     </div>
-    <div class="frow">
-      <label>Responsável</label>
-      <select id="nf-responsavel"></select>
-    </div>
-    <div class="frow">
-      <label>Observações</label>
-      <textarea id="nf-observacoes" placeholder="Detalhes adicionais..."></textarea>
-    </div>
-    <div class="frow">
-      <label>Foto da Nota</label>
-      <input type="file" id="nf-foto-input" accept="image/*" capture="environment"
-        style="display:none" onchange="onFotoNFSelecionada(event)"/>
-      <div id="nf-foto-preview" style="display:none;position:relative;max-width:220px;margin-bottom:8px">
-        <img id="nf-foto-img" style="width:100%;border-radius:8px;border:1.5px solid var(--line);display:block"/>
-        <button type="button" onclick="removerFotoNF()" title="Remover"
-          style="position:absolute;top:6px;right:6px;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:var(--ink);font-size:14px;line-height:1;cursor:pointer">✕</button>
-      </div>
-      <button type="button" class="btn btn-secondary btn-full btn-sm" id="nf-foto-btn"
-        onclick="document.getElementById('nf-foto-input').click()">📷 FOTOGRAFAR NOTA</button>
-    </div>
+    <div class="lb">Foto da nota <span class="sm" id="f-fotos-n"></span></div>
+    <input type="file" id="f-cam" accept="image/*" capture="environment" style="display:none" onchange="aoEscolherFoto(event)"/>
+    <input type="file" id="f-gal" accept="image/*" multiple style="display:none" onchange="aoEscolherFoto(event)"/>
+    <div class="fotos"><button class="btn btn-dark btn-sm" id="btn-cam" onclick="document.getElementById('f-cam').click()">📷 Tirar foto</button>
+      <button class="btn btn-light btn-sm" id="btn-gal" onclick="document.getElementById('f-gal').click()">🖼 Galeria</button></div>
+    <div class="th" id="f-th"></div>
+    <div class="lb"><a onclick="document.getElementById('f-mais').style.display=document.getElementById('f-mais').style.display==='none'?'block':'none'">＋ mais campos (placa, observação)</a></div>
+    <div id="f-mais" style="display:none"><div class="row2">
+      <div><input id="f-placa" placeholder="Placa"/></div><div><input id="f-obs" placeholder="Observação"/></div></div></div>
+    <button class="btn btn-primary btn-full" id="btn-salvar" onclick="salvarEntrada()">＋ SALVAR ENTRADA → entra na planilha</button>
+    <div class="sm" style="text-align:center;margin-top:6px">Data e hora de chegada: automáticas.</div>
   </div>
+  <div class="bar" id="f-hoje"></div>
+</div></div>
 
+<!-- PLANILHA -->
+<div class="page" id="page-planilha">
   <div class="sec">
-    <div class="sec-title">📦 Itens da Nota Fiscal</div>
-    <div id="lista-itens-novo"></div>
-
-    <div style="background:var(--bg-mid);padding:12px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line)">
-      <div class="frow">
-        <label>Descrição do Item</label>
-        <input type="text" id="item-descricao" placeholder="Ex: Cimento"/>
-      </div>
-      <div class="frow-3">
-        <div class="frow">
-          <label>Quantidade</label>
-          <input type="number" id="item-quantidade" step="0.01" placeholder="0"/>
-        </div>
-        <div class="frow">
-          <label>Preço Unit.</label>
-          <input type="number" id="item-preco-unit" step="0.01" placeholder="0.00"/>
-        </div>
-        <div class="frow">
-          <label>Total</label>
-          <input type="number" id="item-total" disabled style="background:var(--bg-card)"/>
-        </div>
-      </div>
-      <button class="btn btn-secondary btn-full btn-sm" onclick="adicionarItem()">+ ADICIONAR ITEM</button>
+    <div class="fil" id="p-per"></div>
+    <div class="fil">
+      <select id="p-cat" onchange="renderPlanilha()"></select>
+      <select id="p-forn" onchange="renderPlanilha()"></select>
+      <input id="p-busca" placeholder="🔎 Nº nota" oninput="renderPlanilha()" style="width:110px"/>
+      <label class="sm" style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="p-canc" onchange="renderPlanilha()" style="width:auto;min-height:0"/> canceladas</label>
     </div>
-
-    <div class="stat-box">
-      <div class="stat-label">Total da NF</div>
-      <div class="stat-value" id="total-nf">R$ 0,00</div>
+    <div class="tw"><table class="tbl" id="tbl"></table></div>
+    <div class="sm" style="margin:6px 0">↔ deslize para ver todas as colunas · toque numa linha: fotos, completar valor, cancelar</div>
+    <div class="bar" id="p-tot"></div>
+    <div class="row2 acoes" style="margin-top:8px">
+      <button class="btn btn-dark" onclick="baixarCsv()">📄 Exportar .csv</button>
+      <button class="btn btn-light" onclick="window.print()">🖨 Imprimir</button>
     </div>
-
-    <button class="btn btn-primary btn-full" onclick="salvarNotaFiscal()">💾 SALVAR NOTA FISCAL</button>
   </div>
 </div>
 
-<!-- Listar Notas Fiscais -->
-<div class="page" id="page-listar">
-  <div class="sec">
-    <div class="sec-title">📋 Histórico de Notas Fiscais</div>
-    <div class="frow-2">
-      <div class="frow">
-        <label>Filtrar por Categoria</label>
-        <select id="filtro-categoria" onchange="renderListar()">
-          <option value="">Todas</option>
-        </select>
-      </div>
-      <div class="frow">
-        <label>Período</label>
-        <select id="filtro-periodo" onchange="renderListar()">
-          <option value="todo">Todos</option>
-          <option value="mes">Este Mês</option>
-          <option value="semana">Esta Semana</option>
-        </select>
-      </div>
-    </div>
-    <div id="lista-nfs"></div>
-  </div>
-</div>
-
-<!-- Resumo -->
+<!-- RESUMO QUANTITATIVO -->
 <div class="page" id="page-resumo">
-  <div class="sec">
-    <div class="sec-title">📊 Resumo de Custos</div>
-    <div class="stat-box">
-      <div class="stat-label">Total Geral</div>
-      <div class="stat-value" id="total-geral">R$ 0,00</div>
-    </div>
-    <div id="resumo-categorias"></div>
-    <div id="resumo-fornecedores"></div>
-  </div>
+  <div class="fil" id="r-per"></div>
+  <div class="seg"><div id="r-sg1" class="on" onclick="setVisaoResumo('cat')">Por categoria</div><div id="r-sg2" onclick="setVisaoResumo('desc')">Por descrição</div></div>
+  <div id="r-corpo"></div>
+  <div class="sm" style="text-align:center">Unidades diferentes nunca são somadas · vai ao PDF do RDO</div>
 </div>
 
-<!-- Modal Config -->
-<div class="modal" id="modal-config">
-  <div class="modal-content">
-    <button class="modal-close" onclick="fecharConfig()">✕</button>
-    <div class="modal-title">⚙️ Configurações</div>
-    <div class="frow">
-      <label>Nome da Obra</label>
-      <input type="text" id="cfg-obra"/>
-    </div>
-    <div class="frow">
-      <label>Responsável</label>
-      <input type="text" id="cfg-responsavel"/>
-    </div>
-    <button class="btn btn-primary btn-full" onclick="salvarConfig()">SALVAR</button>
-  </div>
+<!-- RESUMO R$ -->
+<div class="page" id="page-valores">
+  <div class="fil" id="v-per"></div>
+  <div id="v-corpo"></div>
 </div>
+
+<!-- CADASTRO -->
+<div class="page" id="page-cadastro">
+  <div class="seg" id="c-seg"></div>
+  <div id="c-corpo"></div>
+</div>
+
+<!-- Painel (sheet) genérico -->
+<div class="ov" id="ov" onclick="if(event.target===this)fecharSheet()"><div class="sheet" id="sheet"></div></div>
 
 <script>
 /* ============================================================
@@ -334,458 +286,648 @@ tr:hover{background:var(--bg-mid)}
     // antigo do que quebrar o app inteiro.
   }
 })();
-</script>
-<script>
+</script><script>
+/* ============ Custos — Entrada de materiais (portaria) ============
+   Cada item que entra na obra vira UMA linha da planilha (ordem de chegada). Funciona sem
+   internet: grava no aparelho e envia ao Supabase da obra quando puder. */
 const S = {
-  get(k) { try { return JSON.parse(localStorage.getItem('custo_' + k)); } catch { return null; } },
+  get(k) { try { return JSON.parse(localStorage.getItem('custo_' + k)); } catch (e) { return null; } },
   set(k, v) { localStorage.setItem('custo_' + k, JSON.stringify(v)); }
 };
+const UNIDADES = ['m³', 't', 'kg', 'L', 'un', 'kit', 'saco', 'm', 'viagem'];
+const MEDE_POR = { carga: 'Carga', viagem: 'Viagem', peso: 'Peso', unidade: 'Unidade' };
+const ROT_MEDIDA = { carga: ['carga', 'cargas'], viagem: ['viagem', 'viagens'], peso: ['pesagem', 'pesagens'], unidade: ['lançamento', 'lançamentos'] };
+const MAX_FOTOS = 4;
 
-let config = S.get('config') || { obra: 'Obra', responsavel: 'Responsável' };
-let categorias = S.get('categorias') || ['Material', 'Mão de Obra', 'Aluguel', 'Combustível', 'Outros'];
-let notasFiscais = S.get('notasfiscais') || [];
-let responsaveis = S.get('responsaveis') || ['Jonacir', 'Aline', 'José'];
-let itensTemp = [];
-let fotoNFTemp = null;
+let catalogo = null;
+let entradas = S.get('entradas') || [];
+let fotosLocais = S.get('fotos') || {};      // id da entrada -> [dataURL] ainda não enviadas
+let notasAntigas = S.get('notasfiscais') || [];
+let notasAntigasServidor = [];
+let form = { cat: null, sub: null, fotos: [] };
+let perEntrada = { planilha: { p: 'hoje', d: '' }, resumo: { p: 'hoje', d: '' }, valores: { p: 'hoje', d: '' } };
+let visaoResumo = 'cat';
+let abaCadastro = 'materiais';
 
-function comprimirFotoNF(file, maxDim, qualidade) {
+// ---------- util ----------
+const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad2 = n => String(n).padStart(2, '0');
+const isoLocal = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+const hojeISO = () => isoLocal(new Date());
+const novoId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const slug = t => String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const fmtMoeda = v => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtQtd = n => (Number(n) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+const fmtData = iso => { if (!iso) return ''; const [a, m, d] = String(iso).slice(0, 10).split('-'); return d + '/' + m; };
+const fmtDataCompleta = iso => { if (!iso) return ''; const [a, m, d] = String(iso).slice(0, 10).split('-'); return d + '/' + m + '/' + a; };
+const fmtHora = iso => { const d = new Date(iso); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
+const cmp = (x, y) => String(x).localeCompare(String(y), 'pt-BR', { sensitivity: 'base' });
+
+function notify(msg, cor) {
+  const n = document.getElementById('notif');
+  n.textContent = msg; n.style.background = cor || 'var(--green)'; n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2600);
+}
+function voltarParaHome() {
+  try { if (parent && parent.switchTab && parent !== window) { parent.switchTab('home'); return; } } catch (e) {}
+  window.location.href = 'buildly-completo.html';
+}
+
+// ---------- catálogo ----------
+function semearCatalogo() {
+  const L = [];
+  let ordem = 0;
+  const cat = nome => { L.push({ id: 'cat-' + slug(nome), tipo: 'categoria', nome, ativo: true, ordem: ordem++ }); return 'cat-' + slug(nome); };
+  const sub = (c, nome, un, mede) => L.push({ id: 'sub-' + c.slice(4) + '-' + slug(nome), tipo: 'subcategoria', nome, pai_id: c, unidade: un, mede_por: mede, ativo: true, ordem: ordem++ });
+  let c = cat('Agregados');
+  [['Areia', 'm³', 'carga'], ['Brita 0', 'm³', 'carga'], ['Brita 1', 'm³', 'carga'], ['Brita 2', 'm³', 'carga'], ['Pedrisco', 'm³', 'carga'], ['Rachão', 't', 'carga'], ['Bica corrida', 'm³', 'carga']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Terra');
+  [['Argila', 'm³', 'carga'], ['Saibro', 'm³', 'carga'], ['Aterro', 'm³', 'carga']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Água');
+  [['Caminhão-pipa', 'm³', 'viagem'], ['Galão / garrafão', 'un', 'unidade']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Concreto / Cimento');
+  [['Concreto usinado', 'm³', 'carga'], ['Cimento', 'saco', 'unidade'], ['Argamassa', 'saco', 'unidade']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Aço');
+  [['CA-50', 'kg', 'peso'], ['CA-60', 'kg', 'peso'], ['Tela', 'un', 'unidade'], ['Arame', 'kg', 'peso']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Elétrico');
+  [['Kit elétrico', 'kit', 'unidade'], ['Cabos', 'm', 'unidade'], ['Eletrodutos', 'm', 'unidade']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Hidráulico');
+  [['Kit hidráulico', 'kit', 'unidade'], ['Tubos', 'm', 'unidade'], ['Conexões', 'un', 'unidade']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Combustível');
+  [['Diesel S10', 'L', 'unidade'], ['Gasolina', 'L', 'unidade']].forEach(x => sub(c, x[0], x[1], x[2]));
+  c = cat('Outros');
+  sub(c, 'Diversos', 'un', 'unidade');
+  const d = (subId, nome, un) => L.push({ id: 'desc-' + slug(nome), tipo: 'descricao', nome, pai_id: subId, unidade: un, ativo: true, ordem: ordem++ });
+  d('sub-eletrico-kit-eletrico', 'Kit material elétrico', 'kit'); d('sub-eletrico-kit-eletrico', 'Kit iluminação', 'kit'); d('sub-eletrico-kit-eletrico', 'Quadro de comando', 'un');
+  d('sub-hidraulico-kit-hidraulico', 'Kit material hidráulico', 'kit');
+  L.forEach(r => { r._sinc = false; });
+  S.set('catalogo', L);
+  return L;
+}
+catalogo = S.get('catalogo') || semearCatalogo();
+const cat_ = t => catalogo.filter(r => r.tipo === t).sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || cmp(a.nome, b.nome));
+const ativos = t => cat_(t).filter(r => r.ativo);
+const subsDe = (catId, soAtivas) => cat_('subcategoria').filter(r => r.pai_id === catId && (!soAtivas || r.ativo));
+const descsDe = subId => cat_('descricao').filter(r => r.pai_id === subId && r.ativo);
+const porIdCat = id => catalogo.find(r => r.id === id);
+function salvarCatalogo(linha) {
+  if (linha) { linha._sinc = false; linha.atualizado_em = new Date().toISOString(); enviarCatalogo(linha); }
+  S.set('catalogo', catalogo);
+}
+function adicionarCatalogo(tipo, nome, extra) {
+  nome = String(nome || '').trim();
+  if (!nome) return null;
+  const ja = catalogo.find(r => r.tipo === tipo && cmp(r.nome, nome) === 0 && (r.pai_id || '') === ((extra && extra.pai_id) || ''));
+  if (ja) { ja.ativo = true; salvarCatalogo(ja); return ja; }
+  const maxOrdem = Math.max(0, ...catalogo.map(r => r.ordem || 0));
+  const linha = Object.assign({ id: novoId('c'), tipo, nome, ativo: true, ordem: maxOrdem + 1 }, extra || {});
+  catalogo.push(linha);
+  salvarCatalogo(linha);
+  return linha;
+}
+
+// ---------- painel (sheet) ----------
+function abrirSheet(html) { document.getElementById('sheet').innerHTML = html; document.getElementById('ov').classList.add('open'); }
+function fecharSheet() { document.getElementById('ov').classList.remove('open'); }
+let _sheetCb = null;
+function sheetForm(titulo, sub, campos, onSave, rotuloBotao) {
+  _sheetCb = onSave;
+  abrirSheet(`<h3>${esc(titulo)}</h3>${sub ? `<div class="sm">${esc(sub)}</div>` : ''}
+    ${campos.map(c => `<div class="lb">${esc(c.label)}</div>` + (c.tipo === 'select'
+      ? `<select data-campo="${c.id}">${c.opcoes.map(o => `<option value="${esc(o.v)}"${String(o.v) === String(c.valor) ? ' selected' : ''}>${esc(o.t)}</option>`).join('')}</select>`
+      : `<input data-campo="${c.id}" value="${esc(c.valor || '')}" placeholder="${esc(c.ph || '')}" ${c.tipo === 'number' ? 'type="number" inputmode="decimal" step="any"' : ''}/>`)).join('')}
+    <button class="btn btn-primary btn-full" onclick="_sheetOk()">${esc(rotuloBotao || 'SALVAR')}</button>
+    <button class="btn btn-light btn-full" onclick="fecharSheet()">Cancelar</button>`);
+  const p = document.querySelector('#sheet [data-campo]'); if (p && p.tagName === 'INPUT') setTimeout(() => p.focus(), 50);
+}
+function _sheetOk() {
+  const v = {};
+  document.querySelectorAll('#sheet [data-campo]').forEach(e => { v[e.dataset.campo] = e.value; });
+  const cb = _sheetCb; fecharSheet(); if (cb) cb(v);
+}
+function sheetConfirma(msg, rotulo, onSim) {
+  _sheetCb = onSim;
+  abrirSheet(`<h3>Atenção</h3><div style="margin:8px 0;font-size:14px">${msg}</div>
+    <button class="btn btn-primary btn-full" onclick="_sheetOk()">${esc(rotulo)}</button>
+    <button class="btn btn-light btn-full" onclick="fecharSheet()">Voltar</button>`);
+}
+
+// ---------- navegação ----------
+function abrir(pg, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pg).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.pg === pg));
+  if (pg === 'entrada') renderEntrada();
+  if (pg === 'planilha') renderPlanilha();
+  if (pg === 'resumo') renderResumo();
+  if (pg === 'valores') renderValores();
+  if (pg === 'cadastro') renderCadastro();
+  window.scrollTo(0, 0);
+}
+function abrirCadastro() { abrir('cadastro'); }
+
+// ---------- ENTRADA ----------
+function renderEntrada() {
+  const cats = ativos('categoria');
+  if (!form.cat || !cats.find(c => c.id === form.cat)) form.cat = cats[0] ? cats[0].id : null;
+  const subs = form.cat ? subsDe(form.cat, true) : [];
+  if (!form.sub || !subs.find(s => s.id === form.sub)) form.sub = subs[0] ? subs[0].id : null;
+  document.getElementById('f-cats').innerHTML = cats.map(c => `<button class="chip${c.id === form.cat ? ' on' : ''}" onclick="escolherCat('${c.id}')">${esc(c.nome)}</button>`).join('') +
+    '<button class="chip plus" onclick="novaCategoriaRapida()">＋ Nova</button>';
+  document.getElementById('f-subs').innerHTML = subs.map(s => `<button class="chip${s.id === form.sub ? ' on' : ''}" onclick="escolherSub('${s.id}')">${esc(s.nome)}</button>`).join('') +
+    '<button class="chip plus" onclick="novaSubRapida()">＋ Nova</button>';
+  renderDescricoes();
+  const un = document.getElementById('f-un');
+  const atual = un.value;
+  un.innerHTML = UNIDADES.map(u => `<option>${u}</option>`).join('');
+  const sub = porIdCat(form.sub);
+  un.value = atual && UNIDADES.includes(atual) && form.unTocada ? atual : (sub && sub.unidade) || 'un';
+  document.getElementById('f-emissao').value = document.getElementById('f-emissao').value || hojeISO();
+  document.getElementById('dl-forn').innerHTML = ativos('fornecedor').map(f => `<option value="${esc(f.nome)}">`).join('');
+  const sr = document.getElementById('f-resp');
+  const porteiros = ativos('porteiro');
+  const ult = S.get('ultimo_resp') || '';
+  sr.innerHTML = (porteiros.length ? '' : '<option value="">— cadastre em ⚙️ Cadastro —</option>') + porteiros.map(p => `<option${p.nome === ult ? ' selected' : ''}>${esc(p.nome)}</option>`).join('') + '<option value="__novo">＋ novo porteiro…</option>';
+  sr.onchange = () => { if (sr.value === '__novo') { sr.value = ult || ''; novoPorteiroRapido(); } };
+  renderFotosForm();
+  renderHoje();
+}
+function escolherCat(id) { form.cat = id; form.sub = null; form.unTocada = false; renderEntrada(); }
+function escolherSub(id) { form.sub = id; form.unTocada = false; renderEntrada(); }
+function renderDescricoes() {
+  const sub = porIdCat(form.sub), ds = sub ? descsDe(sub.id) : [];
+  const sel = document.getElementById('f-desc');
+  sel.innerHTML = `<option value="">${sub ? esc(sub.nome) : '—'} (padrão)</option>` + ds.map(d => `<option value="${d.id}">${esc(d.nome)}</option>`).join('');
+}
+function aoMudarDescricao() {
+  const d = porIdCat(document.getElementById('f-desc').value);
+  if (d && d.unidade) { document.getElementById('f-un').value = d.unidade; form.unTocada = true; }
+}
+document.addEventListener('change', e => { if (e.target.id === 'f-un') form.unTocada = true; });
+
+function novaCategoriaRapida() {
+  sheetForm('＋ Nova categoria', 'Fica salva no cadastro e já vem selecionada.', [{ id: 'nome', label: 'Nome', ph: 'ex.: Madeira' }], v => {
+    const r = adicionarCatalogo('categoria', v.nome); if (r) { form.cat = r.id; form.sub = null; renderEntrada(); notify('✅ Categoria criada'); }
+  });
+}
+function opcoesUnidade() { return UNIDADES.map(u => ({ v: u, t: u })); }
+function opcoesMede() { return Object.keys(MEDE_POR).map(k => ({ v: k, t: MEDE_POR[k] })); }
+function novaSubRapida(catId) {
+  const cid = catId || form.cat;
+  if (!cid) { notify('Escolha ou crie uma categoria antes', 'var(--red)'); return; }
+  sheetForm('＋ Nova subcategoria', 'Fica salva no cadastro e já vem selecionada.', [
+    { id: 'cat', label: 'Categoria', tipo: 'select', valor: cid, opcoes: ativos('categoria').map(c => ({ v: c.id, t: c.nome })) },
+    { id: 'nome', label: 'Nome', ph: 'ex.: Cascalho' },
+    { id: 'un', label: 'Unidade padrão', tipo: 'select', valor: 'm³', opcoes: opcoesUnidade() },
+    { id: 'mede', label: 'Mede por', tipo: 'select', valor: 'carga', opcoes: opcoesMede() }
+  ], v => {
+    const r = adicionarCatalogo('subcategoria', v.nome, { pai_id: v.cat, unidade: v.un, mede_por: v.mede });
+    if (r) { form.cat = v.cat; form.sub = r.id; form.unTocada = false; renderEntrada(); if (document.getElementById('page-cadastro').classList.contains('active')) renderCadastro(); notify('✅ Subcategoria criada'); }
+  }, 'SALVAR E USAR');
+}
+function novaDescricaoRapida() {
+  const sub = porIdCat(form.sub);
+  if (!sub) { notify('Escolha a subcategoria antes', 'var(--red)'); return; }
+  sheetForm('＋ Nova descrição de nota', 'Em ' + sub.nome, [
+    { id: 'nome', label: 'Descrição', ph: 'ex.: Kit material elétrico' },
+    { id: 'un', label: 'Unidade', tipo: 'select', valor: sub.unidade || 'un', opcoes: opcoesUnidade() }
+  ], v => { const r = adicionarCatalogo('descricao', v.nome, { pai_id: sub.id, unidade: v.un }); if (r) { renderDescricoes(); document.getElementById('f-desc').value = r.id; aoMudarDescricao(); } });
+}
+function novoFornecedorRapido() {
+  sheetForm('＋ Novo fornecedor', '', [{ id: 'nome', label: 'Nome', ph: 'ex.: Pedreira Boa Vista' }], v => {
+    const r = adicionarCatalogo('fornecedor', v.nome); if (r) { document.getElementById('f-forn').value = r.nome; renderEntrada(); }
+  });
+}
+function novoPorteiroRapido() {
+  sheetForm('＋ Novo porteiro', 'Quem recebe o material.', [{ id: 'nome', label: 'Nome', ph: 'ex.: Carlos' }], v => {
+    const r = adicionarCatalogo('porteiro', v.nome); if (r) { S.set('ultimo_resp', r.nome); renderEntrada(); }
+  });
+}
+
+// fotos
+function comprimirFoto(file, maxDim, q) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
+    const rd = new FileReader();
+    rd.onload = () => {
       const img = new Image();
       img.onload = () => {
         let w = img.width, h = img.height;
-        if (w > maxDim || h > maxDim) {
-          const r = Math.min(maxDim / w, maxDim / h);
-          w = Math.round(w * r);
-          h = Math.round(h * r);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', qualidade));
+        if (w > maxDim || h > maxDim) { const r = Math.min(maxDim / w, maxDim / h); w = Math.round(w * r); h = Math.round(h * r); }
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', q));
       };
       img.onerror = () => reject(new Error('Imagem inválida'));
-      img.src = reader.result;
+      img.src = rd.result;
     };
-    reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
-    reader.readAsDataURL(file);
+    rd.onerror = () => reject(new Error('Falha ao ler arquivo'));
+    rd.readAsDataURL(file);
   });
 }
-
-async function onFotoNFSelecionada(ev) {
-  const file = ev.target.files[0];
-  ev.target.value = '';
-  if (!file) return;
-  try {
-    fotoNFTemp = await comprimirFotoNF(file, 1280, 0.72);
-    renderFotoNFPreview();
-  } catch (err) {
-    notify('❌ Falha ao processar a foto: ' + err.message, '#d98a7c');
+async function aoEscolherFoto(ev) {
+  const files = [...ev.target.files]; ev.target.value = '';
+  for (const f of files) {
+    if (form.fotos.length >= MAX_FOTOS) { notify('Máximo de ' + MAX_FOTOS + ' fotos por lançamento', 'var(--red)'); break; }
+    try { form.fotos.push(await comprimirFoto(f, 1024, 0.62)); } catch (e) { notify('❌ ' + e.message, 'var(--red)'); }
   }
+  renderFotosForm();
+}
+function tirarFoto(i) { form.fotos.splice(i, 1); renderFotosForm(); }
+function renderFotosForm() {
+  document.getElementById('f-th').innerHTML = form.fotos.map((f, i) => `<div><img src="${f}" alt="foto"><button onclick="tirarFoto(${i})" title="Remover">×</button></div>`).join('');
+  document.getElementById('f-fotos-n').textContent = form.fotos.length ? form.fotos.length + '/' + MAX_FOTOS : '(opcional)';
 }
 
-function removerFotoNF() {
-  fotoNFTemp = null;
-  renderFotoNFPreview();
+function renderHoje() {
+  const hoje = entradas.filter(e => e.status !== 'cancelado' && e.data_recebimento === hojeISO());
+  const q = agregarQtd(hoje);
+  const top = q.slice(0, 3).map(x => esc(x.sub) + ' ' + x.qtdTxt).join(' · ');
+  document.getElementById('f-hoje').innerHTML = `<b>Hoje:</b> ${hoje.length} entrada${hoje.length === 1 ? '' : 's'}${top ? ' · ' + top : ''}`;
 }
 
-function renderFotoNFPreview() {
-  const preview = document.getElementById('nf-foto-preview');
-  const img = document.getElementById('nf-foto-img');
-  const btn = document.getElementById('nf-foto-btn');
-  if (fotoNFTemp) {
-    img.src = fotoNFTemp;
-    preview.style.display = 'block';
-    btn.textContent = '📷 TROCAR FOTO';
-  } else {
-    preview.style.display = 'none';
-    btn.textContent = '📷 FOTOGRAFAR NOTA';
-  }
+function salvarEntrada() {
+  const sub = porIdCat(form.sub), cat = porIdCat(form.cat);
+  const v = id => document.getElementById(id).value.trim();
+  const qtd = parseFloat(document.getElementById('f-qtd').value);
+  const nf = v('f-nf'), forn = v('f-forn'), resp = v('f-resp');
+  if (!cat || !sub) return notify('Escolha categoria e subcategoria', 'var(--red)');
+  if (!(qtd > 0)) return notify('Informe a quantidade', 'var(--red)');
+  if (!nf) return notify('Informe o nº da nota (ou S/N)', 'var(--red)');
+  if (!forn) return notify('Informe o fornecedor', 'var(--red)');
+  if (!resp || resp === '__novo') return notify('Escolha quem está recebendo', 'var(--red)');
+  const emissao = v('f-emissao') || hojeISO();
+  const dup = entradas.find(e => e.status !== 'cancelado' && String(e.numero_nf).toLowerCase() === nf.toLowerCase() && cmp(e.fornecedor, forn) === 0 && e.data_emissao === emissao && cmp(e.subcategoria, sub.nome) === 0 && Number(e.quantidade) === qtd);
+  const gravar = () => _gravarEntrada({ cat, sub, qtd, nf, forn, resp, emissao });
+  if (dup) sheetConfirma('Já existe um lançamento igual (nota <b>' + esc(nf) + '</b> · ' + esc(forn) + ' · ' + esc(sub.nome) + ' · ' + fmtQtd(qtd) + '). Lançar mesmo assim?', 'LANÇAR MESMO ASSIM', gravar);
+  else gravar();
 }
-
-function notify(msg, cor = '#7cb083') {
-  const n = document.getElementById('notif');
-  n.textContent = msg;
-  n.style.background = cor;
-  n.classList.add('show');
-  setTimeout(() => n.classList.remove('show'), 3000);
-}
-
-function voltarParaHome() {
-  try {
-    if (parent && parent.switchTab && parent !== window) {
-      parent.switchTab('home');
-    } else {
-      window.location.href = 'buildly-completo.html';
-    }
-  } catch (e) {
-    window.location.href = 'buildly-completo.html';
-  }
-}
-
-function formatarMoeda(valor) {
-  return 'R$ ' + valor.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-}
-
-// Calcular total do item
-document.addEventListener('input', function(e) {
-  if (e.target.id === 'item-quantidade' || e.target.id === 'item-preco-unit') {
-    const qtd = parseFloat(document.getElementById('item-quantidade').value) || 0;
-    const preco = parseFloat(document.getElementById('item-preco-unit').value) || 0;
-    const total = qtd * preco;
-    document.getElementById('item-total').value = total.toFixed(2);
-  }
-});
-
-function adicionarItem() {
-  const descricao = document.getElementById('item-descricao').value.trim();
-  const quantidade = parseFloat(document.getElementById('item-quantidade').value) || 0;
-  const preco_unitario = parseFloat(document.getElementById('item-preco-unit').value) || 0;
-  const total = quantidade * preco_unitario;
-
-  if (!descricao || quantidade === 0 || preco_unitario === 0) {
-    notify('❌ Preencha descrição, quantidade e preço', '#d98a7c');
-    return;
-  }
-
-  itensTemp.push({
-    id: Date.now(),
-    descricao,
-    quantidade,
-    preco_unitario,
-    total
-  });
-
-  document.getElementById('item-descricao').value = '';
-  document.getElementById('item-quantidade').value = '';
-  document.getElementById('item-preco-unit').value = '';
-  document.getElementById('item-total').value = '';
-
-  renderItensTemp();
-  atualizarTotalNF();
-  notify('✅ Item adicionado!');
-}
-
-function renderItensTemp() {
-  const html = itensTemp.length ? itensTemp.map((item, idx) => `
-    <div class="item-row">
-      <div class="item-row-header">
-        <div>
-          <div class="item-row-title">${item.descricao}</div>
-          <div style="font-size:11px;color:var(--ink)">
-            ${item.quantidade} × R$ ${item.preco_unitario.toFixed(2)} = ${formatarMoeda(item.total)}
-          </div>
-        </div>
-        <div class="item-row-actions">
-          <button onclick="removerItem(${idx})">🗑️</button>
-        </div>
-      </div>
-    </div>
-  `).join('') : '<p style="color:var(--ink);font-size:12px">Nenhum item adicionado ainda</p>';
-
-  document.getElementById('lista-itens-novo').innerHTML = html;
-}
-
-function removerItem(idx) {
-  itensTemp.splice(idx, 1);
-  renderItensTemp();
-  atualizarTotalNF();
-}
-
-function atualizarTotalNF() {
-  const total = itensTemp.reduce((s, i) => s + i.total, 0);
-  document.getElementById('total-nf').textContent = formatarMoeda(total);
-}
-
-function salvarNotaFiscal() {
-  const numero = document.getElementById('nf-numero').value.trim();
-  const serie = document.getElementById('nf-serie').value.trim();
-  const data = document.getElementById('nf-data').value;
-  const fornecedor = document.getElementById('nf-fornecedor').value.trim();
-  const categoria = document.getElementById('nf-categoria').value;
-  const responsavel = document.getElementById('nf-responsavel').value;
-  const observacoes = document.getElementById('nf-observacoes').value.trim();
-
-  if (!numero || !data || !fornecedor || itensTemp.length === 0) {
-    notify('❌ Preencha NF, data, fornecedor e adicione itens', '#d98a7c');
-    return;
-  }
-
-  const total_nf = itensTemp.reduce((s, i) => s + i.total, 0);
-
-  const nf = {
-    id: Date.now(),
-    numero,
-    serie,
-    data,
-    fornecedor,
-    categoria,
-    responsavel,
-    observacoes,
-    itens: [...itensTemp],
-    total_nf,
-    foto: fotoNFTemp || null,
-    criado_em: new Date().toISOString()
-  };
-
-  notasFiscais.push(nf);
-  try {
-    S.set('notasfiscais', notasFiscais);
-  } catch (err) {
-    notasFiscais.pop();
-    notify('❌ Sem espaço para salvar (foto muito pesada?). Tente sem foto ou apague notas antigas.', '#d98a7c');
-    return;
-  }
-  custosEnviarParaSupabase(nf);
-
-  document.getElementById('nf-numero').value = '';
-  document.getElementById('nf-serie').value = '';
-  document.getElementById('nf-data').value = '';
-  document.getElementById('nf-fornecedor').value = '';
-  document.getElementById('nf-observacoes').value = '';
-  itensTemp = [];
-  fotoNFTemp = null;
-  renderFotoNFPreview();
-  renderItensTemp();
-  atualizarTotalNF();
-
-  notify('✅ Nota Fiscal salva com sucesso!', '#7cb083');
-}
-
-// Grava a nota fiscal e seus itens no Supabase da obra ativa. Notas não têm
-// edição depois de criadas (só criar/deletar), então os itens são inseridos
-// uma única vez, junto com a NF.
-async function custosEnviarParaSupabase(nf) {
-  try {
-    const cli = B3Obras.cliente();
-    const { error: erroNf } = await cli.from('custos_notas_fiscais').upsert({
-      id: String(nf.id),
-      numero_nf: nf.numero,
-      serie: nf.serie || null,
-      data_emissao: nf.data || null,
-      fornecedor: nf.fornecedor,
-      categoria: nf.categoria,
-      responsavel: nf.responsavel,
-      observacoes: nf.observacoes || null,
-      total_nf: nf.total_nf,
-      foto_url: nf.foto || null
-    });
-    if (erroNf) throw erroNf;
-    if (nf.itens && nf.itens.length) {
-      const { error: erroItens } = await cli.from('custos_itens_nf').upsert(nf.itens.map(i => ({
-        id: String(i.id),
-        nf_id: String(nf.id),
-        descricao: i.descricao,
-        quantidade: i.quantidade,
-        preco_unitario: i.preco_unitario,
-        total: i.total
-      })));
-      if (erroItens) throw erroItens;
-    }
-    nf._sincronizado = true;
-    S.set('notasfiscais', notasFiscais);
-  } catch (err) {
-    console.warn('Custos: não consegui salvar no Supabase agora — fica pendente:', err.message);
-  }
-}
-
-// Busca as notas fiscais do Supabase: acrescenta o que só existe lá (outro
-// aparelho lançou) e remove localmente quem já esteve sincronizado mas foi
-// apagado no servidor.
-async function custosCarregarDoServidor() {
-  try {
-    const cli = B3Obras.cliente();
-    const [{ data: nfs, error: erroNfs }, { data: itens, error: erroItens }] = await Promise.all([
-      cli.from('custos_notas_fiscais').select('*'),
-      cli.from('custos_itens_nf').select('*')
-    ]);
-    if (erroNfs) throw erroNfs;
-    if (erroItens) throw erroItens;
-
-    const itensPorNf = new Map();
-    (itens || []).forEach(i => {
-      const lista = itensPorNf.get(i.nf_id) || [];
-      lista.push({ id: i.id, descricao: i.descricao, quantidade: Number(i.quantidade), preco_unitario: Number(i.preco_unitario), total: Number(i.total) });
-      itensPorNf.set(i.nf_id, lista);
-    });
-
-    const idsServidor = new Set((nfs || []).map(n => String(n.id)));
-    const porId = new Map(notasFiscais.map(n => [String(n.id), n]));
-    let adicionadas = 0, removidas = 0;
-    (nfs || []).forEach(n => {
-      const chave = String(n.id);
-      if (porId.has(chave)) { porId.get(chave)._sincronizado = true; return; }
-      notasFiscais.push({
-        id: n.id, numero: n.numero_nf, serie: n.serie || '', data: n.data_emissao || '',
-        fornecedor: n.fornecedor, categoria: n.categoria, responsavel: n.responsavel,
-        observacoes: n.observacoes || '', itens: itensPorNf.get(n.id) || [],
-        total_nf: Number(n.total_nf) || 0, foto: n.foto_url || null,
-        criado_em: n.criado_em, _sincronizado: true
-      });
-      porId.set(chave, notasFiscais[notasFiscais.length - 1]);
-      adicionadas++;
-    });
-
-    notasFiscais = notasFiscais.filter(n => {
-      if (n._sincronizado && !idsServidor.has(String(n.id))) { removidas++; return false; }
-      return true;
-    });
-
-    if (adicionadas > 0 || removidas > 0) {
-      S.set('notasfiscais', notasFiscais);
-      renderListar();
-      renderResumo();
-    }
-
-    for (const n of notasFiscais.filter(x => !x._sincronizado)) {
-      await custosEnviarParaSupabase(n);
-    }
-  } catch (err) {
-    console.warn('Custos: não foi possível buscar do Supabase:', err.message);
-  }
-}
-
-function renderListar() {
-  const categoria = document.getElementById('filtro-categoria').value;
-  const periodo = document.getElementById('filtro-periodo').value;
-  const hoje = new Date();
-  const mesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  const semanaPassa = new Date(hoje.getTime() - 7*24*60*60*1000);
-
-  let filtradas = notasFiscais.filter(nf => {
-    if (categoria && nf.categoria !== categoria) return false;
-    const dataNF = new Date(nf.data);
-    if (periodo === 'mes' && dataNF < mesAtual) return false;
-    if (periodo === 'semana' && dataNF < semanaPassa) return false;
-    return true;
-  }).sort((a, b) => new Date(b.data) - new Date(a.data));
-
-  const html = filtradas.length ? filtradas.map(nf => `
-    <div class="card">
-      <div class="card-title">NF ${nf.numero}${nf.serie ? '/' + nf.serie : ''} - ${nf.fornecedor}</div>
-      <div class="card-desc">${new Date(nf.data).toLocaleDateString('pt-BR')}</div>
-      <div class="card-meta">
-        <span class="badge badge-blue">${nf.categoria}</span>
-        <span class="badge badge-green">${nf.responsavel}</span>
-      </div>
-      ${nf.foto ? `
-      <a href="${nf.foto}" target="_blank" rel="noopener">
-        <img src="${nf.foto}" alt="Foto da nota"
-          style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1.5px solid var(--line);margin-top:8px;display:block"/>
-      </a>` : ''}
-      <div style="margin-top:8px;font-size:12px;color:var(--ink)">
-        <strong>${nf.itens.length} item(ns):</strong><br>
-        ${nf.itens.map(i => `• ${i.descricao} (${i.quantidade} × R$ ${i.preco_unitario.toFixed(2)})`).join('<br>')}
-      </div>
-      <div class="card-footer">
-        <span>${formatarMoeda(nf.total_nf)}</span>
-        <button onclick="deletarNF(${nf.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-weight:700">🗑️ DELETAR</button>
-      </div>
-    </div>
-  `).join('') : '<p style="color:var(--ink)">Nenhuma nota fiscal</p>';
-
-  document.getElementById('lista-nfs').innerHTML = html;
-}
-
-function renderResumo() {
-  const total = notasFiscais.reduce((s, nf) => s + nf.total_nf, 0);
-  document.getElementById('total-geral').textContent = formatarMoeda(total);
-
-  const porCategoria = {};
-  const porFornecedor = {};
-
-  notasFiscais.forEach(nf => {
-    porCategoria[nf.categoria] = (porCategoria[nf.categoria] || 0) + nf.total_nf;
-    porFornecedor[nf.fornecedor] = (porFornecedor[nf.fornecedor] || 0) + nf.total_nf;
-  });
-
-  const catHtml = Object.entries(porCategoria)
-    .sort((a, b) => b[1] - a[1])
-    .map(([cat, valor]) => `
-      <div class="stat-box">
-        <div class="stat-label">${cat}</div>
-        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink)">${formatarMoeda(valor)}</div>
-        <div style="font-size:11px;color:var(--ink);margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
-      </div>
-    `).join('');
-
-  const fornHtml = '<div style="margin-top:20px"><div class="sec-title">Top Fornecedores</div>' +
-    Object.entries(porFornecedor)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([forn, valor]) => `
-      <div class="stat-box">
-        <div class="stat-label">${forn}</div>
-        <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--ink)">${formatarMoeda(valor)}</div>
-      </div>
-    `).join('') + '</div>';
-
-  document.getElementById('resumo-categorias').innerHTML = catHtml;
-  document.getElementById('resumo-fornecedores').innerHTML = fornHtml;
-}
-
-function deletarNF(id) {
-  if (confirm('Deletar esta nota fiscal?')) {
-    notasFiscais = notasFiscais.filter(nf => nf.id !== id);
-    S.set('notasfiscais', notasFiscais);
-    renderListar();
-    renderResumo();
-    // custos_itens_nf apaga junto por causa do ON DELETE CASCADE.
-    B3Obras.cliente().from('custos_notas_fiscais').delete().eq('id', String(id))
-      .then(({ error }) => { if (error) console.warn('Custos: não foi possível remover no Supabase:', error.message); });
-  }
-}
-
-function atualizarSelectsCategorias() {
-  [document.getElementById('nf-categoria'), document.getElementById('filtro-categoria')].forEach(sel => {
-    const val = sel.value;
-    sel.innerHTML = '<option value="">Todas</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
-    sel.value = val;
-  });
-}
-
-function atualizarSelectsResponsaveis() {
-  document.getElementById('nf-responsavel').innerHTML = responsaveis.map(r => `<option value="${r}">${r}</option>`).join('');
-}
-
-function abrir(tab, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  el.classList.add('active');
-
-  if (tab === 'listar') renderListar();
-  else if (tab === 'resumo') renderResumo();
-}
-
-function abrirConfig() {
-  document.getElementById('cfg-obra').value = config.obra;
-  document.getElementById('cfg-responsavel').value = config.responsavel;
-  document.getElementById('modal-config').classList.add('open');
-}
-
-function fecharConfig() {
-  document.getElementById('modal-config').classList.remove('open');
-}
-
-function salvarConfig() {
-  config.obra = document.getElementById('cfg-obra').value;
-  config.responsavel = document.getElementById('cfg-responsavel').value;
-  S.set('config', config);
-  fecharConfig();
-  notify('✅ Configurações salvas!');
-}
-
-// Init
-window.addEventListener('load', () => {
+function _gravarEntrada(x) {
+  const v = id => document.getElementById(id).value.trim();
+  const d = porIdCat(v('f-desc'));
+  const livre = v('f-desc-livre');
+  const base = (d ? d.nome : x.sub.nome);
+  const preco = document.getElementById('f-preco').value === '' ? null : parseFloat(document.getElementById('f-preco').value);
   const agora = new Date();
-  document.getElementById('hdr-date').textContent = agora.toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'});
-  document.getElementById('nf-data').valueAsDate = agora;
-  atualizarSelectsCategorias();
-  atualizarSelectsResponsaveis();
-  custosCarregarDoServidor();
+  const e = {
+    id: novoId('e'), recebido_em: agora.toISOString(), data_recebimento: isoLocal(agora),
+    numero_nf: x.nf, data_emissao: x.emissao, fornecedor: x.forn,
+    categoria: x.cat.nome, subcategoria: x.sub.nome, descricao: livre ? base + ' – ' + livre : base,
+    unidade: v('f-un'), quantidade: x.qtd, preco_unitario: preco, total: preco == null ? null : +(preco * x.qtd).toFixed(2),
+    responsavel: x.resp, placa: v('f-placa'), observacoes: v('f-obs'), mede_por: x.sub.mede_por || 'unidade',
+    n_fotos: form.fotos.length, status: 'ativo', _sinc: false
+  };
+  entradas.push(e);
+  if (form.fotos.length) fotosLocais[e.id] = form.fotos.slice();
+  try { S.set('entradas', entradas); S.set('fotos', fotosLocais); }
+  catch (err) {
+    delete fotosLocais[e.id]; e.n_fotos = 0;
+    try { S.set('fotos', fotosLocais); S.set('entradas', entradas); notify('⚠️ Sem espaço para a foto — lançamento salvo sem ela', 'var(--yellow)'); } catch (e2) { entradas.pop(); return notify('❌ Sem espaço no aparelho', 'var(--red)'); }
+  }
+  S.set('ultimo_resp', x.resp);
+  enviarEntrada(e);
+  ['f-qtd', 'f-nf', 'f-preco', 'f-desc-livre', 'f-placa', 'f-obs'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-emissao').value = hojeISO();
+  form.fotos = [];
+  renderEntrada();
+  notify('✅ Entrada registrada — já está na planilha');
+}
+
+// ---------- períodos ----------
+const PERIODOS = [['hoje', 'Hoje'], ['ontem', 'Ontem'], ['semana', 'Semana'], ['mes', 'Mês'], ['data', '📅']];
+function addDias(iso, n) { const [a, m, d] = iso.split('-').map(Number); return isoLocal(new Date(a, m - 1, d + n)); }
+function faixa(p, dataSel) {
+  const h = hojeISO();
+  if (p === 'hoje') return [h, h];
+  if (p === 'ontem') { const o = addDias(h, -1); return [o, o]; }
+  if (p === 'data') { const d = dataSel || h; return [d, d]; }
+  const [a, m, d] = h.split('-').map(Number);
+  if (p === 'semana') { const dt = new Date(a, m - 1, d); const dow = (dt.getDay() + 6) % 7; return [isoLocal(new Date(a, m - 1, d - dow)), isoLocal(new Date(a, m - 1, d - dow + 6))]; }
+  return [isoLocal(new Date(a, m - 1, 1)), isoLocal(new Date(a, m, 0))];
+}
+function faixaAnterior(p, dataSel) {
+  const [de, ate] = faixa(p, dataSel);
+  if (p === 'mes') { const [a, m] = de.split('-').map(Number); return [isoLocal(new Date(a, m - 2, 1)), isoLocal(new Date(a, m - 1, 0))]; }
+  if (p === 'semana') return [addDias(de, -7), addDias(ate, -7)];
+  return [addDias(de, -1), addDias(ate, -1)];
+}
+const noPeriodo = (e, f) => e.data_recebimento >= f[0] && e.data_recebimento <= f[1];
+function chipsPeriodo(tela, alvo, fn) {
+  const st = perEntrada[tela];
+  document.getElementById(alvo).innerHTML = PERIODOS.map(([k, t]) => `<button class="chip${st.p === k ? ' on' : ''}" onclick="setPeriodo('${tela}','${k}')">${t}</button>`).join('') +
+    (st.p === 'data' ? `<input type="date" value="${st.d || hojeISO()}" onchange="setData('${tela}',this.value)"/>` : '');
+}
+function setPeriodo(tela, p) { perEntrada[tela].p = p; if (p === 'data' && !perEntrada[tela].d) perEntrada[tela].d = hojeISO(); ({ planilha: renderPlanilha, resumo: renderResumo, valores: renderValores })[tela](); }
+function setData(tela, d) { perEntrada[tela].d = d; ({ planilha: renderPlanilha, resumo: renderResumo, valores: renderValores })[tela](); }
+const doPeriodo = (tela, incluirCanc) => { const st = perEntrada[tela], f = faixa(st.p, st.d); return entradas.filter(e => noPeriodo(e, f) && (incluirCanc || e.status !== 'cancelado')); };
+
+// ---------- PLANILHA ----------
+const COLS = ['Hora', 'Nº nota', 'Emissão', 'Fornecedor', 'Categoria', 'Subcategoria', 'Descrição da nota', 'Un.', 'Qtde', 'Preço unit.', 'Total', 'Responsável'];
+function ordenarCronologico(l) { return l.slice().sort((a, b) => String(a.recebido_em).localeCompare(String(b.recebido_em)) || String(a.id).localeCompare(String(b.id))); }
+function linhasPlanilha() {
+  let l = doPeriodo('planilha', document.getElementById('p-canc') && document.getElementById('p-canc').checked);
+  const c = document.getElementById('p-cat') && document.getElementById('p-cat').value;
+  const f = document.getElementById('p-forn') && document.getElementById('p-forn').value;
+  const b = ((document.getElementById('p-busca') || {}).value || '').trim().toLowerCase();
+  if (c) l = l.filter(e => e.categoria === c);
+  if (f) l = l.filter(e => e.fornecedor === f);
+  if (b) l = l.filter(e => String(e.numero_nf).toLowerCase().includes(b));
+  return ordenarCronologico(l);
+}
+function renderPlanilha() {
+  chipsPeriodo('planilha', 'p-per');
+  const sc = document.getElementById('p-cat'), sf = document.getElementById('p-forn');
+  const vc = sc.value, vf = sf.value;
+  const base = doPeriodo('planilha', true);
+  sc.innerHTML = '<option value="">Todas as categorias</option>' + [...new Set(base.map(e => e.categoria))].sort(cmp).map(c => `<option${c === vc ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  sf.innerHTML = '<option value="">Todos os fornecedores</option>' + [...new Set(base.map(e => e.fornecedor))].sort(cmp).map(c => `<option${c === vf ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  const l = linhasPlanilha();
+  const ativas = l.filter(e => e.status !== 'cancelado');
+  const total = ativas.reduce((t, e) => t + (e.total || 0), 0), semValor = ativas.filter(e => e.total == null).length;
+  document.getElementById('tbl').innerHTML = `<thead><tr>${COLS.map((h, i) => `<th class="${i === 0 ? 'c1' : ''}${[8, 9, 10].includes(i) ? ' r' : ''}">${h}</th>`).join('')}</tr></thead><tbody>` +
+    (l.length ? l.map(e => `<tr class="${e.status === 'cancelado' ? 'cancel' : ''}" onclick="abrirDetalhe('${e.id}')">
+      <td class="c1">${fmtHora(e.recebido_em)}</td><td>${esc(e.numero_nf)}</td><td>${fmtData(e.data_emissao)}</td><td>${esc(e.fornecedor)}</td><td>${esc(e.categoria)}</td><td>${esc(e.subcategoria)}</td>
+      <td>${esc(e.descricao)}</td><td>${esc(e.unidade)}</td><td class="r">${fmtQtd(e.quantidade)}</td>
+      <td class="r${e.preco_unitario == null ? ' sv' : ''}">${e.preco_unitario == null ? '—' : fmtMoeda(e.preco_unitario).replace('R$ ', '')}</td>
+      <td class="r${e.total == null ? ' sv' : ''}">${e.total == null ? '—' : fmtMoeda(e.total).replace('R$ ', '')}</td><td>${esc(e.responsavel)}</td></tr>`).join('')
+      : `<tr><td colspan="12" style="text-align:center;color:#98a2b3;cursor:default;padding:18px">Nenhuma entrada neste período.</td></tr>`) +
+    (l.length ? `<tr class="tot"><td colspan="10" style="text-align:right">TOTAL LANÇADO${semValor ? ' (sem valor: ' + semValor + ')' : ''}</td><td class="r">${fmtMoeda(total).replace('R$ ', 'R$ ')}</td><td></td></tr>` : '') + '</tbody>';
+  document.getElementById('p-tot').innerHTML = `<b>${ativas.length} lançamento${ativas.length === 1 ? '' : 's'}</b> · lançado ${fmtMoeda(total)}${semValor ? ' · <span class="tag">' + semValor + ' sem valor</span>' : ''}`;
+}
+
+function abrirDetalhe(id) {
+  const e = entradas.find(x => x.id === id); if (!e) return;
+  const canc = e.status === 'cancelado';
+  abrirSheet(`<h3>${esc(e.descricao)}${canc ? ' <span class="tag">cancelado</span>' : ''}</h3>
+    <div class="sm">Chegou ${fmtDataCompleta(e.data_recebimento)} às ${fmtHora(e.recebido_em)} · recebido por ${esc(e.responsavel)}</div>
+    <div style="margin-top:8px">
+    ${[['Nota', e.numero_nf], ['Emissão', fmtDataCompleta(e.data_emissao)], ['Fornecedor', e.fornecedor], ['Categoria / sub', e.categoria + ' ▸ ' + e.subcategoria],
+       ['Quantidade', fmtQtd(e.quantidade) + ' ' + e.unidade], ['Preço unitário', e.preco_unitario == null ? 'sem valor' : fmtMoeda(e.preco_unitario)], ['Total', e.total == null ? 'sem valor' : fmtMoeda(e.total)],
+       ['Placa', e.placa || '—'], ['Observação', e.observacoes || '—']].map(([k, v]) => `<div class="kv"><span>${k}</span><b>${esc(v)}</b></div>`).join('')}
+    ${canc ? `<div class="kv"><span>Motivo</span><b>${esc(e.cancelado_motivo || '—')}</b></div>` : ''}</div>
+    <div id="det-fotos"></div>
+    ${canc ? '' : `<div class="lb">Completar / corrigir valor</div><div class="row2"><input id="det-preco" type="number" inputmode="decimal" step="any" placeholder="Preço unit. R$" value="${e.preco_unitario == null ? '' : e.preco_unitario}"/><button class="btn btn-dark" onclick="completarValor('${e.id}')">SALVAR VALOR</button></div>
+    <div class="lb">Cancelar lançamento</div><div class="row2"><input id="det-motivo" placeholder="Motivo (obrigatório)"/><button class="btn btn-danger" onclick="cancelarEntrada('${e.id}')">CANCELAR</button></div>`}
+    <button class="btn btn-light btn-full" onclick="fecharSheet()">Fechar</button>`);
+  carregarFotos(e);
+}
+async function carregarFotos(e) {
+  const alvo = document.getElementById('det-fotos'); if (!alvo || !(e.n_fotos > 0)) return;
+  let fotos = fotosLocais[e.id];
+  if (!fotos) {
+    alvo.innerHTML = '<div class="sm" style="margin-top:6px">Carregando fotos…</div>';
+    try {
+      const { data, error } = await B3Obras.cliente().from('custos_entradas_fotos').select('*').eq('entrada_id', e.id);
+      if (error) throw error;
+      fotos = (data || []).sort((a, b) => (a.ordem || 0) - (b.ordem || 0)).map(f => f.foto);
+    } catch (err) { alvo.innerHTML = '<div class="sm" style="margin-top:6px">Fotos indisponíveis agora (sem conexão).</div>'; return; }
+  }
+  alvo.innerHTML = fotos.map(f => `<img class="big" src="${f}" alt="foto da nota">`).join('');
+}
+function completarValor(id) {
+  const e = entradas.find(x => x.id === id); const p = parseFloat(document.getElementById('det-preco').value);
+  if (!(p >= 0)) return notify('Informe o preço unitário', 'var(--red)');
+  e.preco_unitario = p; e.total = +(p * e.quantidade).toFixed(2); marcarSujo(e);
+  fecharSheet(); atualizarTelas(); notify('✅ Valor registrado');
+}
+function cancelarEntrada(id) {
+  const e = entradas.find(x => x.id === id); const m = document.getElementById('det-motivo').value.trim();
+  if (!m) return notify('Informe o motivo do cancelamento', 'var(--red)');
+  e.status = 'cancelado'; e.cancelado_motivo = m; marcarSujo(e);
+  fecharSheet(); atualizarTelas(); notify('Lançamento cancelado (fica registrado)');
+}
+function marcarSujo(e) { e._sinc = false; e.atualizado_em = new Date().toISOString(); S.set('entradas', entradas); enviarEntrada(e); }
+function atualizarTelas() {
+  const a = document.querySelector('.page.active'); if (!a) return;
+  ({ 'page-entrada': renderEntrada, 'page-planilha': renderPlanilha, 'page-resumo': renderResumo, 'page-valores': renderValores, 'page-cadastro': renderCadastro })[a.id]();
+}
+
+// CSV (Excel pt-BR: ponto e vírgula, UTF-8 com BOM)
+function gerarCsv(l) {
+  const cab = ['Recebido em', 'Número da nota', 'Data de Emissão', 'Fornecedor', 'Categoria', 'Subcategoria', 'Descrição da nota', 'Unidade', 'Quantidade', 'Preço unitário', 'Total', 'Responsável', 'Placa', 'Observações', 'Status'];
+  const cel = v => { const t = String(v == null ? '' : v); return /[;"\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const num = v => v == null ? '' : String(v).replace('.', ',');
+  const linhas = (l || linhasPlanilha()).map(e => [fmtDataCompleta(e.data_recebimento) + ' ' + fmtHora(e.recebido_em), e.numero_nf, fmtDataCompleta(e.data_emissao), e.fornecedor, e.categoria, e.subcategoria, e.descricao, e.unidade,
+    num(e.quantidade), num(e.preco_unitario), num(e.total), e.responsavel, e.placa || '', e.observacoes || '', e.status === 'cancelado' ? 'cancelado' : 'ativo'].map(cel).join(';'));
+  return '﻿' + [cab.join(';')].concat(linhas).join('\r\n');
+}
+function baixarCsv() {
+  const st = perEntrada.planilha, f = faixa(st.p, st.d);
+  const blob = new Blob([gerarCsv()], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'entrada-materiais_' + f[0] + (f[1] !== f[0] ? '_a_' + f[1] : '') + '.csv';
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+// ---------- RESUMOS ----------
+// agrega quantidade por categoria ▸ subcategoria (e unidade); nunca soma unidades diferentes
+function agregarQtd(l) {
+  const mapa = new Map();
+  l.forEach(e => {
+    const k = e.categoria + '|' + e.subcategoria;
+    const g = mapa.get(k) || { cat: e.categoria, sub: e.subcategoria, un: new Map(), nfs: new Set(), n: 0, mede: e.mede_por || 'unidade', desc: new Map() };
+    g.un.set(e.unidade, (g.un.get(e.unidade) || 0) + (Number(e.quantidade) || 0));
+    g.nfs.add(String(e.numero_nf)); g.n++; mapa.set(k, g);
+  });
+  return [...mapa.values()].map(g => Object.assign(g, { qtdTxt: [...g.un.entries()].map(([u, q]) => fmtQtd(q) + ' ' + u).join(' + ') })).sort((a, b) => cmp(a.cat, b.cat) || cmp(a.sub, b.sub));
+}
+function agregarDesc(l) {
+  const mapa = new Map();
+  l.forEach(e => {
+    const k = e.categoria + '|' + e.descricao.toLowerCase() + '|' + e.unidade;
+    const g = mapa.get(k) || { cat: e.categoria, desc: e.descricao, un: e.unidade, q: 0, nfs: new Set(), n: 0 };
+    g.q += Number(e.quantidade) || 0; g.nfs.add(String(e.numero_nf)); g.n++; mapa.set(k, g);
+  });
+  return [...mapa.values()].sort((a, b) => cmp(a.cat, b.cat) || cmp(a.desc, b.desc));
+}
+const rotCont = (g) => { const r = ROT_MEDIDA[g.mede] || ROT_MEDIDA.unidade; return g.n + ' ' + (g.n === 1 ? r[0] : r[1]); };
+const listaNfs = s => { const a = [...s]; return 'NF ' + a.slice(0, 4).join(', ') + (a.length > 4 ? ' +' + (a.length - 4) : ''); };
+function setVisaoResumo(v) { visaoResumo = v; renderResumo(); }
+function renderResumo() {
+  chipsPeriodo('resumo', 'r-per');
+  document.getElementById('r-sg1').className = visaoResumo === 'cat' ? 'on' : '';
+  document.getElementById('r-sg2').className = visaoResumo === 'desc' ? 'on' : '';
+  const l = doPeriodo('resumo');
+  let html = '';
+  if (!l.length) html = '<div class="card sm" style="text-align:center">Nenhuma entrada neste período.</div>';
+  else if (visaoResumo === 'cat') {
+    const ag = agregarQtd(l), porCat = new Map();
+    ag.forEach(g => { (porCat.get(g.cat) || porCat.set(g.cat, []).get(g.cat)).push(g); });
+    const maxPorUn = {};
+    ag.forEach(g => g.un.forEach((q, u) => { maxPorUn[u] = Math.max(maxPorUn[u] || 0, q); }));
+    html = [...porCat.entries()].map(([c, gs]) => {
+      const tot = new Map(); gs.forEach(g => g.un.forEach((q, u) => tot.set(u, (tot.get(u) || 0) + q)));
+      return `<div class="card"><h4>${esc(c)} <span>${[...tot.entries()].map(([u, q]) => fmtQtd(q) + ' ' + u).join(' · ')}</span></h4>` +
+        gs.map(g => { const [u, q] = [...g.un.entries()][0]; return `<div class="li"><span>${esc(g.sub)}<i>${rotCont(g)} · ${esc(listaNfs(g.nfs))}</i><div class="bar2"><u style="width:${Math.max(6, Math.round(100 * q / (maxPorUn[u] || 1)))}%"></u></div></span><b>${g.qtdTxt}</b></div>`; }).join('') + '</div>';
+    }).join('');
+  } else {
+    html = '<div class="card">' + agregarDesc(l).map(g => `<div class="li"><span>${esc(g.desc)}<i>${esc(g.cat)} · ${g.n} lançamento${g.n === 1 ? '' : 's'} · ${esc(listaNfs(g.nfs))}</i></span><b>${fmtQtd(g.q)} ${esc(g.un)}</b></div>`).join('') + '</div>';
+  }
+  document.getElementById('r-corpo').innerHTML = html;
+}
+
+function renderValores() {
+  chipsPeriodo('valores', 'v-per');
+  const st = perEntrada.valores, f = faixa(st.p, st.d), fa = faixaAnterior(st.p, st.d);
+  const l = doPeriodo('valores'), ant = entradas.filter(e => noPeriodo(e, fa) && e.status !== 'cancelado');
+  const com = l.filter(e => e.total != null), sem = l.filter(e => e.total == null);
+  const total = com.reduce((t, e) => t + e.total, 0), totAnt = ant.reduce((t, e) => t + (e.total || 0), 0);
+  let html = `<div class="kpi"><div class="card"><b>${fmtMoeda(total)}</b><small>lançado</small></div><div class="card"><b>${new Set(l.map(e => e.numero_nf + '|' + e.fornecedor)).size}</b><small>notas</small></div>
+    <div class="card" style="${sem.length ? 'border-color:#f3c6c2;cursor:pointer' : ''}" ${sem.length ? 'onclick="completarPendentes()"' : ''}><b style="${sem.length ? 'color:var(--red)' : ''}">${sem.length}</b><small>sem valor${sem.length ? ' ▸ completar' : ''}</small></div></div>`;
+  if (!l.length) html += '<div class="card sm" style="text-align:center">Nenhuma entrada neste período.</div>';
+  else {
+    const porCat = new Map();
+    l.forEach(e => { const c = porCat.get(e.categoria) || porCat.set(e.categoria, []).get(e.categoria); c.push(e); });
+    html += [...porCat.entries()].sort((a, b) => cmp(a[0], b[0])).map(([c, es]) => {
+      const tc = es.reduce((t, e) => t + (e.total || 0), 0), pct = total ? Math.round(100 * tc / total) : 0;
+      const porSub = new Map(); es.forEach(e => { const s = porSub.get(e.subcategoria) || porSub.set(e.subcategoria, []).get(e.subcategoria); s.push(e); });
+      return `<div class="card"><h4>${esc(c)} <span>${fmtMoeda(tc)}${total ? ' · ' + pct + '%' : ''}</span></h4>` +
+        [...porSub.entries()].sort((a, b) => cmp(a[0], b[0])).map(([s, ee]) => {
+          const ts = ee.reduce((t, e) => t + (e.total || 0), 0);
+          const val = ee.filter(e => e.total != null && e.unidade === ee[0].unidade), q = val.reduce((t, e) => t + e.quantidade, 0);
+          const medio = val.length && q ? ' · médio ' + fmtMoeda(val.reduce((t, e) => t + e.total, 0) / q) + '/' + ee[0].unidade : '';
+          const semS = ee.filter(e => e.total == null).length;
+          return `<div class="li"><span>${esc(s)}<i>${agregarQtd(ee)[0].qtdTxt}${medio}${semS ? ' · ' + semS + ' sem valor' : ''}</i></span><b ${ts ? '' : 'style="color:var(--red)"'}>${ts ? fmtMoeda(ts) : 'sem valor'}</b></div>`;
+        }).join('') + '</div>';
+    }).join('');
+    const porF = new Map(); com.forEach(e => porF.set(e.fornecedor, (porF.get(e.fornecedor) || 0) + e.total));
+    if (porF.size) html += '<div class="card"><h4>Por fornecedor</h4>' + [...porF.entries()].sort((a, b) => b[1] - a[1]).map(([n, v]) => `<div class="li"><span>${esc(n)}</span><b>${fmtMoeda(v)}</b></div>`).join('') + '</div>';
+  }
+  const rotAnt = { hoje: 'ontem', ontem: 'anteontem', semana: 'semana anterior', mes: 'mês anterior', data: 'dia anterior' }[st.p];
+  html += `<div class="sm" style="text-align:center">Período anterior (${rotAnt}): ${fmtMoeda(totAnt)} · valores só dos lançamentos com preço</div>`;
+  document.getElementById('v-corpo').innerHTML = html;
+}
+function completarPendentes() { perEntrada.planilha = { p: perEntrada.valores.p, d: perEntrada.valores.d }; abrir('planilha'); const b = document.getElementById('p-busca'); notify('Toque nas linhas com “—” para completar o valor'); }
+
+// ---------- CADASTRO ----------
+const ABAS_CAD = [['materiais', 'Materiais'], ['descricoes', 'Descrições NF'], ['fornecedores', 'Fornec.'], ['porteiros', 'Porteiros'], ['antigas', 'Notas antigas']];
+function setAbaCad(a) { abaCadastro = a; renderCadastro(); }
+function renderCadastro() {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('c-seg').innerHTML = ABAS_CAD.map(([k, t]) => `<div class="${abaCadastro === k ? 'on' : ''}" onclick="setAbaCad('${k}')">${t}</div>`).join('');
+  const c = document.getElementById('c-corpo');
+  if (abaCadastro === 'materiais') {
+    c.innerHTML = cat_('categoria').map(cat => `<div class="card ${cat.ativo ? '' : 'off-row'}"><h4>${esc(cat.nome)} <span><button class="sw${cat.ativo ? '' : ' off'}" onclick="alternarAtivo('${cat.id}')" title="Ativar/desativar"></button> <button class="ic" onclick="renomear('${cat.id}')">✎</button></span></h4>` +
+      subsDe(cat.id).map(s => `<div class="li ${s.ativo ? '' : 'off-row'}"><span>${esc(s.nome)}<i>unidade padrão ${esc(s.unidade || '—')} · por ${esc((MEDE_POR[s.mede_por] || 'unidade').toLowerCase())}</i></span><span><button class="ic" onclick="editarSub('${s.id}')">✎</button><button class="ic" onclick="alternarAtivo('${s.id}')" title="${s.ativo ? 'Desativar' : 'Reativar'}">${s.ativo ? '🗑' : '♻️'}</button></span></div>`).join('') +
+      `<div class="add" onclick="novaSubRapida('${cat.id}')">＋ Subcategoria em ${esc(cat.nome)}</div></div>`).join('') +
+      '<div class="add" onclick="novaCategoriaRapida()">＋ Nova categoria</div><div class="sm" style="margin-top:8px">🗑 só desativa — o histórico de entradas é mantido.</div>';
+  } else if (abaCadastro === 'descricoes') {
+    const ds = cat_('descricao');
+    c.innerHTML = '<div class="card">' + (ds.length ? ds.map(d => { const s = porIdCat(d.pai_id), ca = s && porIdCat(s.pai_id); return `<div class="li ${d.ativo ? '' : 'off-row'}"><span>${esc(d.nome)}<i>${esc(ca ? ca.nome : '')} ▸ ${esc(s ? s.nome : '')} · ${esc(d.unidade || '')}</i></span><span><button class="ic" onclick="renomear('${d.id}')">✎</button><button class="ic" onclick="alternarAtivo('${d.id}')">${d.ativo ? '🗑' : '♻️'}</button></span></div>`; }).join('') : '<div class="sm">Nenhuma descrição cadastrada.</div>') + '</div><div class="add" onclick="novaDescricaoCad()">＋ Nova descrição de nota</div>';
+  } else if (abaCadastro === 'fornecedores' || abaCadastro === 'porteiros') {
+    const t = abaCadastro === 'fornecedores' ? 'fornecedor' : 'porteiro';
+    c.innerHTML = '<div class="card">' + (cat_(t).map(f => `<div class="li ${f.ativo ? '' : 'off-row'}"><span>${esc(f.nome)}</span><span><button class="ic" onclick="renomear('${f.id}')">✎</button><button class="ic" onclick="alternarAtivo('${f.id}')">${f.ativo ? '🗑' : '♻️'}</button></span></div>`).join('') || '<div class="sm">Nenhum cadastrado ainda.</div>') +
+      `</div><div class="add" onclick="novoSimples('${t}')">＋ Novo ${t === 'fornecedor' ? 'fornecedor' : 'porteiro'}</div>`;
+  } else {
+    const todas = notasAntigas.concat(notasAntigasServidor.filter(n => !notasAntigas.find(x => String(x.id) === String(n.id))));
+    c.innerHTML = '<div class="sm" style="margin-bottom:8px">Notas fiscais lançadas no modelo antigo (somente consulta). <a style="color:var(--accent-ink);font-weight:700;cursor:pointer" onclick="carregarNotasAntigas()">↻ buscar no servidor</a></div>' +
+      (todas.length ? todas.sort((a, b) => String(b.data).localeCompare(String(a.data))).map(n => `<div class="card"><h4>NF ${esc(n.numero)} · ${esc(n.fornecedor)} <span>${fmtMoeda(n.total_nf)}</span></h4><div class="sm">${fmtDataCompleta(n.data)} · ${esc(n.categoria)} · ${(n.itens || []).map(i => esc(i.descricao) + ' (' + fmtQtd(i.quantidade) + ')').join(', ') || 'sem itens'}</div></div>`).join('') : '<div class="card sm" style="text-align:center">Nenhuma nota antiga neste aparelho.</div>');
+  }
+}
+function alternarAtivo(id) {
+  const r = porIdCat(id); if (!r) return;
+  r.ativo = !r.ativo; salvarCatalogo(r);
+  if (r.tipo === 'categoria' || r.tipo === 'subcategoria') catalogo.filter(x => x.pai_id === id).forEach(x => { if (x.ativo !== r.ativo && r.tipo === 'categoria' && !r.ativo) { /* mantém as subs; só some da tela de entrada */ } });
+  renderCadastro();
+}
+function renomear(id) {
+  const r = porIdCat(id); if (!r) return;
+  sheetForm('Renomear', '', [{ id: 'nome', label: 'Nome', valor: r.nome }], v => { if (String(v.nome).trim()) { r.nome = v.nome.trim(); salvarCatalogo(r); renderCadastro(); } });
+}
+function editarSub(id) {
+  const r = porIdCat(id); if (!r) return;
+  sheetForm('Editar subcategoria', '', [
+    { id: 'nome', label: 'Nome', valor: r.nome },
+    { id: 'un', label: 'Unidade padrão', tipo: 'select', valor: r.unidade || 'un', opcoes: opcoesUnidade() },
+    { id: 'mede', label: 'Mede por', tipo: 'select', valor: r.mede_por || 'unidade', opcoes: opcoesMede() }
+  ], v => { if (String(v.nome).trim()) { r.nome = v.nome.trim(); r.unidade = v.un; r.mede_por = v.mede; salvarCatalogo(r); renderCadastro(); } });
+}
+function novaDescricaoCad() {
+  const subs = cat_('subcategoria').filter(s => s.ativo);
+  if (!subs.length) return notify('Crie uma subcategoria antes', 'var(--red)');
+  sheetForm('＋ Nova descrição de nota', 'Ex.: Kit material elétrico', [
+    { id: 'sub', label: 'Subcategoria', tipo: 'select', valor: subs[0].id, opcoes: subs.map(s => ({ v: s.id, t: (porIdCat(s.pai_id) || {}).nome + ' ▸ ' + s.nome })) },
+    { id: 'nome', label: 'Descrição' },
+    { id: 'un', label: 'Unidade', tipo: 'select', valor: subs[0].unidade || 'un', opcoes: opcoesUnidade() }
+  ], v => { adicionarCatalogo('descricao', v.nome, { pai_id: v.sub, unidade: v.un }); renderCadastro(); });
+}
+function novoSimples(t) {
+  sheetForm('＋ Novo ' + t, '', [{ id: 'nome', label: 'Nome' }], v => { adicionarCatalogo(t, v.nome); renderCadastro(); });
+}
+
+// ---------- Supabase (envia quando puder; nunca perde o que está no aparelho) ----------
+const _emVoo = new Set();
+function linhaEntrada(e) {
+  return { id: e.id, recebido_em: e.recebido_em, data_recebimento: e.data_recebimento, numero_nf: e.numero_nf, data_emissao: e.data_emissao || null, fornecedor: e.fornecedor,
+    categoria: e.categoria, subcategoria: e.subcategoria, descricao: e.descricao, unidade: e.unidade, quantidade: e.quantidade, preco_unitario: e.preco_unitario, total: e.total,
+    responsavel: e.responsavel, placa: e.placa || null, observacoes: e.observacoes || null, mede_por: e.mede_por || null, n_fotos: e.n_fotos || 0,
+    status: e.status || 'ativo', cancelado_motivo: e.cancelado_motivo || null, atualizado_em: e.atualizado_em || new Date().toISOString() };
+}
+async function enviarEntrada(e) {
+  if (_emVoo.has(e.id)) return; _emVoo.add(e.id);
+  try {
+    const cli = B3Obras.cliente();
+    const { error } = await cli.from('custos_entradas').upsert(linhaEntrada(e));
+    if (error) throw error;
+    const fotos = fotosLocais[e.id];
+    if (fotos && fotos.length) {
+      const { error: ef } = await cli.from('custos_entradas_fotos').upsert(fotos.map((f, i) => ({ id: e.id + '-' + i, entrada_id: e.id, ordem: i, foto: f })));
+      if (ef) throw ef;
+      delete fotosLocais[e.id]; S.set('fotos', fotosLocais);
+    }
+    e._sinc = true; S.set('entradas', entradas);
+  } catch (err) { console.warn('Custos: entrada fica pendente de envio:', err && err.message); }
+  finally { _emVoo.delete(e.id); }
+}
+async function enviarCatalogo(r) {
+  try {
+    const { error } = await B3Obras.cliente().from('custos_catalogo').upsert({ id: r.id, tipo: r.tipo, nome: r.nome, pai_id: r.pai_id || null, unidade: r.unidade || null, mede_por: r.mede_por || null, ativo: r.ativo !== false, ordem: r.ordem || 0, atualizado_em: r.atualizado_em || new Date().toISOString() });
+    if (error) throw error;
+    r._sinc = true; S.set('catalogo', catalogo);
+  } catch (err) { console.warn('Custos: cadastro fica pendente de envio:', err && err.message); }
+}
+async function carregarDoServidor() {
+  try {
+    const cli = B3Obras.cliente();
+    const desde = addDias(hojeISO(), -120);
+    const [rc, re] = await Promise.all([cli.from('custos_catalogo').select('*'), cli.from('custos_entradas').select('*').gte('data_recebimento', desde)]);
+    if (rc.error) throw rc.error; if (re.error) throw re.error;
+    let mudou = false;
+    (rc.data || []).forEach(r => {
+      const l = catalogo.find(x => x.id === r.id);
+      if (!l) { catalogo.push({ id: r.id, tipo: r.tipo, nome: r.nome, pai_id: r.pai_id || undefined, unidade: r.unidade || undefined, mede_por: r.mede_por || undefined, ativo: r.ativo, ordem: r.ordem, _sinc: true }); mudou = true; }
+      else if (l._sinc) { Object.assign(l, { nome: r.nome, unidade: r.unidade || undefined, mede_por: r.mede_por || undefined, ativo: r.ativo, ordem: r.ordem }); }
+    });
+    (re.data || []).forEach(r => {
+      const l = entradas.find(x => x.id === r.id);
+      const lin = { id: r.id, recebido_em: r.recebido_em, data_recebimento: r.data_recebimento, numero_nf: r.numero_nf, data_emissao: r.data_emissao, fornecedor: r.fornecedor, categoria: r.categoria, subcategoria: r.subcategoria,
+        descricao: r.descricao, unidade: r.unidade, quantidade: Number(r.quantidade), preco_unitario: r.preco_unitario == null ? null : Number(r.preco_unitario), total: r.total == null ? null : Number(r.total),
+        responsavel: r.responsavel, placa: r.placa || '', observacoes: r.observacoes || '', mede_por: r.mede_por, n_fotos: r.n_fotos || 0, status: r.status, cancelado_motivo: r.cancelado_motivo, atualizado_em: r.atualizado_em, _sinc: true };
+      if (!l) { entradas.push(lin); mudou = true; } else if (l._sinc) Object.assign(l, lin);
+    });
+    S.set('catalogo', catalogo); S.set('entradas', entradas);
+    for (const r of catalogo.filter(x => !x._sinc)) await enviarCatalogo(r);
+    for (const e of entradas.filter(x => !x._sinc)) await enviarEntrada(e);
+    if (mudou) atualizarTelas();
+  } catch (err) { console.warn('Custos: não foi possível buscar do Supabase:', err && err.message); }
+}
+async function carregarNotasAntigas() {
+  try {
+    const cli = B3Obras.cliente();
+    const [a, b] = await Promise.all([cli.from('custos_notas_fiscais').select('*'), cli.from('custos_itens_nf').select('*')]);
+    if (a.error) throw a.error; if (b.error) throw b.error;
+    notasAntigasServidor = (a.data || []).map(n => ({ id: n.id, numero: n.numero_nf, data: n.data_emissao, fornecedor: n.fornecedor, categoria: n.categoria, total_nf: Number(n.total_nf) || 0,
+      itens: (b.data || []).filter(i => String(i.nf_id) === String(n.id)).map(i => ({ descricao: i.descricao, quantidade: Number(i.quantidade) })) }));
+    renderCadastro(); notify('✅ Notas antigas carregadas');
+  } catch (err) { notify('Sem conexão com o servidor agora', 'var(--red)'); }
+}
+
+// ---------- início ----------
+document.addEventListener('DOMContentLoaded', () => {
+  const d = new Date();
+  document.getElementById('hdr-date').textContent = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+  renderEntrada();
+  if (window.B3Obras) carregarDoServidor();
 });
 </script>
 </body>

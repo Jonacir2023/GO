@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="0bc4639c"</script>
+<script>/*build*/window.BUILD_ID="c420ce00"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -502,7 +502,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
         <button class="fav" data-fav="custos" onclick="alternarFavorito('custos', event)" aria-label="Favoritar Custos"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
         <div class="ico g-orange"><svg viewBox="0 0 24 24"><use href="#i-dollar"/></svg></div>
         <h3>Custos</h3>
-        <p>Orçamentos e controle</p>
+        <p>Entrada de materiais e custos</p>
         <span class="selo">Ativo</span>
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
@@ -844,12 +844,12 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 
 <!-- CUSTOS PAGE (Controle de Gastos) -->
 <div class="page" id="page-custos">
-  <iframe id="custos-iframe" src="custos.html?v=1c368997" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="custos-iframe" src="custos.html?v=2cbd1e53" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- RDO PAGE (Diário de Obras) -->
 <div class="page" id="page-rdo">
-  <iframe id="rdo-iframe" src="rdo.html?v=315dd466" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="rdo-iframe" src="rdo.html?v=96f6cde9" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- REUNIÃO PAGE (Ata de Reunião) -->
@@ -1143,7 +1143,7 @@ function switchTab(tab, el) {
 // ═══════════════════════════════════════════════════════════════
 // CASCA — hero, barra inferior e painéis (padrão visual claro)
 // ═══════════════════════════════════════════════════════════════
-const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Custos", "desc": "Orçamentos e controle", "i": "dollar", "c": "orange", "t": "CUSTOS", "s": "Controle de Notas Fiscais"}, "medicao": {"nome": "Medição", "desc": "Quantidades e avanço físico", "i": "ruler", "c": "slate", "t": "MEDIÇÕES", "s": "Quantidades e avanço físico"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "eap": {"nome": "EAP", "desc": "Estrutura analítica", "i": "layers", "c": "indigo", "t": "EAP", "s": "Estrutura analítica do projeto"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
+const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Custos", "desc": "Entrada de materiais e custos", "i": "dollar", "c": "orange", "t": "CUSTOS", "s": "Entrada de materiais"}, "medicao": {"nome": "Medição", "desc": "Quantidades e avanço físico", "i": "ruler", "c": "slate", "t": "MEDIÇÕES", "s": "Quantidades e avanço físico"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "eap": {"nome": "EAP", "desc": "Estrutura analítica", "i": "layers", "c": "indigo", "t": "EAP", "s": "Estrutura analítica do projeto"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
 const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "eap", "financeiro", "suprimentos"];
 
 function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }

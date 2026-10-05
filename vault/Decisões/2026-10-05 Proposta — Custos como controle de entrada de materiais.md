@@ -1,7 +1,7 @@
 ---
 criado: 2026-10-05
 tags: [decisao, proposta, custos, portaria]
-status: proposta — aguardando aprovação (nada implementado)
+status: aprovada e implementada em 05/10/2026 — falta aplicar sql/007 nas duas obras
 ---
 
 # Proposta — Custos vira controle de entrada de materiais (portaria)
@@ -10,7 +10,7 @@ status: proposta — aguardando aprovação (nada implementado)
 portaria e só soma dinheiro. O usuário quer: formulário **curto**, 1 item ou **kit** (nota com muitos
 itens), uso **em tempo real pela portaria**, e resumo **por quantidade, por categoria e subcategoria**
 (areia, brita, rachão, água, argila, saibro…) para controlar a entrada diária de material.
-**Nada disto foi implementado — esperando aprovação.** Mockup: 3 telas (entrada rápida, kit, resumo).
+**Aprovada pelo usuário em 05/10/2026 ("ok coloque em prática") e implementada** — ver [[Notas/Custos — Entrada de Materiais]]. Perguntas abertas resolvidas pela recomendação: Hora na planilha = sim; RDO só quantidades; Responsável = quem recebeu; "mede por" incluído; até 4 fotos; Fornecedores e Porteiros no Cadastro. Mockup: 3 telas (entrada rápida, kit, resumo).
 
 ## 1. Processo da portaria
 

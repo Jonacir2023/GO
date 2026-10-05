@@ -143,7 +143,7 @@ with sync_playwright() as p:
     check(fr.evaluate("() => document.documentElement.scrollWidth <= window.innerWidth + 1"), "RDO embutido sem rolagem horizontal")
 
     # ---- botões de ação do cabeçalho continuam acessíveis dentro da casca ----
-    for mod, arq, acao in [("custos", "custos.html", "abrirConfig()"), ("eap", "eap.html", "abrirNovaEAP()"),
+    for mod, arq, acao in [("custos", "custos.html", "abrirCadastro()"), ("eap", "eap.html", "abrirNovaEAP()"),
                            ("planejamento", "planejamento.html", "abrirNovoCronograma()"),
                            ("suprimentos", "suprimentos.html", "abrirNovaRequisicao()")]:
         page.evaluate("t => switchTab(t)", mod)
