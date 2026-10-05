@@ -36,6 +36,15 @@ for f in paginas:
         sem_detector.append(f)
 check(not sem_tema, f"toda página liga tema.css?v=hash ({sem_tema})")
 check(not sem_screen, f"tema.css só vale em tela, nunca na impressão/PDF ({sem_screen})")
+casca = open(os.path.join(RAIZ, "buildly-completo.html"), encoding="utf-8").read()
+frames_sem_versao = [m for m in re.findall(r'<iframe[^>]*\bsrc="([^"]+)"', casca) if not re.search(r'\.html\?v=[0-9a-f]{8}$', m)]
+check(not frames_sem_versao, f"iframes da casca levam ?v=hash do arquivo ({frames_sem_versao})")
+import hashlib
+velhos = []
+for arq, v in re.findall(r'<iframe[^>]*\bsrc="([A-Za-z0-9_-]+\.html)\?v=([0-9a-f]{8})"', casca):
+    if hashlib.md5(open(os.path.join(RAIZ, arq), "rb").read()).hexdigest()[:8] != v:
+        velhos.append(arq)
+check(not velhos, f"hash dos iframes está em dia — rode scripts/versionar_estaticos.py ({velhos})")
 check(not sem_detector, f"toda página tem o detector de iframe ({sem_detector})")
 
 with sync_playwright() as p:
@@ -121,7 +130,7 @@ with sync_playwright() as p:
     # ---- modo embutido: app dentro do iframe esconde o próprio cabeçalho ----
     page.evaluate("switchTab('rdo')")
     page.wait_for_timeout(800)
-    fr = next(f for f in page.frames if f.url.endswith("rdo.html"))
+    fr = next(f for f in page.frames if "/rdo.html" in f.url)
     check(fr.evaluate("() => document.documentElement.classList.contains('embutido')"), "iframe do RDO recebe html.embutido")
     check(fr.evaluate("() => { const h = document.querySelector('.header,.hdr'); return !h || getComputedStyle(h).display === 'none'; }"),
           "cabeçalho próprio do RDO fica oculto dentro da casca")
@@ -133,7 +142,7 @@ with sync_playwright() as p:
                            ("suprimentos", "suprimentos.html", "abrirNovaRequisicao()")]:
         page.evaluate("t => switchTab(t)", mod)
         page.wait_for_timeout(700)
-        f2 = next(f for f in page.frames if f.url.endswith(arq))
+        f2 = next(f for f in page.frames if ("/" + arq) in f.url)
         vis = f2.evaluate("""a => { const e = document.querySelector('[onclick="' + a + '"]'); if (!e) return false;
           const r = e.getBoundingClientRect(); return r.width > 20 && r.height > 20 && r.top >= 0 && r.right <= innerWidth + 1; }""", acao)
         check(vis, f"{mod}: botão {acao} visível dentro da casca")

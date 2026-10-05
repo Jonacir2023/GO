@@ -38,7 +38,8 @@ python3 scripts/verificar_sintaxe.py
 As suítes abrem o app num navegador sem tela e conferem regras que já custaram caro: um RDO por
 apontador por dia, responsável obrigatório, baixa lógica, sincronização sem sobrescrever, a
 lixeira do cadastro, o espaço próprio de armazenamento. **Rode antes de entregar qualquer
-mudança em HTML.**
+mudança em HTML** — e rode `python3 scripts/versionar_estaticos.py` antes do commit (põe `?v=hash` nos
+iframes da casca; sem ele o Safari serve o app velho por até 10 min e a suíte `padrao_visual` falha).
 
 `verificar_sintaxe.py` é o mais próximo de um linter que faz sentido aqui: o projeto não tem
 build, e um erro de sintaxe só apareceria quando alguém abrisse a página no celular.

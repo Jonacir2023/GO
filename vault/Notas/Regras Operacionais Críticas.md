@@ -154,9 +154,11 @@ preferências de estilo.
 ### O tema claro nunca entra na impressão/PDF — e `versionar_estaticos.py` depois de editar o tema
 
 `tema.css` é ligado com `media="screen"`. Sem isso, o PDF do RDO passou de 1 para 2 folhas
-(`test_rdo_pdf.py` pegou). Depois de qualquer edição em `tema.css` ou `supabase-config.js`, rode
-`python3 scripts/versionar_estaticos.py`: sem o `?v=hash`, o Safari mostra o tema velho por até
-10 minutos e a casca fica nova com o app de dentro velho.
+(`test_rdo_pdf.py` pegou). Depois de qualquer edição em **qualquer HTML**, `tema.css` ou `supabase-config.js`, rode
+`python3 scripts/versionar_estaticos.py`: ele põe `?v=hash` no tema, no config **e nos iframes da casca**
+(`rdo.html?v=…`). Sem isso, o Safari mostra o app velho por até 10 minutos dentro da casca nova — visto em
+05/10/2026: o usuário gerou o PDF do RDO e ainda saía a lista antiga, sem o Kanban já publicado. O
+`test_padrao_visual.py` falha se o hash de um iframe estiver desatualizado.
 
 ### Assunto da Pauta no Check-in: sempre com data de lançamento, e data é LOCAL — nunca `toISOString()`
 

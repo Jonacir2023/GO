@@ -58,6 +58,23 @@ def main():
         if novo != s:
             pagina.write_text(novo, encoding='utf-8')
             alteradas.append(pagina.name)
+    # iframes da casca: cada app ganha ?v=<hash do arquivo>. Sem isso o Safari reaproveita o
+    # rdo.html velho por até 10 min dentro da casca nova (visto em 05/10/2026: PDF do RDO
+    # sem o Kanban recém-publicado).
+    casca = RAIZ / 'buildly-completo.html'
+    if casca.exists():
+        t = casca.read_text(encoding='utf-8')
+
+        def versao_iframe(m):
+            alvo = RAIZ / m.group(2)
+            if not alvo.exists():
+                return m.group(0)
+            return f'{m.group(1)}{m.group(2)}?v={hash_de(m.group(2))}"'
+        novo = re.sub(r'(<iframe[^>]*\bsrc=")([A-Za-z0-9_-]+\.html)(?:\?v=[0-9a-f]+)?"', versao_iframe, t)
+        if novo != t:
+            casca.write_text(novo, encoding='utf-8')
+            if casca.name not in alteradas:
+                alteradas.append(casca.name)
     print('hashes:', ', '.join(f'{n}={h}' for n, h in hashes.items()))
     print(f'{len(alteradas)} página(s) atualizada(s)' + (': ' + ', '.join(alteradas) if alteradas else ''))
     return 0
