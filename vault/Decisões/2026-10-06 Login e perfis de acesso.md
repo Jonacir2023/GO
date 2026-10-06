@@ -35,10 +35,21 @@ Obra 2 ou as duas). O link público de envio de Pauta (`envio-pauta.html`) **pas
 1. **Fase 1 (feita):** só a tela. Todas as tabelas de dados continuam com a política aberta
    ("acesso do app"). **Isto NÃO protege os dados** — quem souber a chave publicável ainda lê o banco.
    Fez-se assim para não trancar o app antes de o administrador conseguir entrar.
-2. **Fase 2 (pendente, `sql/010_auth_rls.sql`):** troca as políticas abertas por
-   `to authenticated using (public.pode_modulo('<módulo>'))` — `custos_*`→custos, `pauta_*`→pauta,
-   `checkin_*`→checkin, `rdo_*`→rdo etc. Só aplicar **depois** de o usuário confirmar que entra,
-   nas **duas obras**, com SQL de reversão pronto e teste com papéis simulados.
+2. **Fase 2 (APLICADA em 06/10/2026 nas duas obras, `sql/010_auth_rls.sql`):** as políticas abertas viraram
+   `to authenticated using ((select public.pode_modulo('<módulo>')))` — `custos_*`→custos, `pauta_*`→pauta,
+   `checkin_*`→checkin, `rdo_*`→rdo, `obra_config` (lê qualquer papel liberado, grava `obra`) etc.
+   Leituras entre módulos: rdo lê `checkin_assuntos` e `custos_*`; financeiro lê `rdo_snapshot` e grava
+   `custos_notas_fiscais`/`medicao_contratos`; pauta e checkin compartilham `pauta_assuntos`/`checkin_assuntos`.
+   Reversão: `sql/010_rollback_rls.sql`. **Agora o banco só responde a quem tem login e papel.**
+   Testado nas duas obras com papéis simulados (anon, admin, portaria, pendente): anon lê 0 linhas; admin lê e grava
+   tudo; portaria lê/escreve só `custos_*`, lê `obra_config` e não grava; pendente não lê nada.
+
+## Armadilha: `DROP POLICY` trava neste Supabase
+O comando não termina (nem com `lock_timeout`; sem bloqueio visível em `pg_locks`/`pg_stat_activity`) e estoura os 60 s do MCP.
+`CREATE POLICY` e `ALTER POLICY` (inclusive `rename to`) funcionam na hora. Por isso a Fase 2 usa só ALTER + CREATE, e a
+política duplicada da Obra 1 não pôde ser removida. Para testar papéis: `begin; update public.perfis set papel='x' ...;
+set local role authenticated; select set_config('request.jwt.claims','{"sub":"<uid>","role":"authenticated"}',true); select ...; rollback;`
+numa chamada só (um `DO` com `raise exception` também serve; `DO` com `update` travou).
 
 ## Limitações conhecidas
 

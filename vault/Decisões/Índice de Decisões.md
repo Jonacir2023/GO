@@ -26,7 +26,7 @@ escreva uma nova nota que substitua a anterior, marcando a antiga como superada.
 | 27/08 | [[Decisões/2026-08-27 Migração da planilha para o Supabase]] | ❌ Descartada em 28/08 — assunto saiu deste repositório |
 | 04/10 | [[Decisões/2026-10-04 Padrão visual claro]] | ✅ Decidido (falta ver no iPhone) |
 | 05/10 | [[Decisões/2026-10-05 Proposta — Custos como controle de entrada de materiais]] | ✅ Implementada e aplicada nas duas obras |
-| 06/10 | [[Decisões/2026-10-06 Login e perfis de acesso]] | 🟡 Fase 1 feita (tela e perfis); Fase 2 (RLS) aguarda confirmação do login |
+| 06/10 | [[Decisões/2026-10-06 Login e perfis de acesso]] | ✅ Fase 1 (tela e perfis) e Fase 2 (RLS por papel nas duas obras) aplicadas |
 | 06/10 | [[Decisões/2026-10-06 Proposta — Eventos do Dia do RDO]] | ✅ Implementada (RDO: equipe, paralisação, local, planilha impressa) |
 
 ---

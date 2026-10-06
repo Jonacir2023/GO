@@ -8,8 +8,7 @@ tags: [nota, backend, supabase, api]
 `iniciar` (busca o perfil de cada obra), `estado`, `papel`, `ehAdmin`, `podeModulo`, `obrasPermitidas`,
 `listarUsuarios`, `listarPapeis`, `definirPapel`, `guardar`. Tabelas por obra: `papeis`, `perfis`; funções
 `papel_atual()`, `eh_admin()`, `pode_modulo(m)`. Detalhes e fases em
-[[Decisões/2026-10-06 Login e perfis de acesso]]. **Atenção:** enquanto a Fase 2 (`sql/010`) não for
-aplicada, as políticas das tabelas de dados continuam abertas — o login só controla a tela.
+[[Decisões/2026-10-06 Login e perfis de acesso]]. **RLS por papel aplicado (Fase 2, 06/10/2026):** todas as tabelas exigem login e papel.
 
 ---
 
@@ -42,9 +41,7 @@ só serve o recurso de pergunta-e-resposta por IA — ver a seção própria mai
 
 Não existe token de acesso por chamada como no Apps Script: a chave publicável do Supabase
 já é pública por natureza (RLS decide o que pode ser lido/escrito, não o sigilo da chave) —
-ver regra 22 em [[Notas/Regras Operacionais Críticas]]. RLS está **aberto** (`for all
-using (true)`) em toda tabela, de propósito: mesma postura de segurança de antes (device
-sem login), não é uma regressão.
+ver regra 22 em [[Notas/Regras Operacionais Críticas]]. Desde 06/10/2026 o RLS **não é mais aberto**: cada tabela usa `to authenticated` + `pode_modulo(...)` (ver abaixo).
 
 ---
 
