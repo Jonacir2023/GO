@@ -34,5 +34,14 @@ create index if not exists idx_rdo_locais_ativo on public.rdo_locais(ativo);
 
 -- OBRA 1 (ivssgstckfcuiyetxdze) não tinha as colunas de 005 em eap_itens (o eap.html usa
 -- responsavel, status, data_inicio, data_fim, percentual_completo, descricao): aplicada a 005.
--- Pendência de segurança herdada (decisão do usuário): na Obra 1 as 7 tabelas de EAP,
--- Planejamento e Suprimentos continuam SEM RLS.
+-- RLS na Obra 1 (pedido do usuário, 06/10/2026): as 7 tabelas de EAP, Planejamento e Suprimentos
+-- agora têm RLS ligada + política "acesso do app" (for all using (true) with check (true)) — mesmo
+-- acesso efetivo de antes e igual à Obra 2; o aviso crítico do Supabase sumiu (advisor sem alertas).
+alter table public.eap_itens enable row level security;
+alter table public.planejamento_cronogramas enable row level security;
+alter table public.planejamento_atividades enable row level security;
+alter table public.planejamento_restricoes enable row level security;
+alter table public.requisicoes_compra enable row level security;
+alter table public.suprimentos_cotacoes enable row level security;
+alter table public.suprimentos_pedidos enable row level security;
+-- create policy "acesso do app" on public.<cada tabela acima> for all using (true) with check (true);

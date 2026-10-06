@@ -201,9 +201,7 @@ política criada só numa quebra o módulo quando alguém troca de obra. Aplicar
 anotar no Registro. A Obra 2 costuma estar **pausada** — restaurar antes. Comando do Supabase que estoura o
 tempo: dividir em partes e conferir o estado antes de repetir. Conferir a paridade com um hash da estrutura
 (`md5(string_agg(tabela.coluna:tipo:nulo …))` em `information_schema.columns`, igual nas duas). Divergências
-encontradas e corrigidas em 06/10/2026: ver `sql/008_paridade_obras.sql`. Pendência herdada: as tabelas EAP,
-Planejamento e Suprimentos da **Obra 1** estão **sem RLS** (aviso crítico do Supabase) — decisão de
-políticas ainda não tomada; na Obra 2 foram criadas com RLS + política aberta (mesmo acesso efetivo).
+encontradas e corrigidas em 06/10/2026: ver `sql/008_paridade_obras.sql`. RLS: as 25 tabelas das duas obras estão com RLS ligada (as 7 de EAP/Planejamento/Suprimentos da Obra 1 foram ligadas em 06/10/2026, com política aberta "acesso do app" — mesmo acesso efetivo de antes; o app não usa login). **Política aberta = quem tem a chave pública lê e escreve**; fechar de verdade exigiria autenticação no app (decisão futura).
 
 ---
 
