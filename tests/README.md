@@ -1,6 +1,6 @@
 # Testes do BUILDLy
 
-Sete suítes. Cada uma abre o app num navegador sem tela (Playwright + Chromium) e confere uma
+Quinze suítes. Cada uma abre o app num navegador sem tela (Playwright + Chromium) e confere uma
 regra que **já custou caro alguma vez** — não são testes de cobertura, são cercas em cima de
 buracos conhecidos.
 
@@ -22,6 +22,7 @@ O endereço do app vem de `$BUILDLY_URL`, que o hook de sessão define. Sem ele,
 | `test_shell_e_iframes` | o app dentro do iframe herda o espaço próprio e o robô aparece |
 | `test_pauta_administracao` | a tela de token do GitHub não voltou |
 | `test_login` | sem sessão o app não abre; admin vê tudo, portaria só Entradas, pendente espera; páginas avulsas voltam ao login |
+| `test_planejamento_atividades` | atividades lidas em lotes de 1000; situação pela data local; filtros, busca por WTG, KPIs; % real grava início/fim real; restrição grava com `obra_id` |
 
 ## Ao escrever uma suíte nova
 

@@ -40,6 +40,19 @@
     .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; }
     .empty-state { text-align: center; padding: 40px; color: #999; }
     .empty-state i { font-size: 48px; display: block; margin-bottom: 15px; }
+    .ativ-barra { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .ativ-barra input, .ativ-barra select { padding: 9px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-width: 0; }
+    .ativ-barra input[type=search], #restr-descricao { flex: 1 1 260px; }
+    .ativ-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .kpi { background: #f5f5f5; border-radius: 8px; padding: 10px 12px; }
+    .kpi b { display: block; font-size: 20px; color: #1a1a1a; }
+    .kpi span { font-size: 12px; color: #666; }
+    .ativ-tabela-wrap { overflow-x: auto; }
+    .ativ-tabela-wrap .table td, .ativ-tabela-wrap .table th { padding: 8px 10px; font-size: 13px; }
+    .ativ-grupo { font-size: 11px; color: #888; display: block; }
+    .pct-input { width: 64px; padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; text-align: right; }
+    .status.atrasada { background: #ffebee; color: #c62828; }
+    .status.cancelada { background: #eee; color: #777; }
   </style>
 <link rel="stylesheet" href="tema.css?v=8f27e8ff" media="screen">
 </head>
@@ -75,33 +88,59 @@
     </div>
 
     <div id="atividades-aba" class="aba-content" style="display: none;">
+      <div class="ativ-barra">
+        <select id="ativ-cronograma" onchange="carregarAtividades()"></select>
+        <input type="search" id="ativ-busca" placeholder="Buscar atividade, código ou WTG (ex.: GS_27)" oninput="filtrarAtividades()">
+        <select id="ativ-filtro" onchange="filtrarAtividades()">
+          <option value="todas">Todas</option>
+          <option value="hoje">Em andamento hoje</option>
+          <option value="atrasadas">Atrasadas</option>
+          <option value="proximas">Começam em 15 dias</option>
+          <option value="concluidas">Concluídas</option>
+        </select>
+      </div>
+      <div class="ativ-kpis" id="ativ-kpis"></div>
+      <div class="ativ-tabela-wrap">
       <table class="table" id="atividades-table">
         <thead>
           <tr>
             <th>Código</th>
-            <th>Nome</th>
-            <th>Início</th>
-            <th>Fim</th>
-            <th>% Realizado</th>
-            <th>Crítica?</th>
-            <th>Ações</th>
+            <th>Atividade</th>
+            <th>Situação</th>
+            <th>% Real</th>
+            <th>Início prev.</th>
+            <th>Fim prev.</th>
           </tr>
         </thead>
         <tbody id="atividades-tbody">
-          <tr><td colspan="7" class="empty-state"><i class="fas fa-tasks"></i>Nenhuma atividade</td></tr>
+          <tr><td colspan="6" class="empty-state"><i class="fas fa-tasks"></i>Nenhuma atividade</td></tr>
         </tbody>
       </table>
+      </div>
+      <div style="text-align:center;margin-top:12px"><button class="btn btn-secondary" id="ativ-mais" style="display:none" onclick="mostrarMaisAtividades()">Mostrar mais</button></div>
     </div>
 
     <div id="restricoes-aba" class="aba-content" style="display: none;">
+      <div class="ativ-barra">
+        <input type="text" id="restr-descricao" placeholder="Nova restrição (o que impede o avanço)">
+        <select id="restr-criticidade">
+          <option value="media">Média</option>
+          <option value="alta">Alta</option>
+          <option value="critica">Crítica</option>
+          <option value="baixa">Baixa</option>
+        </select>
+        <input type="text" id="restr-responsavel" placeholder="Responsável">
+        <input type="date" id="restr-prazo">
+        <button class="btn btn-primary" onclick="salvarRestricao()">➕ Adicionar</button>
+      </div>
       <table class="table" id="restricoes-table">
         <thead>
           <tr>
             <th>Descrição</th>
             <th>Criticidade</th>
+            <th>Responsável</th>
             <th>Prazo</th>
             <th>Status</th>
-            <th>Ações</th>
           </tr>
         </thead>
         <tbody id="restricoes-tbody">
@@ -234,6 +273,7 @@ async function salvarCronograma() {
 
     fecharModal();
     carregarCronogramas();
+    preencherSeletorCronogramas();
   } catch (e) {
     alert('Erro ao salvar: ' + e.message);
   }
@@ -308,11 +348,240 @@ async function editarCronograma(id) {
   }
 }
 
+// ── Atividades (previsto × real) ──────────────────────────────────────────
+// Data LOCAL (nunca toISOString — à noite o UTC já é o dia seguinte).
+function hojeLocal() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function somaDias(iso, n) {
+  const p = iso.split('-').map(Number);
+  const d = new Date(p[0], p[1] - 1, p[2] + n);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function br(iso) { if (!iso) return '-'; const p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0].slice(2); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function diasEntre(a, b) { // inclusivo
+  const pa = a.split('-').map(Number), pb = b.split('-').map(Number);
+  return Math.round((new Date(pb[0], pb[1] - 1, pb[2]) - new Date(pa[0], pa[1] - 1, pa[2])) / 86400000) + 1;
+}
+
+let _ativs = [], _ativsFiltradas = [], _ativsVisiveis = 0, _eapNomes = {};
+const ATIV_PAGINA = 200;
+
+function situacao(a, hoje) {
+  const pct = Number(a.percentual_real) || 0;
+  if (pct >= 100) return ['concluido', 'Concluída'];
+  if (a.fim_planejado && a.fim_planejado < hoje) return ['atrasada', 'Atrasada'];
+  if (a.inicio_planejado && a.inicio_planejado <= hoje) return ['em_andamento', pct > 0 ? 'Em andamento' : 'Deveria ter iniciado'];
+  return ['planejado', 'Planejada'];
+}
+
+// Busca em lotes de 1000 (o Supabase devolve no máximo 1000 linhas por consulta).
+async function buscarTudo(consultaFn) {
+  const todos = [];
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await consultaFn().range(de, de + 999);
+    if (error) throw error;
+    todos.push(...(data || []));
+    if (!data || data.length < 1000) break;
+  }
+  return todos;
+}
+
+async function preencherSeletorCronogramas() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const { data } = await cliente.from('planejamento_cronogramas').select('id,nome,tipo')
+      .eq('obra_id', B3Obras.atualId()).order('criado_em', { ascending: false });
+    const sel = document.getElementById('ativ-cronograma');
+    const atual = sel.value;
+    sel.innerHTML = (data || []).map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('') || '<option value="">Nenhum cronograma</option>';
+    if (atual && (data || []).some(c => c.id === atual)) sel.value = atual;
+  } catch (e) {
+    console.error('Erro ao listar cronogramas:', e);
+  }
+}
+
+async function carregarAtividades() {
+  const tbody = document.getElementById('atividades-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cronoId = document.getElementById('ativ-cronograma').value;
+    if (!cronoId) { _ativs = []; filtrarAtividades(); return; }
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Carregando…</td></tr>';
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const [ativs, eap] = await Promise.all([
+      buscarTudo(() => cliente.from('planejamento_atividades')
+        .select('id,codigo,nome,eap_id,inicio_planejado,fim_planejado,inicio_real,fim_real,percentual_real,critica')
+        .eq('obra_id', obraId).eq('cronograma_id', cronoId).order('inicio_planejado').order('codigo')),
+      buscarTudo(() => cliente.from('eap_itens').select('id,nome').eq('obra_id', obraId))
+    ]);
+    _eapNomes = {};
+    eap.forEach(e => { _eapNomes[e.id] = e.nome; });
+    // Ordem: início previsto e, no empate, o ID do cronograma como número (1, 2, 10 — não 1, 10, 2).
+    const num = c => (/^\d+$/.test(c || '') ? Number(c) : Infinity);
+    ativs.sort((x, y) => (x.inicio_planejado || '9').localeCompare(y.inicio_planejado || '9') || num(x.codigo) - num(y.codigo) || String(x.codigo).localeCompare(String(y.codigo)));
+    _ativs = ativs;
+    filtrarAtividades();
+  } catch (e) {
+    console.error('Erro ao carregar atividades:', e);
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
+  }
+}
+
+function filtrarAtividades() {
+  const hoje = hojeLocal(), em15 = somaDias(hoje, 15);
+  const busca = (document.getElementById('ativ-busca').value || '').trim().toLowerCase();
+  const filtro = document.getElementById('ativ-filtro').value;
+  _ativsFiltradas = _ativs.filter(a => {
+    const sit = situacao(a, hoje)[0];
+    if (filtro === 'hoje' && !(a.inicio_planejado <= hoje && a.fim_planejado >= hoje && sit !== 'concluido')) return false;
+    if (filtro === 'atrasadas' && sit !== 'atrasada') return false;
+    if (filtro === 'proximas' && !(a.inicio_planejado > hoje && a.inicio_planejado <= em15)) return false;
+    if (filtro === 'concluidas' && sit !== 'concluido') return false;
+    if (busca) {
+      const alvo = (a.codigo + ' ' + a.nome + ' ' + (_eapNomes[a.eap_id] || '')).toLowerCase();
+      if (alvo.indexOf(busca) < 0) return false;
+    }
+    return true;
+  });
+  _ativsVisiveis = 0;
+  document.getElementById('atividades-tbody').innerHTML = '';
+  mostrarMaisAtividades();
+  desenharKpis(hoje);
+}
+
+function mostrarMaisAtividades() {
+  const hoje = hojeLocal();
+  const tbody = document.getElementById('atividades-tbody');
+  if (!_ativsFiltradas.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-tasks"></i>Nenhuma atividade</td></tr>';
+    document.getElementById('ativ-mais').style.display = 'none';
+    return;
+  }
+  const fatia = _ativsFiltradas.slice(_ativsVisiveis, _ativsVisiveis + ATIV_PAGINA);
+  tbody.insertAdjacentHTML('beforeend', fatia.map(a => {
+    const s = situacao(a, hoje);
+    return `<tr>
+      <td>${esc(a.codigo)}</td>
+      <td>${esc(a.nome)}<span class="ativ-grupo">${esc(_eapNomes[a.eap_id] || '')}</span></td>
+      <td><span class="status ${s[0]}">${s[1]}</span></td>
+      <td><input class="pct-input" type="number" min="0" max="100" step="5" value="${Number(a.percentual_real) || 0}" onchange="salvarPercentual('${a.id}', this)"></td>
+      <td>${br(a.inicio_planejado)}</td>
+      <td>${br(a.fim_planejado)}</td>
+    </tr>`;
+  }).join(''));
+  _ativsVisiveis += fatia.length;
+  const btn = document.getElementById('ativ-mais');
+  btn.style.display = _ativsVisiveis < _ativsFiltradas.length ? 'inline-block' : 'none';
+  btn.textContent = 'Mostrar mais (' + (_ativsFiltradas.length - _ativsVisiveis) + ' restantes)';
+}
+
+// Avanço físico ponderado pela duração: previsto (linear até hoje) × real (% lançado).
+function desenharKpis(hoje) {
+  let pesoTot = 0, prev = 0, real = 0, atras = 0, andamento = 0, concl = 0;
+  _ativs.forEach(a => {
+    if (!a.inicio_planejado || !a.fim_planejado) return;
+    const dur = diasEntre(a.inicio_planejado, a.fim_planejado);
+    pesoTot += dur;
+    let p = 0;
+    if (hoje >= a.fim_planejado) p = 1; else if (hoje >= a.inicio_planejado) p = diasEntre(a.inicio_planejado, hoje) / dur;
+    prev += dur * p;
+    real += dur * (Number(a.percentual_real) || 0) / 100;
+    const s = situacao(a, hoje)[0];
+    if (s === 'atrasada') atras++; else if (s === 'em_andamento') andamento++; else if (s === 'concluido') concl++;
+  });
+  const pc = v => pesoTot ? (100 * v / pesoTot).toFixed(1).replace('.', ',') + '%' : '-';
+  document.getElementById('ativ-kpis').innerHTML = _ativs.length ? `
+    <div class="kpi"><b>${_ativs.length}</b><span>atividades</span></div>
+    <div class="kpi"><b>${pc(prev)}</b><span>previsto até hoje</span></div>
+    <div class="kpi"><b>${pc(real)}</b><span>realizado</span></div>
+    <div class="kpi"><b>${andamento}</b><span>em andamento</span></div>
+    <div class="kpi"><b style="color:#c62828">${atras}</b><span>atrasadas</span></div>
+    <div class="kpi"><b>${concl}</b><span>concluídas</span></div>` : '';
+}
+
+async function salvarPercentual(id, input) {
+  let pct = Math.max(0, Math.min(100, Number(input.value) || 0));
+  input.value = pct;
+  const a = _ativs.find(x => x.id === id);
+  if (!a) return;
+  const hoje = hojeLocal();
+  const mud = { percentual_real: pct, atualizado_em: new Date().toISOString() };
+  if (pct > 0 && !a.inicio_real) mud.inicio_real = hoje;
+  if (pct >= 100 && !a.fim_real) mud.fim_real = hoje;
+  if (pct < 100 && a.fim_real) mud.fim_real = null;
+  const { error } = await B3Obras.cliente().from('planejamento_atividades').update(mud)
+    .eq('id', id).eq('obra_id', B3Obras.atualId());
+  if (error) { alert('Erro ao salvar: ' + error.message); input.value = Number(a.percentual_real) || 0; return; }
+  Object.assign(a, mud);
+  input.style.borderColor = '#388e3c';
+  setTimeout(() => { input.style.borderColor = ''; }, 1200);
+  desenharKpis(hoje);
+}
+
+// ── Restrições ────────────────────────────────────────────────────────────
+async function carregarRestricoes() {
+  const tbody = document.getElementById('restricoes-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const { data, error } = await B3Obras.cliente().from('planejamento_restricoes').select('*')
+      .eq('obra_id', B3Obras.atualId()).order('status').order('prazo', { nullsFirst: false });
+    if (error) throw error;
+    if (!data || !data.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-triangle"></i>Sem restrições</td></tr>';
+      return;
+    }
+    const hoje = hojeLocal();
+    const critCls = { critica: 'critica', alta: 'atrasada', media: 'em_andamento', baixa: 'planejado' };
+    tbody.innerHTML = data.map(r => `<tr>
+      <td>${esc(r.descricao)}</td>
+      <td><span class="status ${critCls[r.criticidade] || ''}">${esc(r.criticidade)}</span></td>
+      <td>${esc(r.responsavel || '-')}</td>
+      <td${r.status === 'aberta' && r.prazo && r.prazo < hoje ? ' style="color:#c62828;font-weight:600"' : ''}>${br(r.prazo)}</td>
+      <td><select onchange="mudarStatusRestricao('${r.id}', this.value)">
+        ${['aberta', 'resolvida', 'cancelada'].map(s => `<option value="${s}"${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}
+      </select></td>
+    </tr>`).join('');
+  } catch (e) {
+    console.error('Erro ao carregar restrições:', e);
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
+  }
+}
+
+async function salvarRestricao() {
+  const descricao = document.getElementById('restr-descricao').value.trim();
+  if (!descricao) { alert('Descreva a restrição'); return; }
+  const linha = {
+    obra_id: B3Obras.atualId(), descricao,
+    criticidade: document.getElementById('restr-criticidade').value,
+    responsavel: document.getElementById('restr-responsavel').value.trim() || null,
+    prazo: document.getElementById('restr-prazo').value || null
+  };
+  const { error } = await B3Obras.cliente().from('planejamento_restricoes').insert([linha]);
+  if (error) { alert('Erro: ' + error.message); return; }
+  ['restr-descricao', 'restr-responsavel', 'restr-prazo'].forEach(id => { document.getElementById(id).value = ''; });
+  carregarRestricoes();
+}
+
+async function mudarStatusRestricao(id, status) {
+  const { error } = await B3Obras.cliente().from('planejamento_restricoes')
+    .update({ status, atualizado_em: new Date().toISOString() }).eq('id', id).eq('obra_id', B3Obras.atualId());
+  if (error) { alert('Erro: ' + error.message); }
+  carregarRestricoes();
+}
+
 // Inicializar quando DOM estiver pronto e B3Obras disponível
 window.addEventListener('DOMContentLoaded', () => {
   if (window.B3Obras) {
     (async () => {
       await carregarCronogramas();
+      await preencherSeletorCronogramas();
+      carregarAtividades();
+      carregarRestricoes();
     })();
   }
 });
