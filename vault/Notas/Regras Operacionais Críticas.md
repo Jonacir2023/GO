@@ -203,6 +203,16 @@ tempo: dividir em partes e conferir o estado antes de repetir. Conferir a parida
 (`md5(string_agg(tabela.coluna:tipo:nulo …))` em `information_schema.columns`, igual nas duas). Divergências
 encontradas e corrigidas em 06/10/2026: ver `sql/008_paridade_obras.sql`. RLS: as 25 tabelas das duas obras estão com RLS ligada (as 7 de EAP/Planejamento/Suprimentos da Obra 1 foram ligadas em 06/10/2026, com política aberta "acesso do app" — mesmo acesso efetivo de antes; o app não usa login). **Política aberta = quem tem a chave pública lê e escreve**; fechar de verdade exigiria autenticação no app (decisão futura).
 
+### `obra_id` é TEXTO (`'obra1'`/`'obra2'`), nunca uuid — e leitura grande vem em lotes de 1000 (06/10/2026)
+
+O app grava `obra_id = B3Obras.atualId()`, que é `'obra1'`/`'obra2'`. As 7 tabelas de EAP/Planejamento/
+Suprimentos nasceram com `obra_id uuid`: **todo insert desses módulos falhava** ("invalid input syntax for
+type uuid") e ninguém viu porque o erro só aparecia num `alert`/console — as tabelas estavam vazias nas duas
+obras. Corrigido no banco (`sql/011_obra_id_texto.sql`, nas duas obras). Tabela nova com `obra_id`: **text**.
+Segunda armadilha do mesmo módulo: o Supabase devolve **no máximo 1000 linhas por consulta** sem avisar.
+O cronograma da Gran Sul tem 2.128 atividades — `planejamento.html` lê com `.range()` em lotes
+(`buscarTudo`). Qualquer lista que possa passar de 1000 linhas precisa disso.
+
 ### Login: o que existe e o que ainda NÃO protege (06/10/2026)
 
 O app tem login (e-mail + senha, Supabase Auth, mesma conta nas duas obras) e papéis (`admin` vê tudo, `portaria`
