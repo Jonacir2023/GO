@@ -1,6 +1,7 @@
 import json
 import os
 from playwright.sync_api import sync_playwright
+from _login import contexto
 
 BASE = os.environ.get("BUILDLY_URL", "http://localhost:8795")
 falhas = []
@@ -30,7 +31,7 @@ SEMEAR_DIA = """([ap, data]) => {
 
 
 def abrir(browser, semear_dia):
-    ctx = browser.new_context(viewport={"width": 480, "height": 900})
+    ctx = contexto(browser, viewport={"width": 480, "height": 900})
     page = ctx.new_page()
     page.on("dialog", lambda d: d.dismiss())
     page.errs = []

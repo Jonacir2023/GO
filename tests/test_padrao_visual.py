@@ -4,6 +4,7 @@ import json
 import os
 import re
 from playwright.sync_api import sync_playwright
+from _login import contexto
 
 BASE = os.environ.get("BUILDLY_URL", "http://localhost:8795")
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,7 +56,7 @@ check(not sem_detector, f"toda página tem o detector de iframe ({sem_detector})
 
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
-    ctx = b.new_context(viewport={"width": 390, "height": 844})
+    ctx = contexto(b, viewport={"width": 390, "height": 844})
     page = ctx.new_page()
     erros = []
     page.on("pageerror", lambda e: erros.append(str(e)))

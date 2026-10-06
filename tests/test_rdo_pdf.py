@@ -3,6 +3,7 @@ import os
 import re
 import tempfile
 from playwright.sync_api import sync_playwright
+from _login import contexto
 
 BASE = os.environ.get("BUILDLY_URL", "http://localhost:8795")
 falhas = []
@@ -53,7 +54,7 @@ def paginas(page, gerar):
 
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
-    ctx = b.new_context(viewport={"width": 794, "height": 1123})
+    ctx = contexto(b, viewport={"width": 794, "height": 1123})
     page = ctx.new_page()
     erros = []
     page.on("pageerror", lambda e: erros.append(str(e)))

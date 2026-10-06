@@ -1,6 +1,7 @@
 import json
 import os
 from playwright.sync_api import sync_playwright
+from _login import contexto
 
 BASE = os.environ.get("BUILDLY_URL", "http://localhost:8795")
 falhas = []
@@ -10,7 +11,7 @@ def check(c, m):
 
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
-    page = b.new_context(viewport={"width": 480, "height": 900}).new_page()
+    page = contexto(b, viewport={"width": 480, "height": 900}).new_page()
     erros = []
     page.on("pageerror", lambda e: erros.append(str(e)))
     page.on("dialog", lambda d: d.accept())

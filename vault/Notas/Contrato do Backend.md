@@ -2,6 +2,15 @@
 criado: 2026-08-21
 atualizado: 2026-09-19
 tags: [nota, backend, supabase, api]
+## Login e perfis (Supabase Auth)
+
+`window.B3Auth` (em `supabase-config.js`): `entrar`, `cadastrar`, `recuperarSenha`, `trocarSenha`, `sair`,
+`iniciar` (busca o perfil de cada obra), `estado`, `papel`, `ehAdmin`, `podeModulo`, `obrasPermitidas`,
+`listarUsuarios`, `listarPapeis`, `definirPapel`, `guardar`. Tabelas por obra: `papeis`, `perfis`; funções
+`papel_atual()`, `eh_admin()`, `pode_modulo(m)`. Detalhes e fases em
+[[Decisões/2026-10-06 Login e perfis de acesso]]. **Atenção:** enquanto a Fase 2 (`sql/010`) não for
+aplicada, as políticas das tabelas de dados continuam abertas — o login só controla a tela.
+
 ---
 
 # Contrato do Backend

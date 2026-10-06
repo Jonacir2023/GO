@@ -203,6 +203,16 @@ tempo: dividir em partes e conferir o estado antes de repetir. Conferir a parida
 (`md5(string_agg(tabela.coluna:tipo:nulo …))` em `information_schema.columns`, igual nas duas). Divergências
 encontradas e corrigidas em 06/10/2026: ver `sql/008_paridade_obras.sql`. RLS: as 25 tabelas das duas obras estão com RLS ligada (as 7 de EAP/Planejamento/Suprimentos da Obra 1 foram ligadas em 06/10/2026, com política aberta "acesso do app" — mesmo acesso efetivo de antes; o app não usa login). **Política aberta = quem tem a chave pública lê e escreve**; fechar de verdade exigiria autenticação no app (decisão futura).
 
+### Login: o que existe e o que ainda NÃO protege (06/10/2026)
+
+O app tem login (e-mail + senha, Supabase Auth, mesma conta nas duas obras) e papéis (`admin` vê tudo, `portaria`
+só Entradas). **Enquanto `sql/010_auth_rls.sql` (Fase 2) não for aplicada nas duas obras, o login só controla a
+tela — as tabelas continuam com política aberta.** Nunca dizer ao usuário que os dados estão protegidos antes da
+Fase 2. Na casca, `window.B3_CASCA = true` é obrigatório (senão `B3Auth.guardar()` redireciona a própria casca
+em laço); toda página nova que inclua `supabase-config.js` ganha a guarda sozinha; suíte nova usa
+`contexto(browser, ...)` de `tests/_login.py`, não `browser.new_context(...)`.
+Ver [[Decisões/2026-10-06 Login e perfis de acesso]].
+
 ---
 
 ## Relacionado

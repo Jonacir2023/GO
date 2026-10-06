@@ -3,6 +3,7 @@
 import json
 import os
 from playwright.sync_api import sync_playwright
+from _login import contexto
 
 BASE = os.environ.get("BUILDLY_URL", "http://localhost:8795")
 falhas = []
@@ -17,7 +18,7 @@ def check(cond, msg):
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
     # 05/10/2026 22:10 em Brasília = 06/10 01:10 UTC: o dia que o usuário vê é 05/10
-    ctx = b.new_context(viewport={"width": 390, "height": 844}, timezone_id="America/Sao_Paulo")
+    ctx = contexto(b, viewport={"width": 390, "height": 844}, timezone_id="America/Sao_Paulo")
     page = ctx.new_page()
     erros = []
     page.on("pageerror", lambda e: erros.append(str(e)))

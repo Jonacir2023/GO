@@ -21,9 +21,11 @@ O endereço do app vem de `$BUILDLY_URL`, que o hook de sessão define. Sem ele,
 | `test_espaco_proprio` | o BUILDLy não lê nem apaga o `localStorage` de outro app da mesma origem |
 | `test_shell_e_iframes` | o app dentro do iframe herda o espaço próprio e o robô aparece |
 | `test_pauta_administracao` | a tela de token do GitHub não voltou |
+| `test_login` | sem sessão o app não abre; admin vê tudo, portaria só Entradas, pendente espera; páginas avulsas voltam ao login |
 
 ## Ao escrever uma suíte nova
 
+- Abra o navegador com `contexto(browser, ...)` (de `tests/_login.py`), não `browser.new_context(...)`: ele já entra logado como administrador. Só o `test_login` abre sem sessão.
 - Intercepte `script.google.com` com `page.route()`. Teste não fala com o Google.
 - Confira o **comportamento**, não o nome da função. Suíte presa a nome quebra em refatoração
   e não pega bug nenhum.

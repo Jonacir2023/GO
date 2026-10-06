@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="bbd05617"</script>
+<script>/*build*/window.BUILD_ID="02ee3994"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -371,6 +371,30 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
      demais atrapalha em vez de ajudar */
   .modal { max-width: 560px; }
 }
+
+/* ── LOGIN ── */
+#login{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px 16px;align-items:center;justify-content:center}
+html.b3-trancado #login{display:flex}
+html.b3-trancado body>*:not(#login):not(script):not(link):not(style){display:none!important}
+html.b3-trancado body{overflow:hidden}
+.login-card{width:100%;max-width:380px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 20px 18px}
+.login-marca{font-size:26px;font-weight:800;letter-spacing:1px;color:var(--navy)}
+.login-marca b{color:var(--accent)}
+.login-sub{font-size:13px;color:var(--ink-soft);margin:2px 0 16px}
+.login-abas{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;background:var(--bg-mid);padding:4px;border-radius:10px}
+.login-abas button{border:none;background:none;padding:9px 6px;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer}
+.login-abas button.ativo{background:var(--bg-card);color:var(--ink);box-shadow:var(--shadow-sm)}
+#login-msg{font-size:13px;line-height:1.4;margin:2px 0 10px;min-height:0}
+#login-msg.erro{color:var(--red)}
+#login-msg.ok{color:var(--green)}
+.login-link{display:block;width:100%;background:none;border:none;color:var(--accent-ink);font-family:var(--sans);font-size:13px;font-weight:600;padding:8px;cursor:pointer;text-align:center}
+.login-espera{text-align:center;font-size:14px;line-height:1.5;color:var(--ink)}
+.login-espera h2{font-size:18px;margin:6px 0 8px}
+.usr-item{border-bottom:1px solid var(--line-soft);padding:10px 2px}
+.usr-item b{display:block;font-size:14px}
+.usr-item small{display:block;color:var(--ink-soft);font-size:12px;margin-bottom:6px;word-break:break-all}
+.usr-obra{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;font-size:12px;color:var(--ink-soft);margin-top:4px}
+.usr-obra select{min-height:34px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg-mid);color:var(--ink);font-size:13px;font-family:var(--sans)}
 </style>
 <script>
 /* ============================================================
@@ -430,12 +454,54 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js?v=f48c7213"></script>
+<script src="supabase-config.js?v=bbf9d8bc"></script>
+<script>
+/* LOGIN — a casca é quem mostra a tela de entrada; as páginas avulsas voltam para cá (B3Auth.guardar) */
+window.B3_CASCA = true;
+(function () {
+  var h = location.hash || '';
+  window.__B3_HASH = null;
+  if (/access_token=|error_description=|error=/.test(h)) {
+    window.__B3_HASH = h.replace(/^#/, '');
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  }
+  try {
+    var st = window.B3Auth && B3Auth.estado();
+    if (!st || !st.comAcesso || window.__B3_HASH) document.documentElement.classList.add('b3-trancado');
+  } catch (e) {}
+})();
+</script>
 <link rel="stylesheet" href="tema.css?v=8f27e8ff" media="screen">
 </head>
 <body>
 
 <div class="notif" id="notif"></div>
+<div id="login" role="dialog" aria-modal="true" aria-label="Entrar no BUILDLy">
+  <div class="login-card" id="login-form-card">
+    <div class="login-marca">BUILD<b>Ly</b></div>
+    <div class="login-sub">Plataforma de gestão de obra · Cesbe S.A.</div>
+    <div class="login-abas" id="login-abas">
+      <button type="button" class="ativo" data-aba="entrar" onclick="loginAba('entrar')">Entrar</button>
+      <button type="button" data-aba="criar" onclick="loginAba('criar')">Criar acesso</button>
+    </div>
+    <form id="login-form" onsubmit="return loginEnviar(event)" novalidate>
+      <div class="frow" id="login-f-nome" hidden><label for="login-nome">Nome</label><input id="login-nome" type="text" autocomplete="name" placeholder="Nome e sobrenome"></div>
+      <div class="frow" id="login-f-email"><label for="login-email">E-mail</label><input id="login-email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" placeholder="voce@empresa.com"></div>
+      <div class="frow" id="login-f-senha"><label for="login-senha">Senha</label><input id="login-senha" type="password" autocomplete="current-password" placeholder="Mínimo 8 caracteres"></div>
+      <div class="frow" id="login-f-senha2" hidden><label for="login-senha2">Repita a senha</label><input id="login-senha2" type="password" autocomplete="new-password"></div>
+      <div id="login-msg" role="alert"></div>
+      <button type="submit" class="btn btn-primary btn-full" id="login-btn">ENTRAR</button>
+    </form>
+    <button type="button" class="login-link" id="login-esqueci" onclick="loginRecuperar()">Esqueci a senha</button>
+  </div>
+  <div class="login-card login-espera" id="login-espera-card" hidden>
+    <div class="login-marca">BUILD<b>Ly</b></div>
+    <h2>Aguardando liberação</h2>
+    <p id="login-espera-txt">Seu acesso foi criado. O administrador precisa liberar o seu perfil. Avise-o e toque em &quot;Verificar&quot;.</p>
+    <button type="button" class="btn btn-primary btn-full" style="margin-top:14px" onclick="loginVerificar()">VERIFICAR</button>
+    <button type="button" class="login-link" onclick="loginSair()">Sair e entrar com outra conta</button>
+  </div>
+</div>
 <div id="print-kanban" style="display:none"></div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></symbol><symbol id="i-dollar" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol><symbol id="i-ruler" viewBox="0 0 24 24"><path d="M4 20V4l16 16z"/><path d="M8 20v-3M12 20v-5M8 13h3"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol><symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-bars" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41M15.95 12.65a4 4 0 0 0-5.93-4.13"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol><symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol><symbol id="i-card" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></symbol><symbol id="i-package" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol><symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol><symbol id="i-mais" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/><circle cx="5" cy="12" r="1.2"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol><symbol id="i-robo" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 14h.01M15 14h.01M9 17h6"/><circle cx="12" cy="3" r="1"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol><symbol id="i-guindaste" viewBox="0 0 64 60"><path d="M28 10V54M36 10V54M28 16L36 22L28 28L36 34L28 40L36 46L28 52"/><path d="M5 10H59M32 2L23 10M32 2L41 10M32 2L8 10M32 2L56 10"/><path d="M12 10V32M8 32h8v7H8z"/><path d="M50 10v7h8v-7M21 54h22"/></symbol></svg>
@@ -844,57 +910,57 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 
 <!-- ENTRADAS PAGE (id interno: custos) — controle de entrada de materiais -->
 <div class="page" id="page-custos">
-  <iframe id="custos-iframe" src="custos.html?v=4986589b" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="custos-iframe" src="custos.html?v=022c815e" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- RDO PAGE (Diário de Obras) -->
 <div class="page" id="page-rdo">
-  <iframe id="rdo-iframe" src="rdo.html?v=1cab8344" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="rdo-iframe" src="rdo.html?v=4f67af15" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- REUNIÃO PAGE (Ata de Reunião) -->
 <div class="page" id="page-reuniao">
-  <iframe id="reuniao-iframe" src="reuniao.html?v=65a4b9ee" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="reuniao-iframe" src="reuniao.html?v=7f32ec0f" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- RESUMO DO TEMPO PAGE (condições climáticas, alimentado pelo RDO) -->
 <div class="page" id="page-resumo-tempo">
-  <iframe id="resumo-tempo-iframe" src="resumo-tempo.html?v=3858057b" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="resumo-tempo-iframe" src="resumo-tempo.html?v=59a4b076" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- MEDIÇÃO PAGE (medições com cliente e terceiros) -->
 <div class="page" id="page-medicao">
-  <iframe id="medicao-iframe" src="medicoes.html?v=dc201fc3" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="medicao-iframe" src="medicoes.html?v=92bc4c6e" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- DOCUMENTOS PAGE (contrato, cronograma, orçamento + alertas) -->
 <div class="page" id="page-documentos">
-  <iframe id="documentos-iframe" src="documentos.html?v=ddbf8c04" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="documentos-iframe" src="documentos.html?v=c6c61a6b" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- MANUTENÇÃO PAGE (painel de status + mural da obra) -->
 <div class="page" id="page-manutencao">
-  <iframe id="manutencao-iframe" src="manutencao.html?v=183a52a8" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="manutencao-iframe" src="manutencao.html?v=53213204" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- EAP PAGE (Estrutura Analítica do Projeto) -->
 <div class="page" id="page-eap">
-  <iframe id="eap-iframe" src="eap.html?v=9020232f" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="eap-iframe" src="eap.html?v=03cd2b2f" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- PLANEJAMENTO PAGE (Cronogramas e atividades) -->
 <div class="page" id="page-planejamento">
-  <iframe id="planejamento-iframe" src="planejamento.html?v=306e433a" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="planejamento-iframe" src="planejamento.html?v=77fe28c1" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- FINANCEIRO PAGE (Medições, NFs, aprovações) -->
 <div class="page" id="page-financeiro">
-  <iframe id="financeiro-iframe" src="financeiro.html?v=377c4a06" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="financeiro-iframe" src="financeiro.html?v=a2929b39" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- SUPRIMENTOS PAGE (Requisições, cotações, pedidos) -->
 <div class="page" id="page-suprimentos">
-  <iframe id="suprimentos-iframe" src="suprimentos.html?v=83f907ad" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+  <iframe id="suprimentos-iframe" src="suprimentos.html?v=a05b18ad" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- OBRA PAGE (cadastro compartilhado entre todos os apps) -->
@@ -1090,6 +1156,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 let currentTab = 'home';
 
 function switchTab(tab, el) {
+  // Módulo que o papel do usuário não tem: não abre (a proteção real é o RLS do banco)
+  if (tab !== 'home' && MODULOS[tab] && !podeVer(tab)) { avisoAcesso(); return; }
   // Remove active from all main pages (except pauta and checkin sub-pages)
   document.querySelectorAll('.page').forEach(p => {
     if (!p.id.startsWith('pauta-') && !p.id.startsWith('checkin-')) {
@@ -1213,7 +1281,7 @@ function pintarFavoritos() {
   document.querySelectorAll('.home-card .fav').forEach(b => b.classList.toggle('on', f.includes(b.dataset.fav)));
 }
 function listaModulos(ids) {
-  return '<div class="sheet-lista">' + ids.map(id => {
+  return '<div class="sheet-lista">' + ids.filter(podeVer).map(id => {
     const m = MODULOS[id];
     return '<button class="sheet-item" onclick="irModulo(\'' + id + '\')"><span class="ico g-' + m.c + '">' + _svg(m.i) +
       '</span><span><b>' + _esc(m.nome) + '</b><small>' + _esc(m.desc) + '</small></span><span class="chev">' + _svg('chevron-right') + '</span></button>';
@@ -1221,7 +1289,7 @@ function listaModulos(ids) {
 }
 function abrirFavoritos() {
   marcarNav('favoritos');
-  const f = lerFavoritos().filter(id => MODULOS[id]);
+  const f = lerFavoritos().filter(id => MODULOS[id] && podeVer(id));
   abrirSheet('<h2>Favoritos</h2><div class="sheet-sub">Atalhos fixados pela estrela dos cartões.</div>' +
     (f.length ? listaModulos(f) :
       '<div class="sheet-vazio">Nenhum favorito ainda.<br>Toque na estrela de um cartão da tela inicial para fixar o atalho aqui.</div>'));
@@ -1237,7 +1305,7 @@ function abrirRelatorios() {
     ['reuniao', 'gerar', 'Ata de Reunião', 'Gerar PDF da ata', 'users', 'teal'],
     ['medicao', 'historico', 'Medições', 'Histórico e relatórios', 'ruler', 'slate'],
     ['checkin', 'resumo', 'Resumo do Check-in', 'Assuntos por status', 'check', 'green']
-  ];
+  ].filter(i => podeVer(i[0]));
   abrirSheet('<h2>Relatórios</h2><div class="sheet-sub">Atalhos para gerar e consultar relatórios.</div><div class="sheet-lista">' +
     itens.map(([mod, view, t, d, ic, cor]) =>
       '<button class="sheet-item" onclick="irAba(\'' + mod + '\',\'' + view + '\')"><span class="ico g-' + cor + '">' + _svg(ic) +
@@ -1248,12 +1316,13 @@ function abrirRelatorios() {
 function abrirMais() {
   marcarNav('mais');
   abrirSheet('<h2>Mais módulos</h2><div class="sheet-sub">Outras áreas da plataforma.</div>' + listaModulos(MODULOS_EXTRAS) +
-    '<div class="sheet-lista" style="margin-top:8px"><button class="sheet-item" onclick="fecharSheet();abrirModalPerguntar()"><span class="ico g-brown">' + _svg('robo') +
-    '</span><span><b>Perguntar à IA</b><small>Tire dúvidas sobre os dados da obra</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>');
+    (ehAdminCasca() ? '<div class="sheet-lista" style="margin-top:8px"><button class="sheet-item" onclick="fecharSheet();abrirModalPerguntar()"><span class="ico g-brown">' + _svg('robo') +
+    '</span><span><b>Perguntar à IA</b><small>Tire dúvidas sobre os dados da obra</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>' : ''));
 }
 
 // ── sino: pendências do Check-in ──
 function pendenciasCheckin() {
+  if (!podeVer('checkin')) return [];
   try {
     return (JSON.parse(localStorage.getItem('chk_assuntos')) || []).filter(a => a.status === 'afazer' || a.status === 'fazendo');
   } catch (e) { return []; }
@@ -1280,12 +1349,252 @@ function abrirPerfil() {
   let apont = '', obra = '';
   try { apont = localStorage.getItem('diario_obras_apontador_aparelho') || ''; } catch (e) {}
   try { obra = (B3Obras.atual() || {}).nome || ''; } catch (e) {}
-  abrirSheet('<h2>Perfil deste aparelho</h2><div class="sheet-sub">O que o BUILDLy lembra neste celular ou computador.</div>' +
+  const st = B3Auth.estado(), pf = B3Auth.perfil() || {};
+  const nomesObras = st.obras.map(id => (B3Obras.porId(id) || {}).nome || id).join(', ');
+  const item = (clique, ic, cor, t, d) => '<button class="sheet-item" onclick="' + clique + '"><span class="ico g-' + cor + '">' + _svg(ic) +
+    '</span><span><b>' + t + '</b><small>' + d + '</small></span><span class="chev">' + _svg('chevron-right') + '</span></button>';
+  abrirSheet('<h2>Perfil</h2><div class="sheet-sub">Quem está usando o BUILDLy neste aparelho.</div>' +
+    '<div class="sheet-linha"><span>Nome</span><b>' + _esc(st.nome || '—') + '</b></div>' +
+    '<div class="sheet-linha"><span>E-mail</span><b>' + _esc(st.email || '—') + '</b></div>' +
+    '<div class="sheet-linha"><span>Papel</span><b>' + _esc(pf.rotulo || pf.papel || '—') + '</b></div>' +
+    '<div class="sheet-linha"><span>Obras liberadas</span><b>' + _esc(nomesObras || '—') + '</b></div>' +
     '<div class="sheet-linha"><span>Apontador</span><b>' + _esc(apont || 'não definido (escolha no RDO)') + '</b></div>' +
     '<div class="sheet-linha"><span>Obra ativa</span><b>' + _esc(obra || '—') + '</b></div>' +
     '<div class="sheet-linha"><span>Versão</span><b>BUILDLy Premium v1.0</b></div>' +
-    '<div class="sheet-lista" style="margin-top:12px"><button class="sheet-item" onclick="irAba(\'rdo\',\'diario\')"><span class="ico g-blue">' + _svg('file') +
-    '</span><span><b>Escolher apontador</b><small>No Diário do RDO</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>');
+    '<div class="sheet-lista" style="margin-top:12px">' +
+    (podeVer('rdo') ? item("irAba('rdo','diario')", 'file', 'blue', 'Escolher apontador', 'No Diário do RDO') : '') +
+    (ehAdminCasca() ? item('abrirUsuarios()', 'users', 'teal', 'Usuários e acessos', 'Liberar pessoas, papéis e obras') : '') +
+    item('abrirTrocaSenha()', 'user', 'slate', 'Trocar senha', 'Vale para todas as obras') +
+    item('loginSair()', 'x', 'red', 'Sair', 'Encerrar a sessão neste aparelho') +
+    '</div>');
+}
+
+// ── login e papéis ──
+function podeVer(mod) { try { return B3Auth.podeModulo(mod); } catch (e) { return true; } }
+function ehAdminCasca() { try { return B3Auth.ehAdmin(); } catch (e) { return false; } }
+function avisoAcesso() {
+  const n = document.getElementById('notif');
+  if (!n) return;
+  n.textContent = 'Seu perfil não tem acesso a este módulo.';
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2600);
+}
+
+function aplicarPapel() {
+  document.querySelectorAll('.home-card[data-mod]').forEach(c => { c.hidden = !podeVer(c.dataset.mod); c.style.display = c.hidden ? 'none' : ''; });
+  const adm = ehAdminCasca();
+  document.querySelectorAll('.fab-ia-wrap').forEach(e => { e.style.display = adm ? '' : 'none'; });
+  const semSino = !podeVer('checkin');
+  document.querySelectorAll('.hero-btn[aria-label="Pendências"]').forEach(b => { b.style.display = semSino ? 'none' : ''; });
+  atualizarSino();
+  // se a aba aberta deixou de ser permitida, volta para o início
+  if (currentTab !== 'home' && MODULOS[currentTab] && !podeVer(currentTab)) switchTab('home');
+}
+
+function loginAba(qual) {
+  const criar = qual === 'criar';
+  document.querySelectorAll('#login-abas button').forEach(b => b.classList.toggle('ativo', b.dataset.aba === qual));
+  document.getElementById('login-f-nome').hidden = !criar;
+  document.getElementById('login-f-senha2').hidden = !criar;
+  document.getElementById('login-senha').autocomplete = criar ? 'new-password' : 'current-password';
+  document.getElementById('login-btn').textContent = criar ? 'CRIAR ACESSO' : 'ENTRAR';
+  document.getElementById('login-esqueci').hidden = criar;
+  loginMsg('');
+}
+function loginMsg(t, tipo) {
+  const m = document.getElementById('login-msg');
+  m.textContent = t || '';
+  m.className = tipo || '';
+}
+function loginTela(qual) {
+  // qual: 'form' | 'espera' | null (libera o app)
+  const html = document.documentElement;
+  html.classList.toggle('b3-trancado', !!qual);
+  document.getElementById('login-form-card').hidden = qual !== 'form';
+  document.getElementById('login-espera-card').hidden = qual !== 'espera';
+}
+
+let _loginOcupado = false;
+async function loginEnviar(ev) {
+  if (ev) ev.preventDefault();
+  if (_loginOcupado) return false;
+  const criar = document.querySelector('#login-abas .ativo').dataset.aba === 'criar';
+  const nome = document.getElementById('login-nome').value.trim();
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) { loginMsg('Informe um e-mail válido.', 'erro'); return false; }
+  if (!senha) { loginMsg('Informe a senha.', 'erro'); return false; }
+  if (criar) {
+    if (nome.length < 3) { loginMsg('Informe o nome completo.', 'erro'); return false; }
+    if (senha.length < 8) { loginMsg('A senha precisa ter pelo menos 8 caracteres.', 'erro'); return false; }
+    if (senha !== document.getElementById('login-senha2').value) { loginMsg('As senhas não conferem.', 'erro'); return false; }
+  }
+  _loginOcupado = true;
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  loginMsg(criar ? 'Criando acesso…' : 'Entrando…');
+  try {
+    if (criar) {
+      const r = await B3Auth.cadastrar(nome, email, senha);
+      if (!r.ok) { loginMsg(r.erro, 'erro'); return false; }
+      if (r.precisaConfirmar) {
+        loginAba('entrar');
+        loginMsg('Enviamos um link de confirmação para o seu e-mail. Confirme e depois entre aqui.', 'ok');
+        return false;
+      }
+      await B3Auth.iniciar();
+    } else {
+      const r = await B3Auth.entrar(email, senha);
+      if (!r.ok) { loginMsg(r.erro, 'erro'); return false; }
+      if (r.parcial && r.parcial.length) setTimeout(() => avisoTexto('Senha não confere em: ' + r.parcial.join(', ') + '. Use "Esqueci a senha".'), 600);
+    }
+    document.getElementById('login-senha').value = '';
+    document.getElementById('login-senha2').value = '';
+    loginMsg('');
+    portao();
+  } finally {
+    _loginOcupado = false;
+    btn.disabled = false;
+  }
+  return false;
+}
+function avisoTexto(t) {
+  const n = document.getElementById('notif');
+  if (!n) return;
+  n.textContent = t;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 5000);
+}
+
+async function loginRecuperar() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) { loginMsg('Digite o seu e-mail acima e toque em "Esqueci a senha".', 'erro'); return; }
+  loginMsg('Enviando…');
+  const r = await B3Auth.recuperarSenha(email);
+  if (r.ok) loginMsg('Enviamos o link de redefinição para ' + email + '. Há um e-mail por obra: abra cada um para a senha ficar igual em todas.', 'ok');
+  else loginMsg('Não foi possível enviar. Confira o e-mail e a conexão.', 'erro');
+}
+
+async function loginSair() {
+  await B3Auth.sair();
+  fecharSheet();
+  loginAba('entrar');
+  loginTela('form');
+}
+async function loginVerificar() {
+  document.getElementById('login-espera-txt').textContent = 'Verificando…';
+  await B3Auth.iniciar();
+  portao();
+}
+
+// Decide o que mostrar: login, espera de liberação ou o app
+async function portao() {
+  let st = B3Auth.estado();
+  if (!st.logado) { loginAba('entrar'); loginTela('form'); return; }
+  if (!st.comAcesso) {
+    loginTela('espera');
+    document.getElementById('login-espera-txt').innerHTML = 'Seu acesso foi criado' + (st.email ? ' (' + _esc(st.email) + ')' : '') + '. O administrador precisa liberar o seu perfil. Avise-o e toque em &quot;Verificar&quot;.';
+    st = await B3Auth.iniciar();
+    if (!st.logado) { loginAba('entrar'); loginTela('form'); return; }
+    if (!st.comAcesso) return;
+  }
+  loginTela(null);
+  aplicarPapel();
+  atualizarCartaoObra();
+  // veio de uma página avulsa (envio-pauta.html etc.): devolve para ela
+  const m = /[?&]next=([^&]+)/.exec(location.search);
+  if (m) {
+    let alvo = '';
+    try { alvo = decodeURIComponent(m[1]); } catch (e) {}
+    if (/^[A-Za-z0-9_.-]+\.html(\?.*)?$/.test(alvo) && !/^buildly-completo\.html/.test(alvo)) location.replace(alvo);
+  }
+}
+
+// Link de redefinição de senha (hash capturado no cabeçalho)
+async function tratarHashDeEmail() {
+  const h = window.__B3_HASH;
+  if (!h) return false;
+  window.__B3_HASH = null;
+  const q = new URLSearchParams(h);
+  if (q.get('error_description')) {
+    loginAba('entrar'); loginTela('form');
+    loginMsg(/expired|invalid/i.test(q.get('error_description')) ? 'Link expirado ou já usado. Peça um novo em "Esqueci a senha".' : q.get('error_description'), 'erro');
+    return true;
+  }
+  if (q.get('type') === 'recovery' && q.get('access_token')) {
+    let obraId = null;
+    try {
+      const pay = JSON.parse(atob(q.get('access_token').split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      B3Obras.listarTodas().forEach(o => { if (pay.iss && pay.iss.indexOf(o.url) === 0) obraId = o.id; });
+    } catch (e) {}
+    if (!obraId) return false;
+    try {
+      const r = await B3Obras.cliente(obraId).auth.setSession({ access_token: q.get('access_token'), refresh_token: q.get('refresh_token') });
+      if (r.error) throw r.error;
+    } catch (e) { loginAba('entrar'); loginTela('form'); loginMsg('Link expirado ou já usado. Peça um novo em "Esqueci a senha".', 'erro'); return true; }
+    window.__B3_RECUPERA = obraId;
+    loginTela(null);
+    abrirNovaSenha((B3Obras.porId(obraId) || {}).nome || 'obra');
+    return true;
+  }
+  return false;
+}
+
+function abrirNovaSenha(nomeObra) {
+  document.documentElement.classList.remove('b3-trancado');
+  abrirSheet('<h2>Nova senha</h2><div class="sheet-sub">' + _esc(nomeObra ? 'Redefinição para: ' + nomeObra + '. ' : '') + 'Use a mesma senha nas duas obras.</div>' +
+    '<div class="frow"><label>Nova senha</label><input id="ns-senha" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></div>' +
+    '<div class="frow"><label>Repita</label><input id="ns-senha2" type="password" autocomplete="new-password"></div>' +
+    '<div id="ns-msg" class="sheet-sub" style="color:var(--red)"></div>' +
+    '<button class="btn btn-primary btn-full" onclick="salvarNovaSenha()">SALVAR SENHA</button>');
+}
+async function salvarNovaSenha() {
+  const a = document.getElementById('ns-senha').value, b = document.getElementById('ns-senha2').value;
+  const msg = document.getElementById('ns-msg');
+  if (a.length < 8) { msg.textContent = 'A senha precisa ter pelo menos 8 caracteres.'; return; }
+  if (a !== b) { msg.textContent = 'As senhas não conferem.'; return; }
+  msg.textContent = 'Salvando…';
+  const r = await B3Auth.trocarSenha(a);
+  if (!r.ok) { msg.textContent = r.falhas.join(' · ') || 'Não foi possível salvar.'; return; }
+  fecharSheet();
+  avisoTexto('Senha alterada.');
+  await B3Auth.iniciar();
+  portao();
+}
+function abrirTrocaSenha() {
+  marcarNav('inicio');
+  abrirNovaSenha('');
+}
+
+// ── administração de acessos ──
+async function abrirUsuarios() {
+  if (!ehAdminCasca()) { avisoAcesso(); return; }
+  abrirSheet('<h2>Usuários e acessos</h2><div class="sheet-sub">Carregando…</div>');
+  try {
+    const [dados, papeis] = await Promise.all([B3Auth.listarUsuarios(), B3Auth.listarPapeis()]);
+    const opts = sel => papeis.map(p => '<option value="' + _esc(p.papel) + '"' + (p.papel === sel ? ' selected' : '') + '>' + _esc(p.rotulo) + '</option>').join('');
+    const linhas = dados.usuarios.map(u => '<div class="usr-item"><b>' + _esc(u.nome || u.email) + '</b><small>' + _esc(u.email) + '</small>' +
+      dados.obras.map(o => {
+        const po = u.porObra[o.id];
+        return '<div class="usr-obra"><span>' + _esc(o.nome) + '</span>' + (po
+          ? '<select onchange="mudarPapel(\'' + o.id + '\',\'' + po.user_id + '\',this)">' + opts(po.papel) + '</select>'
+          : '<span>sem cadastro nesta obra</span>') + '</div>';
+      }).join('') + '</div>').join('');
+    abrirSheet('<h2>Usuários e acessos</h2><div class="sheet-sub">Quem entra e o que cada papel enxerga, obra por obra. &quot;Sem acesso&quot; bloqueia a pessoa naquela obra.</div>' +
+      (linhas || '<div class="sheet-vazio">Nenhum usuário cadastrado.</div>'));
+  } catch (e) {
+    abrirSheet('<h2>Usuários e acessos</h2><div class="sheet-vazio">Não foi possível carregar: ' + _esc(e.message || e) + '</div>');
+  }
+}
+async function mudarPapel(obraId, userId, sel) {
+  sel.disabled = true;
+  try {
+    await B3Auth.definirPapel(obraId, userId, sel.value);
+    avisoTexto('Acesso atualizado.');
+  } catch (e) {
+    avisoTexto('Erro: ' + (e.message || e));
+    abrirUsuarios();
+  } finally { sel.disabled = false; }
 }
 
 // ── obra atual (cartão da Home) ──
@@ -1319,10 +1628,15 @@ function trocarObraDoCartao(id) {
   fecharSheet();
 }
 
-function iniciarCasca() {
+async function iniciarCasca() {
   pintarFavoritos();
   atualizarSino();
   atualizarCartaoObra();
+  if (await tratarHashDeEmail()) return;
+  aplicarPapel();
+  portao();
+  // com sessão guardada, confere o perfil no servidor sem travar a abertura (offline mantém o guardado)
+  if (B3Auth.estado().comAcesso) B3Auth.iniciar().then(() => { aplicarPapel(); if (!B3Auth.estado().comAcesso) portao(); });
   window.addEventListener('storage', atualizarSino);
   setInterval(atualizarSino, 20000);
 }
