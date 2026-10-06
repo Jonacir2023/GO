@@ -117,6 +117,16 @@ confirmação para qualquer coisa fora desse fluxo (force-push, reset, apagar br
 
 ---
 
+## Toda adaptação vale para as DUAS obras — regra do usuário (06/10/2026)
+
+O BUILDLy tem dois bancos Supabase de obra: **Obra 1** (`ivssgstckfcuiyetxdze`) e **Obra 2**
+(`lwjbuzubnxnzkofcrhah`). **Toda solicitação e adaptação que mexa em banco (tabela, coluna, política,
+dado de cadastro inicial) é aplicada nas duas, sempre** — não só em uma. O código do app é um só, então
+uma obra sem a tabela quebra o módulo quando alguém troca de obra. Depois de aplicar, **conferir nas duas**
+(`list_tables`) e anotar no Registro. A Obra 2 pode estar **pausada** (plano gratuito): restaurar antes de
+aplicar. Se um comando do Supabase estourar o tempo, rodar em partes menores (um `drop policy if exists`
+junto de vários `create policy` travou por 60 s) e conferir o estado antes de repetir.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

@@ -194,6 +194,15 @@ janela privada que abre o RDO sem passar pelo Check-in, o Kanban saía vazio e a
 buscado ao gerar o PDF; o Kanban se refaz quando os dados chegam) com o `chk_assuntos` local (vale no
 mesmo id; traz o ainda não sincronizado) e respeita `chk_removidos`.
 
+### Mudança de banco = nas DUAS obras, sempre (regra do usuário, 06/10/2026)
+
+Obra 1 (`ivssgstckfcuiyetxdze`) e Obra 2 (`lwjbuzubnxnzkofcrhah`) rodam o mesmo código. Tabela, coluna ou
+política criada só numa quebra o módulo quando alguém troca de obra. Aplicar nas duas, conferir nas duas e
+anotar no Registro. A Obra 2 costuma estar **pausada** — restaurar antes. Comando do Supabase que estoura o
+tempo: dividir em partes e conferir o estado antes de repetir. Pendência herdada: as tabelas EAP,
+Planejamento e Suprimentos da Obra 1 estão **sem RLS** (aviso crítico do Supabase) — decisão de políticas
+ainda não tomada.
+
 ---
 
 ## Relacionado
