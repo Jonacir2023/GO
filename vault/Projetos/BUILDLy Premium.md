@@ -7,8 +7,7 @@ tags: [projeto, buildly, cesbe]
 
 # BUILDLy Premium
 
-**Status:** 🟢 Ativo — app pronto para a próxima obra (a anterior foi encerrada e os dados
-zerados de propósito).
+**Status:** 🟢 Ativo — Obra 1 = **Eólica GranSul** (Statkraft), com cronograma Rev. 05 e pauta carregados em 06/10/2026.
 **Responsável:** Jonacir Cazelli · **Empresa:** Cesbe S.A.
 
 Plataforma de gestão de obra. Páginas HTML/JS estáticas, sem build, publicadas no GitHub Pages.
@@ -50,6 +49,18 @@ Manutenção. Ver [[Notas/Arquitetura do App]].
 ---
 
 ## Histórico
+
+### 06/10/2026 — Obra 1 = Gran Sul: cronograma Rev. 05 no Planejamento + pauta carregada
+
+Pedido do usuário: "fazer o melhor app para o melhor controle da obra"; a primeira obra é a Eólica GranSul
+(Statkraft, BOP Civil + RMT, 35 WTGs). Achado ao preparar a carga: **EAP, Planejamento e Suprimentos nunca
+gravaram nada** — `obra_id` era uuid e o app manda `'obra1'`. Corrigido no banco das duas obras
+(`sql/011_obra_id_texto.sql`). Carregado na Obra 1: 405 itens de EAP (resumos do Rev. 05), o cronograma
+de linha de base e 2.128 atividades, mais 7 restrições e 37 assuntos de Pauta/Check-in (Round 3 de 22/09 e
+análise dos documentos, ids `gs-*`). O `planejamento.html` ganhou as abas que estavam vazias: **Atividades**
+(filtros, busca por WTG, KPIs previsto × real, % editável, leitura em lotes de 1000) e **Restrições**.
+Suíte nova `test_planejamento_atividades.py` (15 suítes). Detalhe e pendências em
+[[Decisões/2026-10-06 Cronograma Gran Sul no Planejamento]].
 
 ### 05/10/2026 — Assuntos da Pauta sem data no calendário do Check-in
 

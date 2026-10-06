@@ -27,6 +27,7 @@ escreva uma nova nota que substitua a anterior, marcando a antiga como superada.
 | 04/10 | [[Decisões/2026-10-04 Padrão visual claro]] | ✅ Decidido (falta ver no iPhone) |
 | 05/10 | [[Decisões/2026-10-05 Proposta — Custos como controle de entrada de materiais]] | ✅ Implementada e aplicada nas duas obras |
 | 06/10 | [[Decisões/2026-10-06 Login e perfis de acesso]] | ✅ Fase 1 (tela e perfis) e Fase 2 (RLS por papel nas duas obras) aplicadas |
+| 06/10 | [[Decisões/2026-10-06 Cronograma Gran Sul no Planejamento]] | ✅ `obra_id` texto nas 2 obras; Rev. 05 carregado na Obra 1; abas Atividades e Restrições |
 | 06/10 | [[Decisões/2026-10-06 Proposta — Eventos do Dia do RDO]] | ✅ Implementada (RDO: equipe, paralisação, local, planilha impressa) |
 
 ---
