@@ -46,46 +46,51 @@ não pode reescrever RDO que já existe.
 > `.value` num `<select>` antes de as `<option>` existirem não seleciona nada — e o campo abre
 > vazio num RDO que estava preenchido.
 
-## Eventos do Dia (substituiu Observações do Dia, 01/10/2026)
+## Eventos do Dia — interfaces com equipes (reformulado em 06/10/2026)
 
-Mesma estrutura de Atividades do Dia: catálogo em `state.eventosDia` (padrão: Chegada de material,
-Chegada de equipamentos, Quebra de equipamento, Mudança de estratégia), editado em
-Cadastro → 📌 Eventos; o "+" do Diário abre esse painel, onde se marca o que aconteceu e se informa
-horário e detalhe; há também "+ Registrar evento avulso" para o que não está no catálogo.
+Antes (01/10) era uma lista de tipos marcados com ✓, com campos de carga e valor. Com a aba **Entradas**
+cuidando de todo material que chega, virou o registro de **quem fez o quê na obra**: liberação, paralisação,
+marcação, visita… Proposta e mockup aprovados em 06/10/2026 — ver
+[[Decisões/2026-10-06 Proposta — Eventos do Dia do RDO]].
 
-- O dia guarda uma **cópia do nome** em `currentDay.eventosDia` (`{id, tipoId, tipo, detalhe, hora, custom}`).
-  Remover ou renomear o tipo no cadastro **não** altera dia já registrado (regra de baixa lógica).
-- O painel do Cadastro lê e grava direto em `currentDay.eventosDia` — não há rascunho separado em
-  `S` como em `ativDia_<data>`.
-- **Dado antigo:** o campo `observacoesDia` não tem mais tela. `eventosDoDia(day)` devolve os eventos
-  do dia mais cada trecho de `observacoesDia` (separado por `*`) como evento avulso "Observação";
-  PDF e WhatsApp usam essa função, então RDO antigo continua imprimindo o texto. Ao abrir um dia
-  para editar (`initCurrentDay`) o texto é migrado para `eventosDia` e `observacoesDia` é zerado.
-  O campo continua existindo nos dados salvos (os testes de sincronização o usam como marcador).
-- **Transporte de material:** cada evento tem uma caixinha "🚛 Transporte de material" que mostra
-  Placa (maiúscula), Volume (m³) e Peso (t) — no Diário, no painel do Cadastro e no avulso.
-  Campos `transporte`, `placa`, `volume`, `peso` no evento (strings como digitadas, vírgula decimal
-  aceita). Desmarcar esconde os campos e tira o transporte de PDF/WhatsApp, mas **não apaga** o
-  digitado. `textoTransporteEvento(ev)` monta "Placa X · Volume Y m³ · Peso Z t" para os relatórios.
-  As unidades m³ e t são fixas no rótulo; se a obra precisar de kg, mudar o rótulo e o texto.
-- **Fornecedor e valor da carga:** campos `fornecedor` e `valorCarga` em todo evento (não dependem
-  da caixinha de transporte). `valorCarga` é texto como digitado; `textoCargaEvento(ev)` acrescenta
-  "R$ " se o usuário não digitou. Não há soma nem conversão numérica — se um dia for preciso totalizar
-  o valor das cargas, será preciso normalizar (vírgula/ponto) antes.
-- **Resumos de semana, mês e ano (PDF e WhatsApp):** `calcResumoPeriodoPDF` soma, além das atividades,
-  os eventos por tipo: ocorrências, cargas (só eventos com transporte marcado), volume (m³), peso (t) e
-  valor (R$, de qualquer evento com valor). Tabela "Evento / Ocorr. / Cargas / Volume / Peso / Valor" com
-  linha TOTAL no PDF; bloco "Eventos acumulados" no WhatsApp. O PDF passou a ter também o RESUMO DO ANO
-  (antes só semana e mês). Soma todos os RDOs do período, de todos os apontadores. Só conta
-  `eventosDia` — o texto antigo de Observações do Dia não entra na soma.
-- **Leitura de números:** `numeroBR()` aceita "12,5", "4.850,00", "R$ 980", "18 t". Ponto sozinho é
-  milhar só no padrão 1.234 / 12.345.678; "12.5" é decimal. Se alguém digitar "1.5" para 1,5 m³ está
-  certo; "1.500" vira 1500 (milhar).
-- **Aba Resumo (tela):** seção "📌 Eventos do Período" (`renderResumoEventos`) com um cartão por tipo
-  (ocorrências + chips de cargas, m³, t e R$) e cartão TOTAL; vale para semana, mês e ano e para os
-  botões Copiar/Enviar WhatsApp da aba (`buildResumoTexto`). O texto "Eventos acumulados" vem de
-  uma função só, `textoEventosAcumulados(r)`, usada também no relatório do dia — mexer nela muda os dois.
-- Seguem separados: Eventos de Segurança e de Meio Ambiente (têm gravidade e ação; contam como SSMA).
+- **Cada evento** (`currentDay.eventosDia[]`): `id, tipoId, tipo` (nome do evento), `grupo`, `equipe`
+  (Fiscalização ou Cesbe + equipe), `hora`, `detalhe` (a Descrição), `responsavel` (pessoa da equipe que
+  liberou/parou/marcou), `local`, `paralisacao` (bool), `retomadaData`, `retomadaHora`, `fotos[]` (até 3,
+  data URI, 1024 px q 0,65), `custom`, `removido`/`removidoEm`. O apontador e a data vêm do próprio dia.
+- **Registro:** "➕ / + Registrar evento" abre a janela `#modalEvDia` (`abrirModalEventoDiaNovo(idx?)`):
+  hora (já vem agora), responsável, chips de equipe (agrupados), chips de evento, local (campo com lista
+  dos locais da obra, vem com o local do dia), descrição, checkbox **⛔ Paralisação**, fotos. Equipe, evento,
+  hora e responsável são obrigatórios. Tocar no cartão edita (mesmo `id`); o 🗑️ é **baixa lógica**
+  (`removido: true`) — `eventosAtivos(day)` filtra, PDF/WhatsApp/Resumo/.csv não mostram, os dados ficam.
+- **Paralisação:** o checkbox abre Data e Hora da retomada (as duas juntas ou as duas vazias; vazias =
+  "Retomada em aberto"). Escolher o evento "Paralisação de trabalho" marca o checkbox. `minutosParadoEvento`
+  = retomada − (data do dia + hora do evento); retomada antes da paralisação é recusada.
+- **Catálogos** (Cadastro → 📌 Eventos): `state.equipesEvento` `[{id, grupo, nome}]` (padrão: Fiscalização →
+  Civil, Segurança do Trabalho, Meio Ambiente, Topografia; Cesbe → Energia, Civil, Topografia, Segurança do
+  Trabalho, Meio Ambiente, Laboratório) e `state.eventosDia` `[{id, desc}]` (11 tipos). Remover do cadastro é
+  **baixa lógica** (`inativo`), com "Removidos" para restaurar; entram na sincronização (`mesclarDaNuvem`).
+  `migrarEventosV2` (dentro de `mergeDefaults`, flag `eventosV2`) acrescenta equipes e tipos novos UMA vez ao
+  catálogo antigo sem tirar nada nem duplicar.
+- **Nada se perde (pedido do usuário):** os campos antigos `fornecedor, valorCarga, transporte, placa, volume,
+  peso` não têm mais tela, mas continuam nos dados e saem na Descrição como
+  "Dados antigos: Fornecedor X · Valor R$ Y · Placa Z · Volume N m³ · Peso P t" (`textoLegadoEvento`, sai mesmo
+  com `transporte` desmarcado). O cálculo de cargas/volume/peso/valor dos acumulados segue lendo esses campos.
+- **Impressão:** PDF = planilha "Eventos do dia" (Hora · Equipe · Evento · Descrição · Responsável · Local ·
+  Paralisação) com **linha de resumo** no rodapé (total, paralisações, tempo parado, por equipe) + bloco
+  "Fotos dos eventos" (6 por linha, legenda hora · evento (i/n)). WhatsApp: um item por evento
+  (equipe, descrição, responsável, local, ⛔ paralisação, 📷 fotos, dados antigos) + "_Resumo dos eventos_".
+  Acumulados (semana/mês/ano) ganharam a linha "Paralisações · tempo parado".
+  Resumo em linha (e não tabela) porque o dia cheio precisa caber em 1 folha — ver teste do PDF.
+- **Aba Resumo (tela):** cartões por tipo (com paralisações e tempo parado), tabela por equipe, a **planilha
+  do período** e o botão **📄 Exportar planilha de eventos (.csv)** (`baixarCsvEventos`, `;` + BOM, todas as
+  colunas inclusive Dados antigos e Apontador).
+- **Dado antigo:** `observacoesDia` continua virando eventos "Observação" ao abrir o dia (`initCurrentDay`
+  acrescenta sem derrubar eventos removidos).
+- **Acidentes:** "Eventos de Segurança" e "Eventos de Meio Ambiente" passaram a se chamar **Acidentes de
+  Segurança do Trabalho** e **Acidentes de Meio Ambiente** (Diário, Cadastro "Acid. SST"/"Acid. MA", PDF,
+  WhatsApp). Os dados (`eventosSeguranca`, `eventosAmbiente`) não mudaram; seguem com gravidade e ação.
+- Armadilha: as janelas novas usam `z-index` 1100 e o `toast` 1200, porque a barra de abas é `z-index: 999`
+  e escondia o topo de janela alta.
 
 ## PDF do RDO: um layout só, condensado (02/10/2026)
 

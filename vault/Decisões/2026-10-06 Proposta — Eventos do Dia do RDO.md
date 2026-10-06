@@ -1,7 +1,7 @@
 ---
 criado: 2026-10-06
 tags: [decisao, proposta, rdo, eventos]
-status: aguardando aprovação do usuário (nada implementado)
+status: aprovada e implementada em 06/10/2026 ("ok coloque em prática") — ver [[Notas/RDO — Regras do Módulo]]
 ---
 
 # Proposta — Eventos do Dia do RDO (equipe, evento, descrição, responsável)

@@ -14,10 +14,24 @@ def check(cond, msg):
 
 
 APONTADOR = "501 – Marcelo Dias (Qualidade / Apontamento)"
+PNG = bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000000" "1f15c4890000000d49444154789c6360f8cfc0f01f0005000201" "e221bc330000000049454e44ae426082")
+
+
+def preencher(page, equipe_g, equipe_n, tipo, resp, desc, local="", hora=None):
+    page.evaluate("abrirModalEventoDiaNovo()")
+    if hora:
+        page.fill("#evdHora", hora)
+    page.click(f'#evdEquipes .evd-chip[data-g="{equipe_g}"][data-n="{equipe_n}"]')
+    page.click(f'#evdTipos .evd-chip[data-t="{tipo}"]')
+    page.fill("#evdResp", resp)
+    page.fill("#evdDesc", desc)
+    if local:
+        page.fill("#evdLocal", local)
+
 
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
-    ctx = contexto(b, viewport={"width": 480, "height": 900})
+    ctx = contexto(b, viewport={"width": 480, "height": 900}, accept_downloads=True)
     page = ctx.new_page()
     erros = []
     page.on("pageerror", lambda e: erros.append(str(e)))
@@ -26,163 +40,186 @@ with sync_playwright() as p:
         status=200, content_type="application/json", body=json.dumps({"ok": True})))
     page.goto(f"{BASE}/rdo.html")
     page.wait_for_timeout(1000)
+    page.evaluate("currentDay.apontador = %s" % json.dumps(APONTADOR))
+    DATA = page.evaluate("currentDay.data")
 
-    # ---- Observações do Dia virou Eventos do Dia ----
+    # ---- estrutura ----
     check(page.locator("#observacoesDia").count() == 0, "campo Observações do Dia não existe mais")
     check(page.locator("#eventosDiaList").count() == 1, "seção Eventos do Dia existe no Diário")
     diario = page.text_content("#view-diario")
-    check("Eventos do Dia" in diario, "título 'Eventos do Dia' aparece")
-    check("Observações do Dia" not in diario, "título antigo não aparece")
+    check("Eventos do Dia" in diario and "Observações do Dia" not in diario, "título 'Eventos do Dia' (o antigo não aparece)")
+    check("Acidentes de Segurança do Trabalho" in diario and "Acidentes de Meio Ambiente" in diario
+          and "Eventos de Segurança" not in diario and "Eventos de Meio Ambiente" not in diario,
+          "seções de segurança e meio ambiente chamam-se Acidentes")
 
+    # ---- catálogo padrão e migração do catálogo antigo ----
     tipos = page.evaluate("state.eventosDia.map(e => e.desc)")
-    check(tipos == ["Chegada de material", "Chegada de equipamentos", "Quebra de equipamento",
-                    "Mudança de estratégia"], f"catálogo padrão com 4 tipos ({tipos})")
+    check(len(tipos) == 11 and "Liberação de trabalho" in tipos and "Paralisação de trabalho" in tipos and "Marcação de acesso" in tipos,
+          f"catálogo padrão com 11 tipos de evento ({tipos})")
+    eqs = page.evaluate("state.equipesEvento.map(e => e.grupo + '|' + e.nome)")
+    check(len(eqs) == 10 and "Fiscalização|Topografia" in eqs and "Cesbe|Laboratório" in eqs, f"10 equipes (4 da Fiscalização + 6 da Cesbe) ({eqs})")
+    mig = page.evaluate("""() => {
+      const antigo = { obra: { nome: 'X' }, eventosDia: [{ id: 'ed1', desc: 'Chegada de material' }, { id: 'ed9', desc: 'Liberação de trabalho' }] };
+      const a = mergeDefaults(antigo);
+      const b = mergeDefaults(JSON.parse(JSON.stringify(a)));
+      return { a: a.eventosDia.map(t => t.desc), b: b.eventosDia.length, eq: a.equipesEvento.length, v2: a.eventosV2 };
+    }""")
+    check("Chegada de material" in mig["a"] and mig["a"].count("Liberação de trabalho") == 1 and len(mig["a"]) == 12 and mig["eq"] == 10 and mig["v2"] is True,
+          f"catálogo antigo mantém o que tinha e ganha os novos sem duplicar ({mig})")
+    check(mig["b"] == 12, "migrar de novo não acrescenta nada")
 
-    # ---- cadastro: marcar um tipo cria o evento no dia ----
-    page.evaluate("currentDay.apontador = %s" % json.dumps(APONTADOR))
-    page.click('.tab[data-view="config"]')
-    page.click('.subtab[data-pane="eventosdia"]')
-    check(page.locator("#configEventosDiaList input[type=checkbox]").count() == 4,
-          "painel do cadastro lista os 4 tipos com caixinha")
-    page.locator("#configEventosDiaList input[type=checkbox]").nth(0).check()
-    ev = page.evaluate("currentDay.eventosDia")
-    check(len(ev) == 1 and ev[0]["tipo"] == "Chegada de material" and ev[0]["tipoId"] == "ed1",
-          f"marcar o tipo registra o evento no dia ({ev})")
-    page.locator("#configEventosDiaList input[type=time]").first.fill("08:30")
-    page.locator("#configEventosDiaList input[type=text]").first.fill("Cimento CP-II, NF 1234")
-    page.locator("#configEventosDiaList input[type=text]").first.blur()
-    ev = page.evaluate("currentDay.eventosDia[0]")
-    check(ev["hora"] == "08:30" and ev["detalhe"] == "Cimento CP-II, NF 1234",
-          f"horário e detalhe gravados ({ev})")
+    # ---- registrar um evento ----
+    page.evaluate("abrirModalEventoDiaNovo()")
+    check(page.is_visible("#modalEvDia") and page.input_value("#evdHora") != "", "janela abre com a hora já preenchida")
+    check(page.locator("#evdEquipes .evd-grp").count() == 2, "equipes aparecem separadas em Fiscalização e Cesbe")
+    check(not page.is_visible("#evdRetomada"), "retomada começa escondida")
+    page.click("#evdSalvarBtn")
+    check(page.evaluate("eventosAtivos(currentDay).length") == 0, "sem equipe, evento e responsável não salva")
+    page.evaluate("fecharModal('modalEvDia')")
 
-    # ---- Diário mostra o evento ----
-    page.click('.tab[data-view="diario"]')
-    txt = page.inner_text("#eventosDiaList")
-    check("Chegada de material" in txt, "evento aparece na lista do Diário")
-    check(page.eval_on_selector("#eventosDiaList input[type=time]", "e => e.value") == "08:30",
-          "horário aparece no Diário")
+    preencher(page, "Fiscalização", "Segurança do Trabalho", "Liberação de trabalho", "Fiscal Souza",
+              "Escavação da vala V-03 liberada após o DDS", "Frente 2", "07:30")
+    page.click("#evdSalvarBtn")
+    ev = page.evaluate("eventosAtivos(currentDay)")
+    check(len(ev) == 1 and ev[0]["tipo"] == "Liberação de trabalho" and ev[0]["grupo"] == "Fiscalização" and ev[0]["equipe"] == "Segurança do Trabalho"
+          and ev[0]["responsavel"] == "Fiscal Souza" and ev[0]["local"] == "Frente 2" and ev[0]["hora"] == "07:30"
+          and ev[0]["detalhe"] == "Escavação da vala V-03 liberada após o DDS" and ev[0]["paralisacao"] is False and ev[0]["fotos"] == [],
+          f"evento grava hora, equipe, evento, descrição, responsável e local ({ev})")
+    card = page.inner_text("#eventosDiaList")
+    check("07:30" in card and "Liberação de trabalho" in card and "Fiscalização · Segurança do Trabalho" in card and "Fiscal Souza" in card and "Frente 2" in card,
+          "o cartão do Diário mostra tudo")
 
-    # ---- evento avulso ----
-    page.evaluate("abrirModalEventoDoDiaAvulso()")
-    page.fill("#modalEvDiaAvulsoTipo", "Visita da fiscalização")
-    page.fill("#modalEvDiaAvulsoHora", "14:00")
-    page.fill("#modalEvDiaAvulsoDetalhe", "Vistoria da armação")
-    page.evaluate("salvarEventoDoDiaAvulso()")
-    ev = page.evaluate("currentDay.eventosDia")
-    check(len(ev) == 2 and ev[1]["custom"] is True and ev[1]["tipo"] == "Visita da fiscalização",
-          "evento avulso entra na lista")
+    # ---- paralisação ----
+    page.evaluate("abrirModalEventoDiaNovo()")
+    page.click('#evdEquipes .evd-chip[data-g="Fiscalização"][data-n="Meio Ambiente"]')
+    page.click('#evdTipos .evd-chip[data-t="Paralisação de trabalho"]')
+    check(page.is_checked("#evdPar") and page.is_visible("#evdRetomada"), "escolher 'Paralisação de trabalho' marca o checkbox e abre a retomada")
+    page.fill("#evdHora", "14:05"); page.fill("#evdResp", "Fiscal Lima"); page.fill("#evdDesc", "Supressão paralisada até conferir a licença")
+    page.fill("#evdRetData", DATA)
+    page.click("#evdSalvarBtn")
+    check(page.evaluate("eventosAtivos(currentDay).length") == 1, "data da retomada sem hora é recusada")
+    page.fill("#evdRetHora", "13:00")
+    page.click("#evdSalvarBtn")
+    check(page.evaluate("eventosAtivos(currentDay).length") == 1, "retomada antes da paralisação é recusada")
+    page.fill("#evdRetHora", "16:35")
+    page.click("#evdSalvarBtn")
+    ev = page.evaluate("eventosAtivos(currentDay)[1]")
+    check(ev["paralisacao"] is True and ev["retomadaData"] == DATA and ev["retomadaHora"] == "16:35", f"paralisação grava data e hora da retomada ({ev})")
+    check(page.evaluate("minutosParadoEvento(eventosAtivos(currentDay)[1], currentDay.data)") == 150, "tempo parado: 14:05 a 16:35 = 150 min")
+    check("2h30" in page.inner_text("#eventosDiaList") and "⛔" in page.inner_text("#eventosDiaList"), "o cartão mostra a paralisação e o tempo parado")
 
-    # ---- baixa: remover o tipo do cadastro não apaga o evento do dia ----
-    page.evaluate("removerEventoCadastro('eventosDia', 'ed1')")
+    # paralisação em aberto (sem retomada)
+    preencher(page, "Cesbe", "Civil", "Visita / vistoria", "Enc. Lima", "Parada para troca de mangueira", "Frente 1", "10:00")
+    page.check("#evdPar")
+    page.click("#evdSalvarBtn")
+    aberto = page.evaluate("eventosAtivos(currentDay)[2]")
+    check(aberto["paralisacao"] is True and aberto["retomadaData"] == "" and "Retomada em aberto" in page.evaluate("textoParalisacaoEvento(eventosAtivos(currentDay)[2], currentDay.data)"),
+          "paralisação pode ficar com a retomada em aberto")
+    # editar: registrar a retomada depois
+    ordem = page.evaluate("[...currentDay.eventosDia].findIndex(e => e.hora === '10:00')")
+    page.evaluate(f"abrirModalEventoDiaNovo({ordem})")
+    check(page.input_value("#evdResp") == "Enc. Lima" and page.is_checked("#evdPar") and page.input_value("#evdLocal") == "Frente 1", "editar abre com os dados do evento")
+    page.fill("#evdRetData", DATA); page.fill("#evdRetHora", "11:20")
+    page.click("#evdSalvarBtn")
+    ed = page.evaluate(f"currentDay.eventosDia[{ordem}]")
+    check(ed["retomadaHora"] == "11:20" and page.evaluate("eventosAtivos(currentDay).length") == 3, "editar atualiza o mesmo evento (não duplica)")
+
+    # ---- fotos (até 3) ----
+    page.evaluate("abrirModalEventoDiaNovo()")
+    for _ in range(4):
+        if page.locator("#evdFotos .evd-foto-add").count():
+            page.set_input_files("#evdFotoInput", files=[{"name": "f.png", "mimeType": "image/png", "buffer": PNG}])
+            page.wait_for_timeout(250)
+    check(page.evaluate("evdFotos.length") == 3 and page.locator("#evdFotos .evd-foto").count() == 3 and page.locator("#evdFotos .evd-foto-add").count() == 0,
+          "até 3 fotos por evento (o botão + some no limite)")
+    page.click('#evdEquipes .evd-chip[data-g="Cesbe"][data-n="Topografia"]')
+    page.click('#evdTipos .evd-chip[data-t="Marcação de acesso"]')
+    page.fill("#evdHora", "09:40"); page.fill("#evdResp", "Topógrafo Reis"); page.fill("#evdDesc", "Acesso à jazida marcado da estaca 12 à 18"); page.fill("#evdLocal", "Jazida")
+    page.click("#evdSalvarBtn")
+    check(page.evaluate("eventosAtivos(currentDay).find(e => e.hora === '09:40').fotos.length") == 3 and page.locator("#eventosDiaList .evc-fotos img").count() == 3,
+          "fotos ficam no evento e aparecem no cartão")
+
+    # equipe e evento novos direto da janela
+    page.evaluate("abrirModalEventoDiaNovo()")
+    page.click("#evdEquipes .evd-chip.mais")
+    page.fill("#evdNovoGrupo", "Terceiros"); page.fill("#evdNovoEquipeNome", "Meteorologia")
+    page.click("#evdNovoEquipe .btn-primary")
+    page.click("#evdTipos .evd-chip.mais")
+    page.fill("#evdNovoTipoNome", "Alerta de chuva")
+    page.click("#evdNovoTipo .btn-primary")
+    check(page.evaluate("evdSel.equipe === 'Meteorologia' && evdSel.tipo === 'Alerta de chuva'") and
+          page.evaluate("state.equipesEvento.some(e => e.nome === 'Meteorologia' && e.grupo === 'Terceiros') && state.eventosDia.some(t => t.desc === 'Alerta de chuva')"),
+          "+ equipe e + evento cadastram e já selecionam")
+    page.evaluate("fecharModal('modalEvDia')")
+
+    # ---- baixa lógica do evento do dia ----
+    n_antes = page.evaluate("currentDay.eventosDia.length")
+    idx = page.evaluate("currentDay.eventosDia.findIndex(e => e.hora === '10:00')")
+    page.evaluate(f"removerEventoDoDia({idx})")
     page.click("#modalConfirmYes")
-    check(page.evaluate("state.eventosDia.length") == 3, "tipo sai do cadastro")
-    check(page.evaluate("currentDay.eventosDia.some(e => e.tipo === 'Chegada de material')"),
-          "o evento já registrado no dia continua lá (cópia do nome)")
+    check(page.evaluate("currentDay.eventosDia.length") == n_antes and page.evaluate("eventosAtivos(currentDay).length") == 3,
+          "remover é baixa lógica: o evento continua nos dados, some das telas e dos relatórios")
+    check("Parada para troca de mangueira" not in page.inner_text("#eventosDiaList"), "evento removido some da lista do Diário")
 
-    # ---- WhatsApp e PDF ----
-    wa = page.evaluate("buildRelatorio(currentDay)")
-    check("Eventos do Dia — 2" in wa and "08:30 — Chegada de material: Cimento CP-II, NF 1234" in wa
-          and "Visita da fiscalização: Vistoria da armação" in wa, "texto do WhatsApp traz os eventos")
-    check("Observações do Dia" not in wa, "WhatsApp não traz mais 'Observações do Dia'")
-    page.evaluate("gerarPdfRDO()")
-    page.wait_for_timeout(500)
-    pdf = page.inner_text("#pdfOverlay")
-    check("EVENTOS DO DIA" in pdf and "Cimento CP-II, NF 1234" in pdf and "08:30" in pdf,
-          "PDF traz a tabela de eventos do dia")
-    page.evaluate("fecharPdfRDO()")
+    # ---- dados antigos (transporte, fornecedor, valor) — nada se perde ----
+    page.evaluate("""() => { currentDay.eventosDia.push({ id: 'leg1', tipoId: 'ed1', tipo: 'Chegada de material', hora: '11:00', detalhe: 'Brita 1', custom: false,
+        fornecedor: 'Pedreira Exemplo', valorCarga: '4.800,00', transporte: true, placa: 'ABC1D23', volume: '12', peso: '18' }); salvarDiarioDia(false); renderEventosDoDia(); }""")
+    leg = "Dados antigos: Fornecedor Pedreira Exemplo · Valor R$ 4.800,00 · Placa ABC1D23 · Volume 12 m³ · Peso 18 t"
+    check(leg in page.inner_text("#eventosDiaList"), "evento antigo mostra os dados de carga como 'Dados antigos'")
+    page.evaluate("currentDay.eventosDia.find(e => e.id === 'leg1').transporte = false")
+    check("Placa ABC1D23" in page.evaluate("textoLegadoEvento(currentDay.eventosDia.find(e => e.id === 'leg1'))"), "desmarcar o transporte antigo não esconde a placa")
+    page.evaluate("currentDay.eventosDia.find(e => e.id === 'leg1').transporte = true")
 
-    # ---- transporte de material: placa, volume e peso ----
-    page.click('.tab[data-view="diario"]')
-    linha = page.locator("#eventosDiaList .item-row").nth(0)
-    check(linha.locator("input[placeholder='Placa']").count() == 0,
-          "sem marcar transporte, os campos de placa/volume/peso ficam escondidos")
-    linha.locator("input[type=checkbox]").check()
-    linha = page.locator("#eventosDiaList .item-row").nth(0)
-    linha.locator("input[placeholder='Placa']").fill("abc1d23")
-    linha.locator("input[placeholder='Volume (m³)']").fill("12,5")
-    linha.locator("input[placeholder='Peso (t)']").fill("18")
-    ev = page.evaluate("currentDay.eventosDia[0]")
-    check(ev["transporte"] is True and ev["placa"] == "ABC1D23" and ev["volume"] == "12,5" and ev["peso"] == "18",
-          f"transporte grava placa (maiúscula), volume e peso ({ev})")
-    wa = page.evaluate("buildRelatorio(currentDay)")
-    check("🚛 Placa ABC1D23 · Volume 12,5 m³ · Peso 18 t" in wa, "WhatsApp traz a linha de transporte")
-    page.evaluate("gerarPdfRDO()")
-    page.wait_for_timeout(500)
-    pdf = page.inner_text("#pdfOverlay")
-    check("ABC1D23" in pdf and "12,5 m³" in pdf and "18 t" in pdf, "PDF traz placa, volume e peso")
-    page.evaluate("fecharPdfRDO()")
-
-    # painel do Cadastro tem o mesmo marcador (tipo que ainda está no catálogo)
+    # ---- Cadastro → Eventos ----
     page.click('.tab[data-view="config"]')
     page.click('.subtab[data-pane="eventosdia"]')
-    page.locator("#configEventosDiaList .ativ-item-wrap").first.locator("input[type=checkbox]").first.check()
-    wrap = page.locator("#configEventosDiaList .ativ-item-wrap").first
-    check(wrap.locator("input[placeholder='Placa']").count() == 0, "painel: transporte começa desmarcado")
-    wrap.locator("input[type=checkbox]").nth(1).check()
-    wrap = page.locator("#configEventosDiaList .ativ-item-wrap").first
-    wrap.locator("input[placeholder='Placa']").fill("pqr1s23")
-    ev = page.evaluate("currentDay.eventosDia.find(e => e.tipoId === 'ed2')")
-    check(ev and ev["transporte"] is True and ev["placa"] == "PQR1S23",
-          f"painel do Cadastro grava o transporte do evento ({ev})")
+    cfg = page.inner_text("#pane-eventosdia")
+    check("Fiscalização" in cfg and "Segurança do Trabalho" in cfg and "Liberação de trabalho" in cfg and "Adicionar Equipe" in cfg, "Cadastro lista equipes e tipos de evento")
+    check(page.locator("#configEventosDiaList input[type=checkbox]").count() == 0, "a lista de tipos com caixinha ✓ acabou")
+    page.evaluate("abrirModalEquipeEv()")
+    page.fill("#equipeEvGrupo", "Cesbe"); page.fill("#equipeEvNome", "Geotecnia")
+    page.evaluate("salvarEquipeEv()")
+    check(page.evaluate("state.equipesEvento.some(e => e.nome === 'Geotecnia' && e.grupo === 'Cesbe')"), "equipe nova entra no catálogo")
+    eid = page.evaluate("state.equipesEvento.find(e => e.nome === 'Geotecnia').id")
+    page.evaluate(f"removerEquipeEv('{eid}')")
+    page.click("#modalConfirmYes")
+    check(page.evaluate(f"state.equipesEvento.find(e => e.id === '{eid}').inativo") is True, "remover equipe do cadastro é baixa lógica")
+    page.evaluate("removerEventoCadastro('eventosDia', 'et2')")
+    page.click("#modalConfirmYes")
+    check(page.evaluate("state.eventosDia.find(t => t.id === 'et2').inativo") is True and page.evaluate("eventosAtivos(currentDay).some(e => e.tipo === 'Paralisação de trabalho')"),
+          "remover tipo do cadastro: sai das opções e o evento já registrado continua")
+    page.evaluate("abrirModalEventoDiaNovo()")
+    check(page.locator('#evdTipos .evd-chip[data-t="Paralisação de trabalho"]').count() == 0, "tipo removido não aparece mais na janela de registro")
+    page.evaluate("fecharModal('modalEvDia')")
+    page.evaluate("reativarNoCadastro(state.eventosDia.find(t => t.id === 'et2')); saveState()")
     page.click('.tab[data-view="diario"]')
 
-    # desmarcar esconde e tira dos relatórios, sem apagar o digitado
-    page.locator("#eventosDiaList .item-row").nth(0).locator("input[type=checkbox]").uncheck()
-    ev = page.evaluate("currentDay.eventosDia[0]")
-    check(ev["transporte"] is False and ev["placa"] == "ABC1D23", "desmarcar mantém o digitado guardado")
+    # ---- WhatsApp ----
     wa = page.evaluate("buildRelatorio(currentDay)")
-    check("ABC1D23" not in wa, "sem transporte marcado, WhatsApp não traz placa")
-    page.locator("#eventosDiaList .item-row").nth(0).locator("input[type=checkbox]").check()
+    check("Eventos do Dia — 4" in wa and "07:30 — *Liberação de trabalho*" in wa and "Equipe: Fiscalização · Segurança do Trabalho" in wa
+          and "Resp.: Fiscal Souza · 📍 Frente 2" in wa and "Escavação da vala V-03 liberada após o DDS" in wa, "WhatsApp traz hora, evento, equipe, descrição, responsável e local")
+    check("⛔ Paralisação. Retomada" in wa and "(2h30 parado)" in wa, "WhatsApp traz a paralisação com retomada e tempo parado")
+    check("📷 3 fotos" in wa and leg in wa, "WhatsApp traz o número de fotos e os dados antigos")
+    check("_Resumo dos eventos_" in wa and "Fiscalização · Meio Ambiente: *1x* · 1 paralisação · 2h30 parado" in wa, "WhatsApp traz o resumo por equipe")
+    check("Parada para troca de mangueira" not in wa, "evento removido não vai no WhatsApp")
+    check("Acidentes de Segurança do Trabalho" in page.evaluate("(() => { const d = JSON.parse(JSON.stringify(currentDay)); d.eventosSeguranca = [{tipo: 'Quase-acidente', gravidade: 'leve', desc: 'x', acao: 'y'}]; return buildRelatorio(d); })()"),
+          "WhatsApp chama de Acidentes de Segurança do Trabalho")
 
-    # avulso com transporte
-    page.evaluate("abrirModalEventoDoDiaAvulso()")
-    check(not page.is_visible("#modalEvDiaAvulsoPlaca"), "modal do avulso abre sem os campos de transporte")
-    page.fill("#modalEvDiaAvulsoTipo", "Entrada de brita")
-    page.check("#modalEvDiaAvulsoTransp")
-    check(page.is_visible("#modalEvDiaAvulsoPlaca"), "marcar transporte no avulso mostra os campos")
-    page.fill("#modalEvDiaAvulsoPlaca", "xyz9k88")
-    page.fill("#modalEvDiaAvulsoVolume", "8")
-    page.fill("#modalEvDiaAvulsoPeso", "13,2")
-    page.evaluate("salvarEventoDoDiaAvulso()")
-    ev = page.evaluate("currentDay.eventosDia[currentDay.eventosDia.length - 1]")
-    check(ev["tipo"] == "Entrada de brita" and ev["transporte"] is True and ev["placa"] == "XYZ9K88"
-          and ev["volume"] == "8" and ev["peso"] == "13,2", f"avulso grava o transporte ({ev})")
-
-    # ---- fornecedor e valor da carga (independem do transporte) ----
-    page.click('.tab[data-view="diario"]')
-    linha = page.locator("#eventosDiaList .item-row").nth(0)
-    linha.locator("input[placeholder='Fornecedor']").fill("Votorantim Cimentos")
-    linha.locator("input[placeholder='Valor da carga (R$)']").fill("4.850,00")
-    ev = page.evaluate("currentDay.eventosDia[0]")
-    check(ev["fornecedor"] == "Votorantim Cimentos" and ev["valorCarga"] == "4.850,00",
-          f"fornecedor e valor da carga gravados ({ev})")
-    wa = page.evaluate("buildRelatorio(currentDay)")
-    check("🏭 Fornecedor Votorantim Cimentos · Valor R$ 4.850,00" in wa, "WhatsApp traz fornecedor e valor")
+    # ---- PDF ----
     page.evaluate("gerarPdfRDO()")
-    page.wait_for_timeout(500)
+    page.wait_for_timeout(600)
     pdf = page.inner_text("#pdfOverlay")
-    check("Votorantim Cimentos" in pdf and "R$ 4.850,00" in pdf, "PDF traz fornecedor e valor")
+    for trecho, nome in [("EVENTOS DO DIA", "título"), ("Equipe", "coluna Equipe"), ("Responsável", "coluna Responsável"), ("Local", "coluna Local"),
+                         ("Fiscal Souza", "responsável"), ("Frente 2", "local"), ("Fiscalização · Meio Ambiente", "equipe"),
+                         ("Retomada 16:35 (2h30)", "retomada e tempo parado"), ("Resumo: 4 eventos", "resumo"), ("Por equipe:", "resumo por equipe"),
+                         ("FOTOS DOS EVENTOS — 3", "bloco de fotos"), ("09:40 · Marcação de acesso (1/3)", "legenda da foto"), (leg, "dados antigos"),
+                         ("Escavação da vala V-03 liberada após o DDS", "descrição")]:
+        check(trecho.lower() in pdf.lower(), f"PDF traz: {nome}")
+    check("Parada para troca de mangueira" not in pdf, "evento removido não vai no PDF")
+    horas = page.evaluate("[...document.querySelectorAll('#pdfOverlay .cx-tit')].find(e => /eventos do dia/i.test(e.textContent)).parentElement.querySelectorAll('tr td:first-child')")
+    seq = page.evaluate("[...[...document.querySelectorAll('#pdfOverlay .cx-tit')].find(e => /^eventos do dia/i.test(e.textContent)).parentElement.querySelectorAll('tr')].slice(1, -1).map(r => r.children[0].textContent)")
+    check(seq == sorted(seq), f"planilha do PDF em ordem cronológica ({seq})")
     page.evaluate("fecharPdfRDO()")
-    page.evaluate("currentDay.eventosDia[0].valorCarga = 'R$ 100'")
-    check("Valor R$ 100" in page.evaluate("textoCargaEvento(currentDay.eventosDia[0])")
-          and "R$ R$" not in page.evaluate("textoCargaEvento(currentDay.eventosDia[0])"),
-          "se o usuário já digitou R$, não duplica o prefixo")
-    page.evaluate("currentDay.eventosDia[0].valorCarga = '4.850,00'")
-
-    page.click('.tab[data-view="config"]')
-    page.click('.subtab[data-pane="eventosdia"]')
-    check(page.locator("#configEventosDiaList input[placeholder='Fornecedor']").count() >= 1,
-          "painel do Cadastro tem fornecedor e valor")
-    page.click('.tab[data-view="diario"]')
-
-    page.evaluate("abrirModalEventoDoDiaAvulso()")
-    page.fill("#modalEvDiaAvulsoTipo", "Compra emergencial")
-    page.fill("#modalEvDiaAvulsoFornecedor", "Casa do Construtor")
-    page.fill("#modalEvDiaAvulsoValor", "980")
-    page.evaluate("salvarEventoDoDiaAvulso()")
-    ev = page.evaluate("currentDay.eventosDia[currentDay.eventosDia.length - 1]")
-    check(ev["fornecedor"] == "Casa do Construtor" and ev["valorCarga"] == "980" and ev["transporte"] is False,
-          f"avulso grava fornecedor e valor sem exigir transporte ({ev})")
 
     # ---- resumos de semana / mês / ano somam atividades e eventos ----
     seed = page.evaluate("""(ap) => {
@@ -268,6 +305,27 @@ with sync_playwright() as p:
     check("📌 Eventos do Período" in txt and "• Chegada de material: *4x* — 4 cargas · 50,5 m³ · 75,5 t · R$ 8.830,50" in txt
           and "• *Total:* *5x*" in txt, "Copiar/Enviar da aba Resumo traz os eventos acumulados")
     check("_Eventos acumulados_" not in txt, "texto da aba não repete o subtítulo do relatório do dia")
+    page.click('.tab[data-view="diario"]')
+
+    # ---- planilha de eventos do período na aba Resumo e em .csv ----
+    page.click('.tab[data-view="resumo"]')
+    page.evaluate("setResumoPeriodo('ano'); resumoOffset = 0; renderResumo();")
+    tela = page.inner_text("#resumoEventosList")
+    check("Liberação de trabalho" in tela and "Fiscal Souza" in tela and "Frente 2" in tela and "Marcação de acesso" in tela
+          and "Retomada" in tela and "Fiscalização · Meio Ambiente" in tela, "aba Resumo traz a planilha de eventos do período (equipe, responsável, local, retomada)")
+    check("1 paralisação" in tela or "paralisaç" in tela.lower(), "aba Resumo conta as paralisações")
+    check("Parada para troca de mangueira" not in tela, "evento removido não entra no Resumo")
+    with page.expect_download() as dl:
+        page.evaluate("baixarCsvEventos()")
+    nome = dl.value.suggested_filename
+    csv = open(dl.value.path(), encoding="utf-8-sig").read()
+    cab = csv.splitlines()[0]
+    check(nome.startswith("eventos-do-dia_") and nome.endswith(".csv"), f"nome do arquivo .csv ({nome})")
+    check(cab == '"Data";"Hora";"Grupo";"Equipe";"Evento";"Descrição";"Responsável";"Local";"Paralisação";"Data da retomada";"Hora da retomada";"Tempo parado";"Fotos";"Dados antigos";"Apontador"',
+          "colunas do .csv")
+    check('"Fiscal Souza";"Frente 2"' in csv and '"Sim"' in csv and '"2h30"' in csv and "Fornecedor Pedreira Exemplo" in csv and '"3"' in csv,
+          "o .csv leva todos os campos (responsável, local, paralisação, tempo parado, fotos e dados antigos)")
+    check("Parada para troca de mangueira" not in csv, "evento removido fora do .csv")
     page.click('.tab[data-view="diario"]')
 
     # ---- dado antigo: observacoesDia vira eventos "Observação" ----

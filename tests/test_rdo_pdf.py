@@ -33,8 +33,8 @@ SEMEAR = """([ap]) => {
   d.eventosSeguranca = [{ id: 's', tipo: 'Quase-acidente', gravidade: 'media', desc: 'Queda de material a 2 m', acao: 'Isolamento e DDS extra' }];
   d.eventosAmbiente = [{ id: 'm', tipo: 'Emissão de poeira excessiva', gravidade: 'leve', desc: 'Via de acesso', acao: 'Umectação' }];
   d.eventosDia = [
-    { id: 'e1', tipo: 'Chegada de material', hora: '08:30', detalhe: 'Cimento CP-II NF 1234', fornecedor: 'Votorantim', valorCarga: '4.850,00', transporte: true, placa: 'ABC1D23', volume: '12,5', peso: '18' },
-    { id: 'e2', tipo: 'Quebra de equipamento', hora: '14:10', detalhe: 'Escavadeira PC200 - mangueira hidráulica' }];
+    { id: 'e1', tipo: 'Liberação de trabalho', grupo: 'Fiscalização', equipe: 'Segurança do Trabalho', hora: '08:30', detalhe: 'Escavação da vala V-03 liberada após o DDS', responsavel: 'Fiscal Souza', local: 'Frente 2' },
+    { id: 'e2', tipo: 'Paralisação de trabalho', grupo: 'Cesbe', equipe: 'Civil', hora: '14:10', detalhe: 'Escavadeira PC200 - mangueira hidráulica', responsavel: 'Enc. Lima', local: 'Frente 1', paralisacao: true, retomadaData: d.data, retomadaHora: '16:40' }];
   d.fotos = [1, 2, 3, 4, 5, 6, 7].map(i => ({ id: 'f' + i, dataUrl: foto, legenda: 'Frente de serviço ' + i }));
   salvarDiarioDia(false);
 }"""
@@ -81,9 +81,11 @@ with sync_playwright() as p:
         ("Acompanhamento de fiscalização", "atividade do cadastro"), ("Atendimento à fiscalização", "atividade avulsa"),
         ("Concretagem de laje — Chuva forte na tarde", "atividade paralisada com justificativa"),
         ("Quase-acidente", "evento de segurança"), ("Umectação", "ação do evento de meio ambiente"),
-        ("Cimento CP-II NF 1234", "evento do dia"), ("Valor R$ 4.850,00", "valor da carga"),
-        ("Placa ABC1D23", "placa do transporte"), ("Votorantim", "fornecedor"),
-        ("ACUMULADOS", "tabela de acumulados"), ("Cargas de material", "cargas nos acumulados"),
+        ("Escavação da vala V-03 liberada", "descrição do evento do dia"), ("Fiscalização · Segurança do Trabalho", "equipe do evento"),
+        ("Fiscal Souza", "responsável do evento"), ("Frente 2", "local do evento"),
+        ("Retomada 16:40 (2h30)", "retomada e tempo parado"),
+        ("Resumo: 2 eventos", "resumo dos eventos"), ("Acidentes — segurança do trabalho", "bloco de acidentes"),
+        ("ACUMULADOS", "tabela de acumulados"), ("Paralisações · tempo parado", "paralisações nos acumulados"),
         ("501 – Marcelo Dias", "apontador"), ("Gerado pelo App Diário de Obras", "rodapé"),
     ]:
         check(trecho.lower() in doc.lower(), f"PDF traz: {nome}")

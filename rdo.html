@@ -730,6 +730,40 @@
     overflow-y: auto;
     animation: slideUp 0.25s ease;
   }
+
+  /* Eventos do Dia — registro (equipe, evento, local, paralisação, fotos) */
+  .evd-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .evd-chip { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 11px; border-radius: 99px; border: 1.5px solid var(--line); background: var(--bg-card); color: var(--ink); cursor: pointer; text-transform: none; letter-spacing: 0; }
+  .evd-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .evd-chip.mais { border-style: dashed; background: transparent; }
+  .evd-grp { font-size: 12px; font-weight: 700; color: var(--ink); margin: 8px 0 4px; text-transform: none; letter-spacing: 0; opacity: .75; }
+  .evd-par { display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; text-transform: none; letter-spacing: 0; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--bg-card); }
+  .evd-par input { width: 18px; height: 18px; margin: 0; flex: none; }
+  .evd-par.on { border-color: #d64545; color: #d64545; }
+  .evd-novo { display: flex; gap: 6px; margin-bottom: 8px; }
+  .evd-novo[hidden] { display: none; }
+  #modalEvDia, #modalEquipeEv { z-index: 1100; }
+  .evd-novo input, .evd-novo select { min-width: 0; flex: 1; }
+  .evd-fotos { display: flex; gap: 8px; flex-wrap: wrap; }
+  .evd-foto { position: relative; width: 66px; height: 66px; }
+  .evd-foto img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .evd-foto button { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border: none; border-radius: 50%; background: rgba(0,0,0,.65); color: #fff; font-size: 11px; line-height: 1; cursor: pointer; }
+  .evd-foto-add { width: 66px; height: 66px; border: 1.5px dashed var(--line); border-radius: 8px; background: transparent; color: var(--accent); font-size: 22px; cursor: pointer; }
+  .evc { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-card); margin-bottom: 8px; cursor: pointer; align-items: start; }
+  .evc.evc-par { border-left: 4px solid #d64545; }
+  .evc-hora { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .evc-tit { font-weight: 700; }
+  .evc-sub { font-size: 12px; opacity: .75; margin-top: 1px; }
+  .evc-desc { font-size: 13px; margin-top: 4px; white-space: pre-wrap; }
+  .evc-leg { font-size: 12px; margin-top: 4px; opacity: .75; font-style: italic; }
+  .evc-parlin { font-size: 12px; font-weight: 700; color: #d64545; margin-top: 4px; }
+  .evc-fotos { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .evc-fotos img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+  .ev-tab-wrap { overflow-x: auto; margin: 8px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-card); }
+  .ev-tab { border-collapse: collapse; width: 100%; font-size: 12px; min-width: 520px; }
+  .ev-tab th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .4px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .ev-tab td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .ev-tab .n { text-align: right; font-variant-numeric: tabular-nums; }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .modal-title {
     font-family: var(--serif);
@@ -875,7 +909,7 @@
     border-radius: 24px;
     font-size: 13px;
     font-weight: 600;
-    z-index: 300;
+    z-index: 1200;
     opacity: 0;
     transition: all 0.3s ease;
     box-shadow: 0 8px 24px rgba(0,0,0,0.3);
@@ -1462,15 +1496,15 @@
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">📌 Eventos do Dia</div>
-      <button class="btn-circular-add" onclick="abrirAbaEventosDia()" title="Selecionar eventos">+</button>
+      <button class="btn-circular-add" onclick="abrirModalEventoDiaNovo()" title="Registrar evento">+</button>
     </div>
     <div id="eventosDiaList"></div>
-    <button class="add-btn-full" onclick="abrirModalEventoDoDiaAvulso()"><span style="color:var(--accent-soft)">+</span> Registrar evento avulso</button>
+    <button class="add-btn-full" onclick="abrirModalEventoDiaNovo()"><span style="color:var(--accent-soft)">+</span> Registrar evento</button>
   </div>
 
   <div class="section">
     <div class="section-title">
-      <div class="section-title-text">🦺 Eventos de Segurança</div>
+      <div class="section-title-text">🦺 Acidentes de Segurança do Trabalho</div>
       <button class="btn-circular-add" onclick="abrirModalEventoDia('seguranca')" title="Adicionar">+</button>
     </div>
     <div id="evSegList"></div>
@@ -1479,7 +1513,7 @@
   
   <div class="section">
     <div class="section-title">
-      <div class="section-title-text">🌱 Eventos de Meio Ambiente</div>
+      <div class="section-title-text">🌱 Acidentes de Meio Ambiente</div>
       <button class="btn-circular-add" onclick="abrirModalEventoDia('meio_ambiente')" title="Adicionar">+</button>
     </div>
     <div id="evAmbList"></div>
@@ -1624,8 +1658,8 @@
   </div>
   <div class="subtabs">
     <button class="subtab" data-pane="eventosdia">📌 Eventos</button>
-    <button class="subtab" data-pane="seguranca">🦺 Seg.</button>
-    <button class="subtab" data-pane="meio_ambiente">🌱 M.A.</button>
+    <button class="subtab" data-pane="seguranca">🦺 Acid. SST</button>
+    <button class="subtab" data-pane="meio_ambiente">🌱 Acid. MA</button>
     <button class="subtab" data-pane="backup">💾 Backup</button>
   </div>
   
@@ -1746,14 +1780,22 @@
   <!-- EVENTOS DO DIA -->
   <div class="config-pane" id="pane-eventosdia">
     <div class="section">
-      <div class="section-title"><div class="section-title-text">📌 Eventos do Dia</div></div>
+      <div class="section-title"><div class="section-title-text">👥 Equipes</div></div>
       <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
-        Marque os que aconteceram hoje — o horário e o detalhe aparecem logo abaixo do item. Use ✏️/🗑️ para editar ou remover do cadastro.
+        Quem causa o evento na obra: Fiscalização e equipes da empresa. Aparecem como botões ao registrar um evento.
+      </p>
+      <button class="add-btn-full" onclick="abrirModalEquipeEv()"><span style="color:var(--accent-soft)">+</span> Adicionar Equipe</button>
+      <hr class="divider">
+      <div id="configEquipesEvList"></div>
+    </div>
+    <div class="section">
+      <div class="section-title"><div class="section-title-text">📌 Tipos de evento</div></div>
+      <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
+        Liberação, paralisação, marcação… Use ✏️/🗑️ para editar ou remover do cadastro (os eventos já registrados nos diários não mudam).
       </p>
       <button class="add-btn-full" onclick="abrirModalEventoCadastro('eventosDia')"><span style="color:var(--accent-soft)">+</span> Adicionar Tipo de Evento</button>
       <hr class="divider">
       <div id="configEventosDiaList"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEventosDoDia()">💾 Salvar Eventos do Dia</button>
     </div>
   </div>
 
@@ -1984,36 +2026,62 @@
   </div>
 </div>
 
-<!-- Atividade avulsa -->
-<div class="modal-overlay" id="modalEventoDoDiaAvulso">
+<!-- Evento do dia: registro -->
+<div class="modal-overlay" id="modalEvDia">
   <div class="modal">
-    <div class="modal-title">Evento Avulso do Dia</div>
-    <label>Evento</label>
-    <input type="text" id="modalEvDiaAvulsoTipo" placeholder="Ex.: Visita da fiscalização">
-    <label>Horário</label>
-    <input type="time" id="modalEvDiaAvulsoHora">
-    <label>Detalhe</label>
-    <textarea id="modalEvDiaAvulsoDetalhe" rows="3" placeholder="Opcional"></textarea>
-    <label>Fornecedor</label>
-    <input type="text" id="modalEvDiaAvulsoFornecedor" placeholder="Opcional">
-    <label>Valor da carga (R$)</label>
-    <input type="text" inputmode="decimal" id="modalEvDiaAvulsoValor" placeholder="Opcional">
-    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0">
-      <input type="checkbox" id="modalEvDiaAvulsoTransp" style="width:18px;height:18px;margin:0;flex:none"
-        onchange="document.getElementById('modalEvDiaAvulsoTranspCampos').style.display = this.checked ? 'block' : 'none'">
-      🚛 Transporte de material
-    </label>
-    <div id="modalEvDiaAvulsoTranspCampos" style="display:none">
-      <label>Placa</label>
-      <input type="text" id="modalEvDiaAvulsoPlaca" maxlength="8" placeholder="Ex.: ABC1D23" style="text-transform:uppercase">
-      <label>Volume (m³)</label>
-      <input type="text" inputmode="decimal" id="modalEvDiaAvulsoVolume" placeholder="Ex.: 12">
-      <label>Peso (t)</label>
-      <input type="text" inputmode="decimal" id="modalEvDiaAvulsoPeso" placeholder="Ex.: 18">
+    <div class="modal-title" id="modalEvDiaTitulo">Registrar evento</div>
+    <div class="frow-2" style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px">
+      <div><label for="evdHora">Hora</label><input type="time" id="evdHora"></div>
+      <div><label for="evdResp">Responsável</label><input type="text" id="evdResp" placeholder="Quem liberou, parou ou marcou"></div>
     </div>
+    <label>Equipe que causou o evento</label>
+    <div id="evdEquipes"></div>
+    <div class="evd-novo" id="evdNovoEquipe" hidden>
+      <input type="text" id="evdNovoGrupo" list="evdGruposLista" placeholder="Grupo (Fiscalização, Cesbe…)">
+      <datalist id="evdGruposLista"></datalist>
+      <input type="text" id="evdNovoEquipeNome" placeholder="Nome da equipe">
+      <button class="btn btn-primary" type="button" onclick="evdAdicionarEquipe()">OK</button>
+    </div>
+    <label>Evento</label>
+    <div id="evdTipos"></div>
+    <div class="evd-novo" id="evdNovoTipo" hidden>
+      <input type="text" id="evdNovoTipoNome" placeholder="Nome do evento">
+      <button class="btn btn-primary" type="button" onclick="evdAdicionarTipo()">OK</button>
+    </div>
+    <label for="evdLocal">Local do evento</label>
+    <input type="text" id="evdLocal" list="evdLocalLista" placeholder="Escolha ou digite o local">
+    <datalist id="evdLocalLista"></datalist>
+    <label for="evdDesc">Descrição</label>
+    <textarea id="evdDesc" rows="3" placeholder="O que foi liberado, parado ou marcado e por quê"></textarea>
+    <label class="evd-par" id="evdParLabel" style="margin-top:12px"><input type="checkbox" id="evdPar" onchange="evdAtualizarRetomada()"> ⛔ Paralisação</label>
+    <div id="evdRetomada" hidden>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+        <div><label for="evdRetData">Data da retomada</label><input type="date" id="evdRetData"></div>
+        <div><label for="evdRetHora">Hora da retomada</label><input type="time" id="evdRetHora"></div>
+      </div>
+      <p style="font-size:12px;margin-top:4px;opacity:.75">Pode deixar em branco e voltar aqui quando o trabalho retomar: o evento fica como "retomada em aberto".</p>
+    </div>
+    <label>Fotos (opcional, até 3)</label>
+    <div class="evd-fotos" id="evdFotos"></div>
+    <input type="file" id="evdFotoInput" accept="image/*" hidden onchange="evdAdicionarFoto(event)">
     <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-ghost" onclick="fecharModal('modalEventoDoDiaAvulso')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarEventoDoDiaAvulso()">Salvar</button>
+      <button class="btn btn-ghost" type="button" onclick="fecharModal('modalEvDia')">Cancelar</button>
+      <button class="btn btn-primary" type="button" id="evdSalvarBtn" onclick="evdSalvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Equipe de evento (cadastro) -->
+<div class="modal-overlay" id="modalEquipeEv">
+  <div class="modal">
+    <div class="modal-title" id="modalEquipeEvTitulo">Nova equipe</div>
+    <label for="equipeEvGrupo">Grupo</label>
+    <input type="text" id="equipeEvGrupo" list="evdGruposLista" placeholder="Fiscalização, Cesbe…">
+    <label for="equipeEvNome">Equipe</label>
+    <input type="text" id="equipeEvNome" placeholder="Ex.: Topografia">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost" type="button" onclick="fecharModal('modalEquipeEv')">Cancelar</button>
+      <button class="btn btn-primary" type="button" onclick="salvarEquipeEv()">Salvar</button>
     </div>
   </div>
 </div>
@@ -2320,6 +2388,16 @@ function voltarParaHome() {
   }
 }
 
+// Eventos do Dia: equipes que causam eventos na obra e tipos de evento (catálogo inicial).
+const EQUIPES_EVENTO_PADRAO = [
+  ['Fiscalização', 'Civil'], ['Fiscalização', 'Segurança do Trabalho'], ['Fiscalização', 'Meio Ambiente'], ['Fiscalização', 'Topografia'],
+  ['Cesbe', 'Energia'], ['Cesbe', 'Civil'], ['Cesbe', 'Topografia'], ['Cesbe', 'Segurança do Trabalho'], ['Cesbe', 'Meio Ambiente'], ['Cesbe', 'Laboratório']
+];
+const TIPOS_EVENTO_PADRAO = [
+  'Liberação de trabalho', 'Paralisação de trabalho', 'Retomada de trabalho', 'Liberação de base', 'Liberação de terreno',
+  'Liberação de acesso', 'Marcação de base', 'Marcação de acesso', 'Visita / vistoria', 'Ensaio / coleta', 'Não conformidade'
+];
+
 const DEFAULT_DATA = {
   obra: {
     nome: '',
@@ -2393,12 +2471,9 @@ const DEFAULT_DATA = {
     { id: 'a5', desc: 'Acompanhamento de fiscalização', local: '', unidade: '' }
   ],
   veiculosFrota: [],
-  eventosDia: [
-    { id: 'ed1', desc: 'Chegada de material' },
-    { id: 'ed2', desc: 'Chegada de equipamentos' },
-    { id: 'ed3', desc: 'Quebra de equipamento' },
-    { id: 'ed4', desc: 'Mudança de estratégia' }
-  ],
+  eventosDia: TIPOS_EVENTO_PADRAO.map((d, i) => ({ id: 'et' + (i + 1), desc: d })),
+  equipesEvento: EQUIPES_EVENTO_PADRAO.map(([g, n], i) => ({ id: 'eq' + (i + 1), grupo: g, nome: n })),
+  eventosV2: true,
   seguranca: [
     { id: 's1', desc: 'Acidente sem afastamento' },
     { id: 's2', desc: 'Quase-acidente' },
@@ -2441,7 +2516,7 @@ const EMPTY_DAY = () => ({
   atividadesMarcadas: {},
   atividadesQtd: {},  // id -> quantidade executada
   atividadesAvulsas: [],
-  eventosDia: [],  // [{id, tipoId, tipo, detalhe, hora, custom}] — tipo é cópia do nome
+  eventosDia: [],  // [{id, tipoId, tipo, grupo, equipe, hora, detalhe, responsavel, local, paralisacao, retomadaData, retomadaHora, fotos[], removido?, custom}] — tipo/equipe são cópias do nome
   efetivo: {},
   equipamentos: {},  // id -> {ativo, operadorMat, operadorNome, status, horimetro}
   veiculosLeves: [],  // [{id, desc, placa, motorista}]
@@ -2546,8 +2621,23 @@ function getStorageKey() {
 function getHistoryKey() {
   return HISTORY_KEY_BASE + '_' + (state.obra.nome || 'default').replace(/\s+/g, '_').toLowerCase();
 }
+// Catálogo antigo (4 tipos de evento, sem equipes): acrescenta os tipos e as equipes novos UMA vez,
+// sem tirar nada do que o usuário já cadastrou. Quem apagou um tipo depois da migração não o vê voltar.
+function migrarEventosV2(s) {
+  if (!Array.isArray(s.eventosDia)) s.eventosDia = [];
+  if (!Array.isArray(s.equipesEvento)) s.equipesEvento = [];
+  if (!s.eventosV2) {
+    const tem = new Set(s.eventosDia.map(t => String(t.desc || '').trim().toLowerCase()));
+    TIPOS_EVENTO_PADRAO.forEach((d, i) => { if (!tem.has(d.toLowerCase())) s.eventosDia.push({ id: 'et' + (i + 1), desc: d }); });
+    const temEq = new Set(s.equipesEvento.map(e => (e.grupo + '|' + e.nome).toLowerCase()));
+    EQUIPES_EVENTO_PADRAO.forEach(([g, n], i) => { if (!temEq.has((g + '|' + n).toLowerCase())) s.equipesEvento.push({ id: 'eq' + (i + 1), grupo: g, nome: n }); });
+    s.eventosV2 = true;
+  }
+  return s;
+}
 function mergeDefaults(d) {
   const base = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  base.eventosV2 = (d && d.eventosV2 === true);
   // deep-ish merge: garante chaves principais
   Object.keys(base).forEach(k => {
     if (d[k] !== undefined) base[k] = d[k];
@@ -2557,7 +2647,7 @@ function mergeDefaults(d) {
   Object.keys(DEFAULT_DATA.obra).forEach(k => {
     if (base.obra[k] === undefined) base.obra[k] = DEFAULT_DATA.obra[k];
   });
-  return base;
+  return migrarEventosV2(base);
 }
 function saveState() {
   const key = getStorageKey();
@@ -3038,7 +3128,8 @@ function initCurrentDay(data) {
   }
   // Observações do Dia virou Eventos do Dia: o texto antigo entra como eventos
   // avulsos "Observação" (uma por linha separada por *) e o campo é zerado.
-  currentDay.eventosDia = eventosDoDia(currentDay);
+  { const antigos = eventosDoDia(currentDay).filter(e => !(currentDay.eventosDia || []).includes(e));
+    currentDay.eventosDia = (currentDay.eventosDia || []).concat(antigos); }
   currentDay.observacoesDia = '';
   editingDate = (data === todayISO()) ? null : data;
   atualizarHeaderEdicao();
@@ -3768,7 +3859,9 @@ function textoEventosAcumulados(r) {
     e.cargas ? `${e.cargas} carga${e.cargas > 1 ? 's' : ''}` : '',
     e.volume ? `${fmtNumBR(e.volume)} m³` : '',
     e.peso ? `${fmtNumBR(e.peso)} t` : '',
-    e.valor ? fmtMoedaBR(e.valor) : ''
+    e.valor ? fmtMoedaBR(e.valor) : '',
+    e.par ? `${e.par} paralisaç${e.par > 1 ? 'ões' : 'ão'}` : '',
+    e.min ? `${fmtMinutos(e.min)} parado` : ''
   ].filter(Boolean).join(' · ');
   let s = `\n_Eventos acumulados_\n`;
   tiposEv.forEach(t => {
@@ -3779,20 +3872,32 @@ function textoEventosAcumulados(r) {
     const e = r.totalEventos;
     s += `• *Total:* *${e.ocorrencias}x*${detalhes(e) ? ' — ' + detalhes(e) : ''}\n`;
   }
+  const nomesEq = Object.keys(r.equipes || {}).filter(n => n !== '(sem equipe)').sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  if (nomesEq.length) {
+    s += `_Por equipe_\n`;
+    nomesEq.forEach(n => {
+      const q = r.equipes[n];
+      s += `• ${n}: *${q.ocorrencias}x*${q.par ? ` · ${q.par} paralisaç${q.par > 1 ? 'ões' : 'ão'}` : ''}${q.min ? ` · ${fmtMinutos(q.min)} parado` : ''}\n`;
+    });
+  }
   return s;
 }
 
 function calcResumoPeriodoPDF(isoInicio, isoFim) {
   const dias = Object.keys(history).filter(k => dataDaChave(k) >= isoInicio && dataDaChave(k) <= isoFim).sort();
   const acum = {}; // atId -> total
-  const eventos = {}; // tipo -> {ocorrencias, cargas, volume, peso, valor}
-  const totalEventos = { ocorrencias: 0, cargas: 0, volume: 0, peso: 0, valor: 0 };
+  const novoEv = () => ({ ocorrencias: 0, cargas: 0, volume: 0, peso: 0, valor: 0, par: 0, min: 0 });
+  const eventos = {}; // tipo -> {ocorrencias, cargas, volume, peso, valor, par, min}
+  const equipes = {}; // "grupo · equipe" -> {ocorrencias, par, min}
+  const lista = [];   // planilha do período: {data, apontador, ev}
+  const totalEventos = novoEv();
   let somaEfetivo = 0, diasComEfetivo = 0;
-  dias.forEach(data => {
-    const dia = history[data];
-    // Só eventos de verdade: o texto antigo de Observações do Dia não entra na soma.
-    (dia.eventosDia || []).forEach(ev => {
-      const e = eventos[ev.tipo || 'Evento'] || (eventos[ev.tipo || 'Evento'] = { ocorrencias: 0, cargas: 0, volume: 0, peso: 0, valor: 0 });
+  dias.forEach(chave => {
+    const dia = history[chave];
+    const dataDia = dataDaChave(chave);
+    // Só eventos de verdade (e não removidos): o texto antigo de Observações do Dia não entra na soma.
+    eventosAtivos(dia).forEach(ev => {
+      const e = eventos[ev.tipo || 'Evento'] || (eventos[ev.tipo || 'Evento'] = novoEv());
       e.ocorrencias++; totalEventos.ocorrencias++;
       if (ev.transporte) {
         const vol = numeroBR(ev.volume), peso = numeroBR(ev.peso);
@@ -3801,6 +3906,13 @@ function calcResumoPeriodoPDF(isoInicio, isoFim) {
       }
       const val = numeroBR(ev.valorCarga);
       e.valor += val; totalEventos.valor += val;
+      const min = minutosParadoEvento(ev, dataDia);
+      const nomeEq = equipeEvento(ev) || '(sem equipe)';
+      const q = equipes[nomeEq] || (equipes[nomeEq] = { ocorrencias: 0, par: 0, min: 0 });
+      q.ocorrencias++;
+      if (ev.paralisacao) { e.par++; totalEventos.par++; q.par++; }
+      e.min += min; totalEventos.min += min; q.min += min;
+      lista.push({ data: dataDia, apontador: dia.apontador || '', ev });
     });
     const ids = new Set([
       ...Object.keys(dia.atividadesQtd || {}),
@@ -3815,7 +3927,8 @@ function calcResumoPeriodoPDF(isoInicio, isoFim) {
       if (n > 0) { somaEfetivo += n; diasComEfetivo++; }
     }
   });
-  return { dias, acum, eventos, totalEventos, somaEfetivo, diasComEfetivo };
+  lista.sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : ((a.ev.hora || '99:99') < (b.ev.hora || '99:99') ? -1 : (a.ev.hora || '99:99') > (b.ev.hora || '99:99') ? 1 : 0));
+  return { dias, acum, eventos, totalEventos, equipes, lista, somaEfetivo, diasComEfetivo };
 }
 
 // Assuntos do Check-in para o Kanban do PDF. Duas fontes, mescladas:
@@ -4167,21 +4280,48 @@ function gerarPdfRDO() {
     ? `<table class="cx"><tr><th style="width:9%" class="c">Tipo</th><th>Descrição</th><th style="width:38%">Situação</th><th style="width:9%" class="r">Qtd</th></tr>${linhasEq}</table>`
     : colunaVazia);
 
-  // ----- eventos do dia -----
-  const eventos = eventosDoDia(day);
+  // ----- eventos do dia: planilha, resumo por equipe e fotos -----
+  const eventos = ordenarEventosPorHora(eventosDoDia(day));
   const linhasEv = eventos.map(ev => {
-    const partes = [ev.detalhe ? E(ev.detalhe) : '', textoCargaEvento(ev) ? E(textoCargaEvento(ev)) : '', textoTransporteEvento(ev) ? '<b>Transp.:</b> ' + E(textoTransporteEvento(ev)) : ''].filter(Boolean);
-    return `<tr><td class="c">${E(ev.hora || '—')}</td><td>${E(ev.tipo)}</td><td>${partes.join(' · ')}</td></tr>`;
+    const par = textoParalisacaoEvento(ev, day.data, true);
+    return `<tr><td class="c">${E(ev.hora || '—')}</td><td>${E(equipeEvento(ev) || '—')}</td><td>${E(ev.tipo)}</td><td>${E(descricaoCompletaEvento(ev) || '—')}</td><td>${E(ev.responsavel || '—')}</td><td>${E(ev.local || '—')}</td><td>${par ? '<b>' + E(par) + '</b>' : '—'}</td></tr>`;
   }).join('');
+  // Resumo em uma linha no rodapé da própria planilha (economiza folha): total, paralisações, tempo parado e por equipe.
+  const porEq = {};
+  eventos.forEach(ev => {
+    const k = equipeEvento(ev);
+    if (!k) return;
+    const o = porEq[k] || (porEq[k] = { n: 0, par: 0, min: 0 });
+    o.n++; if (ev.paralisacao) { o.par++; o.min += minutosParadoEvento(ev, day.data); }
+  });
+  const totPar = eventos.filter(ev => ev.paralisacao).length;
+  const totMin = eventos.reduce((t, ev) => t + minutosParadoEvento(ev, day.data), 0);
+  const nomesEqPdf = Object.keys(porEq).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const resumoLinha = `<b>Resumo:</b> ${eventos.length} evento${eventos.length > 1 ? 's' : ''}` +
+    ` · ${totPar} paralisaç${totPar === 1 ? 'ão' : 'ões'}${totMin ? ' · ' + fmtMinutos(totMin) + ' parado' : ''}` +
+    (nomesEqPdf.length ? ' · <b>Por equipe:</b> ' + nomesEqPdf.map(k => `${E(k)} ${porEq[k].n}${porEq[k].par ? ' (' + porEq[k].par + ' paral.' + (porEq[k].min ? ', ' + fmtMinutos(porEq[k].min) : '') + ')' : ''}`).join('; ') : '');
   const secEventos = eventos.length ? bloco('Eventos do dia',
-    `<table class="cx"><tr><th style="width:8%" class="c">Hora</th><th style="width:24%">Evento</th><th>Detalhe</th></tr>${linhasEv}</table>`) : '';
+    `<table class="cx"><tr><th style="width:5%" class="c">Hora</th><th style="width:20%">Equipe</th><th style="width:14%">Evento</th><th style="width:25%">Descrição</th><th style="width:10%">Responsável</th><th style="width:10%">Local</th><th style="width:16%">Paralisação</th></tr>${linhasEv}<tr><td colspan="7">${resumoLinha}</td></tr></table>`) : '';
+  const fotosEv = [];
+  eventos.forEach(ev => (ev.fotos || []).forEach((f, i, a) => fotosEv.push({ src: f, leg: `${ev.hora || '--:--'} · ${ev.tipo} (${i + 1}/${a.length})` })));
+  let secEvFotos = '';
+  if (fotosEv.length) {
+    const cols = 6, larg = (100 / cols).toFixed(2) + '%';
+    let linhasF = '';
+    for (let i = 0; i < fotosEv.length; i += cols) {
+      let tds = '';
+      for (let k = i; k < i + cols; k++) tds += fotosEv[k] ? `<td style="width:${larg}"><img src="${fotosEv[k].src}" alt="Foto do evento"><div>${E(fotosEv[k].leg)}</div></td>` : `<td style="width:${larg}"></td>`;
+      linhasF += `<tr>${tds}</tr>`;
+    }
+    secEvFotos = bloco(`Fotos dos eventos — ${fotosEv.length}`, `<table class="cx-fotos">${linhasF}</table>`);
+  }
 
   // ----- segurança e meio ambiente -----
   const gravRot = { leve: 'Leve', media: 'Média', grave: 'Grave' };
-  const linhasSsma = [['Seg.', evSeg], ['Amb.', evAmb]].map(([area, lista]) => lista.map(ev =>
+  const linhasSsma = [['SST', evSeg], ['MA', evAmb]].map(([area, lista]) => lista.map(ev =>
     `<tr><td class="c">${area}</td><td>${E(ev.tipo)}</td><td>${gravRot[ev.gravidade] || '—'}</td><td>${[ev.desc ? E(ev.desc) : '', ev.acao ? '<b>Ação:</b> ' + E(ev.acao) : ''].filter(Boolean).join(' · ')}</td></tr>`
   ).join('')).join('');
-  const secSsma = linhasSsma ? bloco('Segurança e meio ambiente',
+  const secSsma = linhasSsma ? bloco('Acidentes — segurança do trabalho e meio ambiente',
     `<table class="cx"><tr><th style="width:7%" class="c">Área</th><th style="width:22%">Evento</th><th style="width:9%">Grav.</th><th>Descrição / ação</th></tr>${linhasSsma}</table>`) : '';
 
   // ----- fotos em miniatura -----
@@ -4228,6 +4368,9 @@ function gerarPdfRDO() {
       + linhaAc('Volume (m³)', r => r.totalEventos.volume ? fmtNumBR(r.totalEventos.volume) : '—')
       + linhaAc('Peso (ton)', r => r.totalEventos.peso ? fmtNumBR(r.totalEventos.peso) : '—');
   }
+  if (periodos.some(pr => pr.r.totalEventos.par)) {
+    linhasAc += linhaAc('Paralisações · tempo parado', r => r.totalEventos.par ? r.totalEventos.par + ' · ' + fmtMinutos(r.totalEventos.min) : '—', true);
+  }
   if (temValor) linhasAc += linhaAc('Valor das cargas', r => r.totalEventos.valor ? fmtMoedaBR(r.totalEventos.valor) : '—', true);
   const secAcum = bloco('Acumulados', `<table class="cx"><tr><th>Item</th>${periodos.map(pr => `<th class="r" style="width:19%">${pr.rot}<br><span style="font-weight:400">${pr.sub}</span></th>`).join('')}</tr>${linhasAc}</table>`);
 
@@ -4259,7 +4402,7 @@ function gerarPdfRDO() {
       </tr></table>
       <table class="cx-kpi"><tr>
         ${kpi(totEf, 'Efetivo')}${kpi(ativsMarc.length + avulsas.length, 'Atividades')}${kpi(equipsAtivos.length + vlAtivos.length, 'Equip./veíc.')}
-        ${kpi(paralisadas.length, 'Paralisadas')}${kpi(evSeg.length + evAmb.length, 'SSMA')}${kpi(totalPrecipitacao(day).toFixed(1), 'Chuva mm')}${kpi(fotos.length, 'Fotos')}
+        ${kpi(paralisadas.length, 'Paralisadas')}${kpi(evSeg.length + evAmb.length, 'Acidentes')}${kpi(totalPrecipitacao(day).toFixed(1), 'Chuva mm')}${kpi(fotos.length, 'Fotos')}
       </tr></table>
       <table class="cx-duas"><tr>
         <td>${bloco('Clima', tabClima)}</td>
@@ -4268,6 +4411,7 @@ function gerarPdfRDO() {
       <table class="cx-duas"><tr><td>${secEfetivo}</td><td>${secEquip}</td></tr></table>
       ${secAtiv}
       ${secEventos}
+      ${secEvFotos}
       ${secSsma}
       ${secAcum}
       ${secFotos}
@@ -4782,7 +4926,7 @@ function salvarDiarioDia(notificar) {
     if (notificar) avisarFaltaResponsavel();
     return;
   }
-  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || (currentDay.eventosDia || []).length > 0 || currentDay.tempoManha || currentDay.tempoTarde ||
+  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || eventosAtivos(currentDay).length > 0 || currentDay.tempoManha || currentDay.tempoTarde ||
     Object.keys(currentDay.efetivo).length > 0 ||
     Object.keys(currentDay.atividadesMarcadas).length > 0 ||
     Object.keys(currentDay.atividadesQtd || {}).length > 0 ||
@@ -4952,248 +5096,335 @@ function salvarAtivExtra() {
 }
 
 // ============================================================
-// EVENTOS DO DIA — chegada de material, quebra de equipamento, mudança de estratégia…
-// Catálogo em state.eventosDia (editado em Cadastro → Eventos). O dia guarda uma
-// CÓPIA do nome (tipo) em currentDay.eventosDia; remover ou renomear o tipo no
-// cadastro nunca mexe num dia já registrado.
+// EVENTOS DO DIA — interfaces com equipes: liberação, paralisação, marcação, visita…
+// Cada evento: hora, equipe causadora (grupo + equipe), evento (tipo), descrição (detalhe),
+// responsável, local, paralisação (com data/hora de retomada) e até 3 fotos.
+// Catálogos em state.eventosDia (tipos) e state.equipesEvento (editados em Cadastro → Eventos).
+// O dia guarda uma CÓPIA dos nomes: remover ou renomear no cadastro nunca mexe num dia já
+// registrado. Remover um evento do dia é baixa lógica (removido: true) — nada se apaga.
+// Campos antigos (fornecedor, valorCarga, transporte, placa, volume, peso) continuam guardados
+// e saem na Descrição como "Dados antigos: …" — ver textoLegadoEvento.
 // ============================================================
+const MAX_FOTOS_EVENTO = 3;
+
+function eventosAtivos(day) {
+  return ((day && day.eventosDia) || []).filter(e => e && !e.removido);
+}
+
 function eventosDoDia(day) {
-  const lista = ((day && day.eventosDia) || []).slice();
+  const lista = eventosAtivos(day).slice();
   String((day && day.observacoesDia) || '').split('*').map(t => t.trim()).filter(Boolean).forEach(t => {
     lista.push({ id: uid('ev'), tipoId: null, tipo: 'Observação', detalhe: t, hora: '', custom: true });
   });
   return lista;
 }
 
-// Transporte de material: o evento ganha placa, volume (m³) e peso (t).
-// Desmarcar a caixinha esconde os campos e tira o transporte dos relatórios,
-// mas não apaga o que foi digitado (clique sem querer não perde dado).
-function textoTransporteEvento(ev) {
-  if (!ev || !ev.transporte) return '';
-  const partes = [];
-  if (ev.placa) partes.push(`Placa ${ev.placa}`);
-  if (ev.volume) partes.push(`Volume ${ev.volume} m³`);
-  if (ev.peso) partes.push(`Peso ${ev.peso} t`);
-  return partes.join(' · ');
+// Ordem cronológica; sem hora vai para o fim, mantendo a ordem de lançamento.
+function ordenarEventosPorHora(lista) {
+  return lista.map((e, i) => ({ e, i })).sort((a, b) => {
+    const ha = a.e.hora || '99:99', hb = b.e.hora || '99:99';
+    return ha < hb ? -1 : ha > hb ? 1 : a.i - b.i;
+  }).map(x => x.e);
 }
 
-// Fornecedor e valor da carga valem para qualquer evento (uma chegada de
-// material tem fornecedor mesmo sem caminhão); não dependem do transporte.
-function textoCargaEvento(ev) {
+function equipeEvento(ev) {
+  return [ev && ev.grupo, ev && ev.equipe].filter(Boolean).join(' · ');
+}
+
+function fmtMinutos(m) {
+  return m > 0 ? `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}` : '—';
+}
+
+// Minutos entre a paralisação (data do dia + hora do evento) e a retomada. Sem retomada = 0 (em aberto).
+function minutosParadoEvento(ev, dataDia) {
+  if (!ev || !ev.paralisacao || !ev.retomadaData || !ev.retomadaHora || !ev.hora || !dataDia) return 0;
+  const m = Math.round((new Date(ev.retomadaData + 'T' + ev.retomadaHora) - new Date(dataDia + 'T' + ev.hora)) / 60000);
+  return isFinite(m) && m > 0 ? m : 0;
+}
+
+function textoParalisacaoEvento(ev, dataDia, curto) {
+  if (!ev || !ev.paralisacao) return '';
+  if (ev.retomadaData && ev.retomadaHora) {
+    const m = minutosParadoEvento(ev, dataDia);
+    const dt = ev.retomadaData.split('-').reverse().slice(0, 2).join('/');
+    if (curto) return `Retomada ${ev.retomadaData === dataDia ? '' : dt + ' '}${ev.retomadaHora}` + (m ? ` (${fmtMinutos(m)})` : '');
+    return `Paralisação. Retomada ${dt} ${ev.retomadaHora}` + (m ? ` (${fmtMinutos(m)} parado)` : '');
+  }
+  return curto ? 'Retomada em aberto' : 'Paralisação. Retomada em aberto';
+}
+
+// Campos de quando o evento ainda era chegada de material. Saem como texto, sempre, para nada se perder.
+function textoLegadoEvento(ev) {
   if (!ev) return '';
-  const partes = [];
-  if (ev.fornecedor) partes.push(`Fornecedor ${ev.fornecedor}`);
-  if (ev.valorCarga) partes.push(`Valor ${/R\$/i.test(ev.valorCarga) ? ev.valorCarga : 'R$ ' + ev.valorCarga}`);
-  return partes.join(' · ');
+  const p = [];
+  if (ev.fornecedor) p.push(`Fornecedor ${ev.fornecedor}`);
+  if (ev.valorCarga) p.push(`Valor ${/R\$/i.test(ev.valorCarga) ? ev.valorCarga : 'R$ ' + ev.valorCarga}`);
+  if (ev.placa) p.push(`Placa ${ev.placa}`);
+  if (ev.volume) p.push(`Volume ${ev.volume} m³`);
+  if (ev.peso) p.push(`Peso ${ev.peso} t`);
+  return p.length ? 'Dados antigos: ' + p.join(' · ') : '';
 }
 
-function htmlCargaEvento(idx, ev) {
-  const campo = 'min-width:0;width:100%;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)';
-  return `
-    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px;margin-top:8px">
-      <input type="text" placeholder="Fornecedor" value="${escAttr(ev.fornecedor || '')}" style="${campo}"
-        oninput="salvarCampoEventoDoDia(${idx},'fornecedor',this.value)">
-      <input type="text" inputmode="decimal" placeholder="Valor da carga (R$)" value="${escAttr(ev.valorCarga || '')}" style="${campo}"
-        oninput="salvarCampoEventoDoDia(${idx},'valorCarga',this.value)">
-    </div>`;
-}
-
-function htmlTransporteEvento(idx, ev) {
-  const campo = 'min-width:0;width:100%;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)';
-  return `
-    <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--ink)">
-      <input type="checkbox" ${ev.transporte ? 'checked' : ''} style="width:18px;height:18px;margin:0;flex:none"
-        onchange="alternarTransporteEventoDoDia(${idx}, this.checked)">
-      🚛 Transporte de material
-    </label>
-    ${ev.transporte ? `
-    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin-top:8px">
-      <input type="text" placeholder="Placa" value="${escAttr(ev.placa || '')}" maxlength="8" style="${campo};text-transform:uppercase"
-        oninput="salvarCampoEventoDoDia(${idx},'placa',this.value)">
-      <input type="text" inputmode="decimal" placeholder="Volume (m³)" value="${escAttr(ev.volume || '')}" style="${campo}"
-        oninput="salvarCampoEventoDoDia(${idx},'volume',this.value)">
-      <input type="text" inputmode="decimal" placeholder="Peso (t)" value="${escAttr(ev.peso || '')}" style="${campo}"
-        oninput="salvarCampoEventoDoDia(${idx},'peso',this.value)">
-    </div>` : ''}`;
-}
-
-function alternarTransporteEventoDoDia(idx, marcado) {
-  const ev = (currentDay.eventosDia || [])[idx];
-  if (!ev) return;
-  ev.transporte = !!marcado;
-  salvarDiarioDia(false);
-  renderEventosDoDia();
-  renderConfigEventosDia();
+function descricaoCompletaEvento(ev) {
+  return [ev && ev.detalhe, textoLegadoEvento(ev)].filter(Boolean).join(' · ');
 }
 
 function renderEventosDoDia() {
   const cont = document.getElementById('eventosDiaList');
   if (!cont) return;
-  const lista = currentDay.eventosDia || [];
+  const lista = (currentDay.eventosDia || []).map((ev, i) => ({ ev, i })).filter(x => !x.ev.removido);
   if (lista.length === 0) {
-    cont.innerHTML = '<div class="empty">Nenhum evento registrado. Clique ➕ para adicionar.</div>';
+    cont.innerHTML = '<div class="empty">Nenhum evento registrado. Toque em ➕ para registrar.</div>';
     return;
   }
-  cont.innerHTML = '';
-  lista.forEach((ev, idx) => {
-    const row = document.createElement('div');
-    row.className = 'item-row checked';
-    row.style.alignItems = 'flex-start';
-    row.innerHTML = `
-      <div class="checkbox" style="margin-top:2px"></div>
-      <div class="item-info">
-        <div class="item-name">${escapeHtml(ev.tipo)}</div>
-        <div style="display:flex;gap:8px;margin-top:8px;align-items:flex-start">
-          <input type="time" value="${escAttr(ev.hora || '')}" title="Horário"
-            style="width:96px;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)"
-            onchange="salvarCampoEventoDoDia(${idx},'hora',this.value)">
-          <textarea rows="2" placeholder="Detalhe (ex.: fornecedor, NF, quantidade, motivo)"
-            style="flex:1;min-width:0;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink);resize:vertical"
-            oninput="salvarCampoEventoDoDia(${idx},'detalhe',this.value)">${escapeHtml(ev.detalhe || '')}</textarea>
-        </div>
-        ${htmlCargaEvento(idx, ev)}
-        ${htmlTransporteEvento(idx, ev)}
+  lista.sort((a, b) => { const ha = a.ev.hora || '99:99', hb = b.ev.hora || '99:99'; return ha < hb ? -1 : ha > hb ? 1 : a.i - b.i; });
+  cont.innerHTML = lista.map(({ ev, i }) => {
+    const par = textoParalisacaoEvento(ev, currentDay.data);
+    const legado = textoLegadoEvento(ev);
+    const sub = [equipeEvento(ev), ev.responsavel ? 'Resp.: ' + ev.responsavel : '', ev.local ? '📍 ' + ev.local : ''].filter(Boolean).join(' · ');
+    const fotos = (ev.fotos || []).map(f => `<img src="${f}" alt="">`).join('');
+    return `<div class="evc${ev.paralisacao ? ' evc-par' : ''}" onclick="abrirModalEventoDiaNovo(${i})">
+      <div class="evc-hora">${escapeHtml(ev.hora || '--:--')}</div>
+      <div>
+        <div class="evc-tit">${escapeHtml(ev.tipo)}</div>
+        ${sub ? `<div class="evc-sub">${escapeHtml(sub)}</div>` : ''}
+        ${ev.detalhe ? `<div class="evc-desc">${escapeHtml(ev.detalhe)}</div>` : ''}
+        ${legado ? `<div class="evc-leg">${escapeHtml(legado)}</div>` : ''}
+        ${par ? `<div class="evc-parlin">⛔ ${escapeHtml(par)}</div>` : ''}
+        ${fotos ? `<div class="evc-fotos">${fotos}</div>` : ''}
       </div>
-      <div class="item-actions"><button class="icon-btn" onclick="removerEventoDoDia(${idx})" title="Remover">🗑️</button></div>
-    `;
-    cont.appendChild(row);
-  });
-}
-
-function salvarCampoEventoDoDia(idx, campo, valor) {
-  const ev = (currentDay.eventosDia || [])[idx];
-  if (!ev) return;
-  ev[campo] = (campo === 'placa') ? String(valor).toUpperCase().trim() : valor;
-  salvarDiarioDia(false);
+      <button class="icon-btn" onclick="event.stopPropagation();removerEventoDoDia(${i})" title="Remover">🗑️</button>
+    </div>`;
+  }).join('');
 }
 
 function removerEventoDoDia(idx) {
   confirmar('Remover este evento do dia?', () => {
-    currentDay.eventosDia.splice(idx, 1);
+    const ev = (currentDay.eventosDia || [])[idx];
+    if (!ev) return;
+    ev.removido = true;
+    ev.removidoEm = new Date().toISOString();
     salvarDiarioDia(false);
     renderEventosDoDia();
-    renderConfigEventosDia();
   });
 }
 
-function abrirAbaEventosDia() {
-  const t = document.querySelector('.tab[data-view="config"]');
-  if (t) t.click();
-  setTimeout(() => {
-    const st = document.querySelector('.subtab[data-pane="eventosdia"]');
-    if (st) st.click();
-  }, 200);
+// ---- registro / edição de um evento (janela) ----
+let evdIdx = null;
+let evdSel = { grupo: '', equipe: '', tipo: '' };
+let evdFotos = [];
+
+async function abrirModalEventoDiaNovo(idx) {
+  evdIdx = (idx === undefined || idx === null) ? null : idx;
+  const ev = evdIdx !== null ? (currentDay.eventosDia || [])[evdIdx] : null;
+  evdSel = { grupo: ev ? (ev.grupo || '') : '', equipe: ev ? (ev.equipe || '') : '', tipo: ev ? (ev.tipo || '') : '' };
+  evdFotos = ev && Array.isArray(ev.fotos) ? ev.fotos.slice() : [];
+  const agora = new Date();
+  const hhmm = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+  document.getElementById('modalEvDiaTitulo').textContent = ev ? 'Editar evento' : 'Registrar evento';
+  document.getElementById('evdHora').value = ev ? (ev.hora || '') : hhmm;
+  document.getElementById('evdResp').value = ev ? (ev.responsavel || '') : '';
+  document.getElementById('evdDesc').value = ev ? (ev.detalhe || '') : '';
+  document.getElementById('evdLocal').value = ev ? (ev.local || '') : (currentDay.localObra || '');
+  document.getElementById('evdPar').checked = !!(ev && ev.paralisacao);
+  document.getElementById('evdRetData').value = ev ? (ev.retomadaData || '') : '';
+  document.getElementById('evdRetHora').value = ev ? (ev.retomadaHora || '') : '';
+  document.getElementById('evdNovoEquipe').hidden = true;
+  document.getElementById('evdNovoTipo').hidden = true;
+  evdRenderEquipes();
+  evdRenderTipos();
+  evdRenderFotos();
+  evdAtualizarRetomada();
+  abrirModal('modalEvDia');
+  evdCarregarLocais();
 }
 
-function renderConfigEventosDia() {
-  const cont = document.getElementById('configEventosDiaList');
-  if (!cont) return;
-  cont.innerHTML = '';
-  if (state.eventosDia.length === 0) {
-    cont.innerHTML = '<div class="empty">Nenhum tipo de evento. Use "Adicionar Tipo de Evento".</div>';
-    return;
+async function evdCarregarLocais() {
+  try {
+    const selObra = document.getElementById('obraAtiva');
+    const obraId = (selObra && selObra.value) || B3Obras.atualId();
+    const locais = await carregarLocaisDaObra(obraId);
+    document.getElementById('evdLocalLista').innerHTML = (locais || []).map(l => `<option value="${escAttr(l.nome)}">`).join('');
+  } catch (e) { /* sem lista: o campo aceita texto livre */ }
+}
+
+function evdRenderEquipes() {
+  const grupos = {};
+  (state.equipesEvento || []).filter(e => !e.inativo).forEach(e => { (grupos[e.grupo || 'Outras'] = grupos[e.grupo || 'Outras'] || []).push(e); });
+  // equipe do evento que já não está no cadastro continua visível e marcada
+  if (evdSel.equipe && !(state.equipesEvento || []).some(e => !e.inativo && e.nome === evdSel.equipe && (e.grupo || '') === (evdSel.grupo || ''))) {
+    (grupos[evdSel.grupo || 'Outras'] = grupos[evdSel.grupo || 'Outras'] || []).push({ grupo: evdSel.grupo, nome: evdSel.equipe });
   }
-  const doDia = (currentDay && currentDay.eventosDia) || [];
-  state.eventosDia.forEach(t => {
-    const idx = doDia.findIndex(e => e.tipoId === t.id);
-    const marcado = idx >= 0;
-    const wrap = document.createElement('div');
-    wrap.className = 'ativ-item-wrap';
-
-    const row = document.createElement('div');
-    row.className = 'item-row' + (marcado ? ' checked' : '');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = marcado;
-    cb.style.marginRight = '10px';
-    cb.style.cursor = 'pointer';
-    cb.addEventListener('change', () => {
-      if (!currentDay.eventosDia) currentDay.eventosDia = [];
-      if (cb.checked) currentDay.eventosDia.push({ id: uid('ev'), tipoId: t.id, tipo: t.desc, detalhe: '', hora: '', custom: false, fornecedor: '', valorCarga: '', transporte: false, placa: '', volume: '', peso: '' });
-      else currentDay.eventosDia = currentDay.eventosDia.filter(e => e.tipoId !== t.id);
-      salvarDiarioDia(false);
-      renderConfigEventosDia();
-      renderEventosDoDia();
-    });
-    const info = document.createElement('div');
-    info.className = 'item-info';
-    const nome = document.createElement('div');
-    nome.className = 'item-name';
-    nome.textContent = t.desc;
-    info.appendChild(nome);
-    const acts = document.createElement('div');
-    acts.className = 'item-actions';
-    const bE = document.createElement('button');
-    bE.className = 'icon-btn'; bE.textContent = '✏️';
-    bE.addEventListener('click', e => { e.stopPropagation(); editarEventoCadastro('eventosDia', t.id); });
-    const bD = document.createElement('button');
-    bD.className = 'icon-btn'; bD.textContent = '🗑️';
-    bD.addEventListener('click', e => { e.stopPropagation(); removerEventoCadastro('eventosDia', t.id); });
-    acts.appendChild(bE); acts.appendChild(bD);
-    row.appendChild(cb); row.appendChild(info); row.appendChild(acts);
-    wrap.appendChild(row);
-
-    if (marcado) {
-      const ev = doDia[idx];
-      const det = document.createElement('div');
-      det.className = 'ativ-detalhe-dia';
-      det.innerHTML = `
-        <div>
-          <label>Horário</label>
-          <input type="time" value="${escAttr(ev.hora || '')}" onchange="salvarCampoEventoDoDia(${idx},'hora',this.value);renderEventosDoDia()">
-        </div>
-        <div>
-          <label>Detalhe</label>
-          <input type="text" value="${escAttr(ev.detalhe || '')}" placeholder="Ex.: fornecedor, NF, quantidade"
-            onchange="salvarCampoEventoDoDia(${idx},'detalhe',this.value);renderEventosDoDia()">
-        </div>`;
-      wrap.appendChild(det);
-      const tr = document.createElement('div');
-      tr.style.padding = '0 12px 12px';
-      tr.innerHTML = htmlCargaEvento(idx, ev) + htmlTransporteEvento(idx, ev);
-      wrap.appendChild(tr);
-    }
-    cont.appendChild(wrap);
-  });
+  const chip = e => `<button type="button" class="evd-chip${(evdSel.equipe === e.nome && (evdSel.grupo || '') === (e.grupo || '')) ? ' on' : ''}" data-g="${escAttr(e.grupo || '')}" data-n="${escAttr(e.nome)}" onclick="evdEscolherEquipe(this)">${escapeHtml(e.nome)}</button>`;
+  document.getElementById('evdEquipes').innerHTML = Object.keys(grupos).map(g =>
+    `<div class="evd-grp">${escapeHtml(g)}</div><div class="evd-chips">${grupos[g].map(chip).join('')}</div>`).join('') +
+    `<div class="evd-chips"><button type="button" class="evd-chip mais" onclick="evdNovoAlternar('Equipe')">+ equipe</button></div>`;
+  document.getElementById('evdGruposLista').innerHTML = [...new Set((state.equipesEvento || []).map(e => e.grupo).filter(Boolean))].map(g => `<option value="${escAttr(g)}">`).join('');
+}
+function evdEscolherEquipe(el) {
+  evdSel.grupo = el.dataset.g; evdSel.equipe = el.dataset.n;
+  evdRenderEquipes();
 }
 
-function salvarEventosDoDia() {
-  const gravou = diarioPodeSerSalvo(currentDay);
-  salvarDiarioDia();
-  renderDiario();
-  toastSalvoDoCadastro(gravou, '✓ Eventos salvos e adicionados ao Diário!');
-  voltarAoDiarioAposSalvar(currentDay.data, gravou);
+function evdRenderTipos() {
+  const tipos = (state.eventosDia || []).filter(t => !t.inativo).map(t => t.desc);
+  if (evdSel.tipo && !tipos.includes(evdSel.tipo)) tipos.push(evdSel.tipo);
+  document.getElementById('evdTipos').innerHTML = '<div class="evd-chips">' + tipos.map(t =>
+    `<button type="button" class="evd-chip${evdSel.tipo === t ? ' on' : ''}" data-t="${escAttr(t)}" onclick="evdEscolherTipo(this)">${escapeHtml(t)}</button>`).join('') +
+    `<button type="button" class="evd-chip mais" onclick="evdNovoAlternar('Tipo')">+ evento</button></div>`;
+}
+function evdEscolherTipo(el) {
+  evdSel.tipo = el.dataset.t;
+  if (/paraliza|paralisa/i.test(evdSel.tipo)) document.getElementById('evdPar').checked = true;
+  evdRenderTipos();
+  evdAtualizarRetomada();
 }
 
-function abrirModalEventoDoDiaAvulso() {
-  document.getElementById('modalEvDiaAvulsoTipo').value = '';
-  document.getElementById('modalEvDiaAvulsoHora').value = '';
-  document.getElementById('modalEvDiaAvulsoDetalhe').value = '';
-  document.getElementById('modalEvDiaAvulsoTransp').checked = false;
-  document.getElementById('modalEvDiaAvulsoTranspCampos').style.display = 'none';
-  ['Placa', 'Volume', 'Peso', 'Fornecedor', 'Valor'].forEach(k => document.getElementById('modalEvDiaAvulso' + k).value = '');
-  abrirModal('modalEventoDoDiaAvulso');
+function evdNovoAlternar(qual) {
+  const box = document.getElementById('evdNovo' + qual);
+  box.hidden = !box.hidden;
+  if (!box.hidden) document.getElementById(qual === 'Equipe' ? 'evdNovoEquipeNome' : 'evdNovoTipoNome').focus();
 }
-function salvarEventoDoDiaAvulso() {
-  const tipo = document.getElementById('modalEvDiaAvulsoTipo').value.trim();
-  if (!tipo) { toast('Informe o evento'); return; }
+function evdAdicionarEquipe() {
+  const nome = document.getElementById('evdNovoEquipeNome').value.trim();
+  const grupo = document.getElementById('evdNovoGrupo').value.trim() || 'Outras';
+  if (!nome) { toast('Informe o nome da equipe'); return; }
+  state.equipesEvento = state.equipesEvento || [];
+  const ja = state.equipesEvento.find(e => e.nome.toLowerCase() === nome.toLowerCase() && (e.grupo || '').toLowerCase() === grupo.toLowerCase());
+  if (ja) reativarNoCadastro(ja); else state.equipesEvento.push({ id: uid('eq'), grupo, nome });
+  saveState();
+  evdSel.grupo = grupo; evdSel.equipe = nome;
+  document.getElementById('evdNovoEquipeNome').value = '';
+  document.getElementById('evdNovoEquipe').hidden = true;
+  evdRenderEquipes();
+  renderConfigEventosDia();
+}
+function evdAdicionarTipo() {
+  const nome = document.getElementById('evdNovoTipoNome').value.trim();
+  if (!nome) { toast('Informe o nome do evento'); return; }
+  const ja = (state.eventosDia || []).find(t => t.desc.toLowerCase() === nome.toLowerCase());
+  if (ja) reativarNoCadastro(ja); else state.eventosDia.push({ id: uid('ec'), desc: nome });
+  saveState();
+  evdSel.tipo = ja ? ja.desc : nome;
+  document.getElementById('evdNovoTipoNome').value = '';
+  document.getElementById('evdNovoTipo').hidden = true;
+  evdRenderTipos();
+  renderConfigEventosDia();
+}
+
+function evdAtualizarRetomada() {
+  const on = document.getElementById('evdPar').checked;
+  document.getElementById('evdRetomada').hidden = !on;
+  document.getElementById('evdParLabel').classList.toggle('on', on);
+}
+
+function evdRenderFotos() {
+  document.getElementById('evdFotos').innerHTML = evdFotos.map((f, i) =>
+    `<div class="evd-foto"><img src="${f}" alt="Foto ${i + 1}"><button type="button" onclick="evdRemoverFoto(${i})" title="Remover">✕</button></div>`).join('') +
+    (evdFotos.length < MAX_FOTOS_EVENTO ? '<button type="button" class="evd-foto-add" onclick="document.getElementById(\'evdFotoInput\').click()" title="Adicionar foto">＋</button>' : '');
+}
+async function evdAdicionarFoto(ev) {
+  const file = ev.target.files[0];
+  ev.target.value = '';
+  if (!file || evdFotos.length >= MAX_FOTOS_EVENTO) return;
+  try {
+    evdFotos.push(await comprimirFoto(file, 1024, 0.65));
+    evdRenderFotos();
+  } catch (err) {
+    toast('❌ Falha ao processar a foto');
+  }
+}
+function evdRemoverFoto(i) {
+  evdFotos.splice(i, 1);
+  evdRenderFotos();
+}
+
+function evdSalvar() {
+  const hora = document.getElementById('evdHora').value;
+  const resp = document.getElementById('evdResp').value.trim();
+  const par = document.getElementById('evdPar').checked;
+  const rd = document.getElementById('evdRetData').value, rh = document.getElementById('evdRetHora').value;
+  if (!evdSel.equipe) { toast('Escolha a equipe'); return; }
+  if (!evdSel.tipo) { toast('Escolha o evento'); return; }
+  if (!hora) { toast('Informe a hora'); return; }
+  if (!resp) { toast('Informe o responsável'); return; }
+  if (par && ((rd && !rh) || (!rd && rh))) { toast('Informe data e hora da retomada, ou deixe as duas em branco'); return; }
+  if (par && rd && rh && new Date(rd + 'T' + rh) < new Date(currentDay.data + 'T' + hora)) { toast('A retomada não pode ser antes da paralisação'); return; }
   if (!currentDay.eventosDia) currentDay.eventosDia = [];
-  currentDay.eventosDia.push({
-    id: uid('ev'), tipoId: null, tipo,
-    detalhe: document.getElementById('modalEvDiaAvulsoDetalhe').value.trim(),
-    hora: document.getElementById('modalEvDiaAvulsoHora').value,
-    custom: true,
-    fornecedor: document.getElementById('modalEvDiaAvulsoFornecedor').value.trim(),
-    valorCarga: document.getElementById('modalEvDiaAvulsoValor').value.trim(),
-    transporte: document.getElementById('modalEvDiaAvulsoTransp').checked,
-    placa: document.getElementById('modalEvDiaAvulsoPlaca').value.toUpperCase().trim(),
-    volume: document.getElementById('modalEvDiaAvulsoVolume').value.trim(),
-    peso: document.getElementById('modalEvDiaAvulsoPeso').value.trim()
+  const base = evdIdx !== null ? (currentDay.eventosDia[evdIdx] || {}) : {};
+  const tipoObj = (state.eventosDia || []).find(t => t.desc === evdSel.tipo);
+  const ev = Object.assign({}, base, {
+    id: base.id || uid('ev'),
+    tipoId: tipoObj ? tipoObj.id : null,
+    tipo: evdSel.tipo,
+    grupo: evdSel.grupo, equipe: evdSel.equipe,
+    hora, detalhe: document.getElementById('evdDesc').value.trim(),
+    responsavel: resp,
+    local: document.getElementById('evdLocal').value.trim(),
+    paralisacao: par, retomadaData: rd, retomadaHora: rh,
+    fotos: evdFotos.slice(),
+    custom: !tipoObj
   });
+  if (evdIdx !== null) currentDay.eventosDia[evdIdx] = ev; else currentDay.eventosDia.push(ev);
   salvarDiarioDia(false);
-  fecharModal('modalEventoDoDiaAvulso');
+  fecharModal('modalEvDia');
   renderEventosDoDia();
-  toast('Evento adicionado');
+  toast(evdIdx !== null ? 'Evento atualizado' : 'Evento registrado');
+}
+
+// ---- Cadastro → Eventos: equipes e tipos ----
+function renderConfigEventosDia() {
+  const cEq = document.getElementById('configEquipesEvList');
+  const cTp = document.getElementById('configEventosDiaList');
+  if (!cEq || !cTp) return;
+  const linha = (nome, sub, aEditar, aRemover) => `<div class="item-row"><div class="item-info"><div class="item-name">${escapeHtml(nome)}</div>${sub ? `<div style="font-size:11px;opacity:.7">${escapeHtml(sub)}</div>` : ''}</div>
+    <div class="item-actions"><button class="icon-btn" onclick="${aEditar}">✏️</button><button class="icon-btn" onclick="${aRemover}">🗑️</button></div></div>`;
+  const equipes = (state.equipesEvento || []).filter(e => !e.inativo);
+  cEq.innerHTML = equipes.length ? equipes.map(e => linha(e.nome, e.grupo, `abrirModalEquipeEv('${e.id}')`, `removerEquipeEv('${e.id}')`)).join('')
+    : '<div class="empty">Nenhuma equipe. Use "Adicionar Equipe".</div>';
+  anexarBlocoRemovidos(cEq, state.equipesEvento, e => `${e.grupo ? e.grupo + ' · ' : ''}${e.nome}`,
+    e => { reativarNoCadastro(e); saveState(); renderConfigEventosDia(); toast('Restaurada'); });
+  const tipos = (state.eventosDia || []).filter(t => !t.inativo);
+  cTp.innerHTML = tipos.length ? tipos.map(t => linha(t.desc, '', `editarEventoCadastro('eventosDia','${t.id}')`, `removerEventoCadastro('eventosDia','${t.id}')`)).join('')
+    : '<div class="empty">Nenhum tipo de evento. Use "Adicionar Tipo de Evento".</div>';
+  anexarBlocoRemovidos(cTp, state.eventosDia, t => t.desc,
+    t => { reativarNoCadastro(t); saveState(); renderConfigEventosDia(); toast('Restaurado'); });
+}
+
+let equipeEvEditId = null;
+function abrirModalEquipeEv(id) {
+  equipeEvEditId = id || null;
+  const e = id ? (state.equipesEvento || []).find(x => x.id === id) : null;
+  document.getElementById('modalEquipeEvTitulo').textContent = e ? 'Editar equipe' : 'Nova equipe';
+  document.getElementById('equipeEvGrupo').value = e ? (e.grupo || '') : '';
+  document.getElementById('equipeEvNome').value = e ? e.nome : '';
+  document.getElementById('evdGruposLista').innerHTML = [...new Set((state.equipesEvento || []).map(x => x.grupo).filter(Boolean))].map(g => `<option value="${escAttr(g)}">`).join('');
+  abrirModal('modalEquipeEv');
+}
+function salvarEquipeEv() {
+  const grupo = document.getElementById('equipeEvGrupo').value.trim() || 'Outras';
+  const nome = document.getElementById('equipeEvNome').value.trim();
+  if (!nome) { toast('Informe a equipe'); return; }
+  state.equipesEvento = state.equipesEvento || [];
+  if (equipeEvEditId) {
+    const e = state.equipesEvento.find(x => x.id === equipeEvEditId);
+    if (e) { e.grupo = grupo; e.nome = nome; }
+  } else {
+    const ja = state.equipesEvento.find(x => x.nome.toLowerCase() === nome.toLowerCase() && (x.grupo || '').toLowerCase() === grupo.toLowerCase());
+    if (ja) reativarNoCadastro(ja); else state.equipesEvento.push({ id: uid('eq'), grupo, nome });
+  }
+  saveState();
+  fecharModal('modalEquipeEv');
+  renderConfigEventosDia();
+  toast('Salvo');
+}
+function removerEquipeEv(id) {
+  confirmar('Remover esta equipe do cadastro? Os eventos já registrados não mudam.', () => {
+    baixarDoCadastro((state.equipesEvento || []).find(x => x.id === id));
+    saveState();
+    renderConfigEventosDia();
+    toastBaixa('Removida');
+  });
 }
 
 function renderEfetivoDia() {
@@ -5772,11 +6003,11 @@ function abrirModalEventoDia(tipo) {
   activeEventoEditIdx = null;
   const cadastro = state[tipo];
   if (cadastro.length === 0) {
-    toast('Cadastre tipos em ⚙️ ' + (tipo === 'seguranca' ? 'Segurança' : 'Meio Ambiente'));
+    toast('Cadastre tipos em ⚙️ ' + (tipo === 'seguranca' ? 'Acid. SST' : 'Acid. MA'));
     return;
   }
   document.getElementById('modalEventoDiaTitle').textContent = 
-    tipo === 'seguranca' ? '🦺 Evento de Segurança' : '🌱 Evento de Meio Ambiente';
+    tipo === 'seguranca' ? '🦺 Acidente de Segurança do Trabalho' : '🌱 Acidente de Meio Ambiente';
   const sel = document.getElementById('modalEventoDiaTipo');
   sel.innerHTML = cadastro.map(c => `<option value="${c.id}">${escapeHtml(c.desc)}</option>`).join('');
   document.getElementById('modalEventoDiaDesc').value = '';
@@ -5810,7 +6041,7 @@ function abrirModalEventoAvulso(tipo) {
   activeEventoTipo = tipo;
   activeEventoEditIdx = null;
   document.getElementById('modalEventoAvulsoTitle').textContent = 
-    tipo === 'seguranca' ? '🦺 Evento Avulso de Segurança' : '🌱 Evento Avulso de Meio Ambiente';
+    tipo === 'seguranca' ? '🦺 Acidente Avulso de Segurança do Trabalho' : '🌱 Acidente Avulso de Meio Ambiente';
   document.getElementById('modalEventoAvulsoTipo').value = '';
   document.getElementById('modalEventoAvulsoDesc').value = '';
   document.getElementById('modalEventoAvulsoGrav').value = 'leve';
@@ -6928,6 +7159,7 @@ function salvarEventoCadastro() {
 }
 function removerEventoCadastro(tipo, id) {
   confirmar('Remover este tipo?', () => {
+    if (tipo === 'eventosDia') { baixarDoCadastro(state.eventosDia.find(e => e.id === id)); saveState(); renderConfigEventos(tipo); toastBaixa('Removido'); return; }
     state[tipo] = state[tipo].filter(e => e.id !== id);
     saveState();
     renderConfigEventos(tipo);
@@ -7109,10 +7341,10 @@ function buildRelatorio(day) {
   });
   txt += `*✅ Total Geral: ${total} colaboradores*\n`;
   
-  // Eventos Segurança
+  // Acidentes de Segurança do Trabalho
   if (day.eventosSeguranca && day.eventosSeguranca.length > 0) {
     txt += `\n${divisor}\n\n`;
-    txt += `*🦺 Eventos de Segurança — ${day.eventosSeguranca.length}*\n`;
+    txt += `*🦺 Acidentes de Segurança do Trabalho — ${day.eventosSeguranca.length}*\n`;
     day.eventosSeguranca.forEach((ev, i) => {
       txt += `\n${i+1}. *${ev.tipo}* (${ev.gravidade})\n`;
       if (ev.desc) txt += `   Desc.: ${ev.desc}\n`;
@@ -7120,10 +7352,10 @@ function buildRelatorio(day) {
     });
   }
   
-  // Eventos Meio Ambiente
+  // Acidentes de Meio Ambiente
   if (day.eventosAmbiente && day.eventosAmbiente.length > 0) {
     txt += `\n${divisor}\n\n`;
-    txt += `*🌱 Eventos de Meio Ambiente — ${day.eventosAmbiente.length}*\n`;
+    txt += `*🌱 Acidentes de Meio Ambiente — ${day.eventosAmbiente.length}*\n`;
     day.eventosAmbiente.forEach((ev, i) => {
       txt += `\n${i+1}. *${ev.tipo}* (${ev.gravidade})\n`;
       if (ev.desc) txt += `   Desc.: ${ev.desc}\n`;
@@ -7139,15 +7371,31 @@ function buildRelatorio(day) {
   }
 
   // Eventos do Dia
-  const _evsDia = eventosDoDia(day);
+  const _evsDia = ordenarEventosPorHora(eventosDoDia(day));
   if (_evsDia.length > 0) {
     txt += `\n${divisor}\n\n`;
     txt += `*📌 Eventos do Dia — ${_evsDia.length}*\n`;
-    _evsDia.forEach(ev => {
-      txt += `• ${ev.hora ? ev.hora + ' — ' : ''}${ev.tipo}${ev.detalhe ? ': ' + ev.detalhe : ''}\n`;
-      if (textoCargaEvento(ev)) txt += `   🏭 ${textoCargaEvento(ev)}\n`;
-      if (textoTransporteEvento(ev)) txt += `   🚛 ${textoTransporteEvento(ev)}\n`;
+    _evsDia.forEach((ev, i) => {
+      txt += `\n${i + 1}. ${ev.hora ? ev.hora + ' — ' : ''}*${ev.tipo}*\n`;
+      if (equipeEvento(ev)) txt += `   Equipe: ${equipeEvento(ev)}\n`;
+      if (ev.detalhe) txt += `   ${ev.detalhe}\n`;
+      if (ev.responsavel || ev.local) txt += `   ${[ev.responsavel ? 'Resp.: ' + ev.responsavel : '', ev.local ? '📍 ' + ev.local : ''].filter(Boolean).join(' · ')}\n`;
+      if (textoLegadoEvento(ev)) txt += `   ${textoLegadoEvento(ev)}\n`;
+      if (ev.paralisacao) txt += `   ⛔ ${textoParalisacaoEvento(ev, day.data)}\n`;
+      if ((ev.fotos || []).length) txt += `   📷 ${ev.fotos.length} foto${ev.fotos.length > 1 ? 's' : ''}\n`;
     });
+    const _porEqWa = {};
+    _evsDia.forEach(ev => {
+      const k = equipeEvento(ev);
+      if (!k) return;
+      const o = _porEqWa[k] || (_porEqWa[k] = { n: 0, par: 0, min: 0 });
+      o.n++; if (ev.paralisacao) { o.par++; o.min += minutosParadoEvento(ev, day.data); }
+    });
+    const _ks = Object.keys(_porEqWa).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    if (_ks.length) {
+      txt += `\n_Resumo dos eventos_\n`;
+      _ks.forEach(k => { const o = _porEqWa[k]; txt += `• ${k}: *${o.n}x*${o.par ? ` · ${o.par} paralisaç${o.par > 1 ? 'ões' : 'ão'}` : ''}${o.min ? ` · ${fmtMinutos(o.min)} parado` : ''}\n`; });
+    }
   }
 
   // Notas recebidas no dia (planilha do módulo Entradas) + resumo de quantidades
@@ -7295,7 +7543,9 @@ function renderResumoEventos(r) {
       e.cargas ? chip(`🚛 ${e.cargas} carga${e.cargas > 1 ? 's' : ''}`) : '',
       e.volume ? chip(`${fmtNumBR(e.volume)} m³`) : '',
       e.peso ? chip(`${fmtNumBR(e.peso)} t`) : '',
-      e.valor ? chip(fmtMoedaBR(e.valor)) : ''
+      e.valor ? chip(fmtMoedaBR(e.valor)) : '',
+      e.par ? chip(`⛔ ${e.par} paralisaç${e.par > 1 ? 'ões' : 'ão'}`) : '',
+      e.min ? chip(`${fmtMinutos(e.min)} parado`) : ''
     ].join('');
     return `<div class="resumo-ativ-item"${destaque ? ' style="border-color:var(--accent)"' : ''}>
       <div class="resumo-ativ-header">
@@ -7305,8 +7555,41 @@ function renderResumoEventos(r) {
       ${chips ? `<div class="resumo-ativ-detalhe">${chips}</div>` : ''}
     </div>`;
   };
-  cont.innerHTML = tipos.map(t => bloco(t, r.eventos[t], false)).join('') +
+  let html = tipos.map(t => bloco(t, r.eventos[t], false)).join('') +
     (tipos.length > 1 ? bloco('TOTAL', r.totalEventos, true) : '');
+  const nomesEq = Object.keys(r.equipes || {}).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  if (nomesEq.length) {
+    html += `<div class="ev-tab-wrap"><table class="ev-tab"><thead><tr><th>Equipe</th><th class="n">Eventos</th><th class="n">Paralisações</th><th class="n">Tempo parado</th></tr></thead><tbody>` +
+      nomesEq.map(n => `<tr><td>${escapeHtml(n)}</td><td class="n">${r.equipes[n].ocorrencias}</td><td class="n">${r.equipes[n].par || '—'}</td><td class="n">${fmtMinutos(r.equipes[n].min)}</td></tr>`).join('') +
+      `</tbody></table></div>`;
+  }
+  if ((r.lista || []).length) {
+    html += `<div class="ev-tab-wrap"><table class="ev-tab" style="min-width:900px"><thead><tr><th>Data</th><th>Hora</th><th>Equipe</th><th>Evento</th><th>Descrição</th><th>Responsável</th><th>Local</th><th>Paralisação / retomada</th><th class="n">Fotos</th></tr></thead><tbody>` +
+      r.lista.map(({ data, ev }) => `<tr><td>${formatDateBR(data)}</td><td>${escapeHtml(ev.hora || '—')}</td><td>${escapeHtml(equipeEvento(ev) || '—')}</td><td>${escapeHtml(ev.tipo)}</td><td>${escapeHtml(descricaoCompletaEvento(ev) || '—')}</td><td>${escapeHtml(ev.responsavel || '—')}</td><td>${escapeHtml(ev.local || '—')}</td><td>${escapeHtml(textoParalisacaoEvento(ev, data) || '—')}</td><td class="n">${(ev.fotos || []).length || '—'}</td></tr>`).join('') +
+      `</tbody></table></div><button class="btn btn-ghost btn-full" onclick="baixarCsvEventos()">📄 Exportar planilha de eventos (.csv)</button>`;
+  }
+  cont.innerHTML = html;
+}
+
+// Planilha de eventos do período em .csv (Excel brasileiro: ; e BOM). Leva TODOS os campos.
+function baixarCsvEventos() {
+  const { isoInicio, isoFim } = getResumoDatas();
+  const r = calcResumoPeriodoPDF(isoInicio, isoFim);
+  const cel = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const cab = ['Data', 'Hora', 'Grupo', 'Equipe', 'Evento', 'Descrição', 'Responsável', 'Local', 'Paralisação', 'Data da retomada', 'Hora da retomada', 'Tempo parado', 'Fotos', 'Dados antigos', 'Apontador'];
+  const linhas = [cab].concat(r.lista.map(({ data, apontador, ev }) => [
+    formatDateBR(data), ev.hora || '', ev.grupo || '', ev.equipe || '', ev.tipo || '', ev.detalhe || '', ev.responsavel || '', ev.local || '',
+    ev.paralisacao ? 'Sim' : '', ev.retomadaData ? formatDateBR(ev.retomadaData) : '', ev.retomadaHora || '',
+    ev.paralisacao ? (ev.retomadaData ? fmtMinutos(minutosParadoEvento(ev, data)) : 'Em aberto') : '',
+    (ev.fotos || []).length || '', textoLegadoEvento(ev).replace(/^Dados antigos: /, ''), apontador
+  ]));
+  const csv = '﻿' + linhas.map(l => l.map(cel).join(';')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `eventos-do-dia_${isoInicio}_a_${isoFim}.csv`;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
 function renderResumo() {
@@ -7988,6 +8271,8 @@ function mesclarDaNuvem(dados) {
     if (st.atividades)    mesclarListaPorId(state.atividades, st.atividades);
     if (st.equipamentos)  mesclarListaPorId(state.equipamentos, st.equipamentos);
     if (st.veiculosFrota) { state.veiculosFrota = state.veiculosFrota || []; mesclarListaPorId(state.veiculosFrota, st.veiculosFrota); }
+    if (st.eventosDia)    { state.eventosDia = state.eventosDia || []; mesclarListaPorId(state.eventosDia, st.eventosDia); }
+    if (st.equipesEvento) { state.equipesEvento = state.equipesEvento || []; mesclarListaPorId(state.equipesEvento, st.equipesEvento); }
     if (st.seguranca)     mesclarListaPorId(state.seguranca, st.seguranca);
     if (st.meio_ambiente) mesclarListaPorId(state.meio_ambiente, st.meio_ambiente);
     if (st.colaboradores && st.colaboradores.categorias) {
