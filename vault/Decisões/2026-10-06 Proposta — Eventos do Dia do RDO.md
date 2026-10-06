@@ -32,3 +32,16 @@ guardados, fora da tela).
 1 Responsável = pessoa da equipe (sim) · 2 uma equipe por registro (sim) · 3 paralisação×retomada só
 registrar na v1 · 4 Eventos de Segurança e Meio Ambiente continuam separados · 5 RDO antigo intacto ·
 6 Local = coluna automática · 7 sem foto na v1 · 8 sem mudança de banco.
+
+
+## v2 (resposta do usuário, 06/10/2026) — mockup atualizado, aguardando ok final
+- **Paralisação:** checkbox no evento; marcado, abre **data e hora de retomada** (pode ficar em branco = "em aberto").
+  O evento "Paralisação de trabalho" já marca o checkbox. A planilha calcula o **tempo parado**.
+- **Acidentes:** "Eventos de Segurança" → **Acidentes de Segurança do Trabalho**; "Eventos de Meio Ambiente" →
+  **Acidentes de Meio Ambiente** (Diário, Cadastro, PDF, WhatsApp). Dados antigos não mudam.
+- **Impressão:** eventos do dia em **planilha** + **resumo** + **fotos** (leitura de "imagem": até 3 fotos por
+  evento, a confirmar) no PDF, WhatsApp e Resumo; .csv com todas as colunas.
+- **Local do evento** em cada evento (lista dos locais da obra, vem com o local do dia) e na planilha impressa.
+- **Nada se perde:** fornecedor, valor, placa, volume e peso já lançados saem na Descrição como "Dados antigos: …";
+  a sincronização não apaga campo algum.
+- Assumidos (sem resposta): responsável = pessoa da equipe; uma equipe por registro; catálogo como proposto.
