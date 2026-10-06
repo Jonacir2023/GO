@@ -25,7 +25,7 @@ escreva uma nova nota que substitua a anterior, marcando a antiga como superada.
 | 26/08 | [[Decisões/2026-08-26 Isolamento definitivo entre projetos]] | 🟡 Feito no código, falta despublicar o buildly2 |
 | 27/08 | [[Decisões/2026-08-27 Migração da planilha para o Supabase]] | ❌ Descartada em 28/08 — assunto saiu deste repositório |
 | 04/10 | [[Decisões/2026-10-04 Padrão visual claro]] | ✅ Decidido (falta ver no iPhone) |
-| 05/10 | [[Decisões/2026-10-05 Proposta — Custos como controle de entrada de materiais]] | 🟡 Implementada — falta aplicar o SQL nas obras |
+| 05/10 | [[Decisões/2026-10-05 Proposta — Custos como controle de entrada de materiais]] | ✅ Implementada e aplicada nas duas obras |
 
 ---
 

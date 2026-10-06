@@ -1,7 +1,7 @@
 ---
 criado: 2026-10-05
 tags: [decisao, proposta, custos, portaria]
-status: aprovada e implementada em 05/10/2026 — falta aplicar sql/007 nas duas obras
+status: aprovada e implementada em 05/10/2026 — sql/007 aplicado nas duas obras em 06/10/2026
 ---
 
 # Proposta — Custos vira controle de entrada de materiais (portaria)

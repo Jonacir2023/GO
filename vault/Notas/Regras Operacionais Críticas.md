@@ -199,9 +199,11 @@ mesmo id; traz o ainda não sincronizado) e respeita `chk_removidos`.
 Obra 1 (`ivssgstckfcuiyetxdze`) e Obra 2 (`lwjbuzubnxnzkofcrhah`) rodam o mesmo código. Tabela, coluna ou
 política criada só numa quebra o módulo quando alguém troca de obra. Aplicar nas duas, conferir nas duas e
 anotar no Registro. A Obra 2 costuma estar **pausada** — restaurar antes. Comando do Supabase que estoura o
-tempo: dividir em partes e conferir o estado antes de repetir. Pendência herdada: as tabelas EAP,
-Planejamento e Suprimentos da Obra 1 estão **sem RLS** (aviso crítico do Supabase) — decisão de políticas
-ainda não tomada.
+tempo: dividir em partes e conferir o estado antes de repetir. Conferir a paridade com um hash da estrutura
+(`md5(string_agg(tabela.coluna:tipo:nulo …))` em `information_schema.columns`, igual nas duas). Divergências
+encontradas e corrigidas em 06/10/2026: ver `sql/008_paridade_obras.sql`. Pendência herdada: as tabelas EAP,
+Planejamento e Suprimentos da **Obra 1** estão **sem RLS** (aviso crítico do Supabase) — decisão de
+políticas ainda não tomada; na Obra 2 foram criadas com RLS + política aberta (mesmo acesso efetivo).
 
 ---
 

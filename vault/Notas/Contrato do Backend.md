@@ -66,7 +66,7 @@ sozinho antes de existir Supabase (`mesclarDaNuvem`, `aplicarRegraRdo`,
 | `checkin_assuntos` | Check-in | Mesmo `id` texto de `pauta_assuntos` quando o assunto veio de lá |
 | `checkin_reunioes` | Check-in | `assuntos_snapshot` jsonb — ata da reunião, insert simples (sem upsert) |
 | `custos_notas_fiscais`, `custos_itens_nf` | Entradas | NF não tem edição (só criar/deletar); itens entram uma vez só, junto com a NF |
-| `custos_catalogo`, `custos_entradas`, `custos_entradas_fotos` | Entradas (entrada de materiais) | **Pendente de aplicar** (`sql/007_custos_entradas.sql`). Entrada = 1 linha por item, `id` texto, upsert; cancelar = `status`; fotos em tabela à parte (≤4). Ver [[Notas/Entradas — Controle de Materiais]] |
+| `custos_catalogo`, `custos_entradas`, `custos_entradas_fotos` | Entradas (entrada de materiais) | Aplicado nas duas obras em 06/10/2026 (`sql/007_custos_entradas.sql`). Entrada = 1 linha por item, `id` texto, upsert; cancelar = `status`; fotos em tabela à parte (≤4). Ver [[Notas/Entradas — Controle de Materiais]] |
 | `documentos`, `documento_notas_manuais` | Documentos | |
 | `manutencao_mural` | Manutenção | |
 | `reuniao_atas` | Reunião | `participantes`/`pauta`/`topicos`/`plano_acao` como jsonb |

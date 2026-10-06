@@ -35,8 +35,8 @@ da portaria**: cada item que chega vira **uma linha** de planilha, em **ordem de
 
 Local (`custo_*`): `catalogo`, `entradas`, `fotos` (pendentes), `ultimo_resp`, `notasfiscais` (modelo antigo).
 Supabase (por obra): `custos_catalogo`, `custos_entradas`, `custos_entradas_fotos` — migração em
-`sql/007_custos_entradas.sql` (**precisa ser aplicada em cada obra**; sem ela o app funciona só no aparelho e
-reenvia depois). As tabelas antigas `custos_notas_fiscais`/`custos_itens_nf` ficam intactas; o robô de IA
+`sql/007_custos_entradas.sql` — **aplicada nas duas obras em 06/10/2026** (sem as tabelas o app funciona só no
+aparelho e reenvia depois). As tabelas antigas `custos_notas_fiscais`/`custos_itens_nf` ficam intactas; o robô de IA
 (`buildly-completo.html`) ainda consulta essas antigas — **pendente** apontar para `custos_entradas`.
 
 ## Relacionado
