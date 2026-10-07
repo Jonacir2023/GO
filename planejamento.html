@@ -117,16 +117,19 @@
     </div>
 
     <div id="atividades-aba" class="aba-content" style="display: none;">
-      <div class="ativ-barra">
-        <select id="ativ-cronograma" onchange="carregarAtividades()"></select>
-        <input type="search" id="ativ-busca" placeholder="Buscar atividade, código ou WTG (ex.: GS_27)" oninput="filtrarAtividades()">
-        <select id="ativ-filtro" onchange="filtrarAtividades()">
-          <option value="todas">Todas</option>
-          <option value="hoje">Em andamento hoje</option>
-          <option value="atrasadas">Atrasadas</option>
-          <option value="proximas">Começam em 15 dias</option>
-          <option value="concluidas">Concluídas</option>
-        </select>
+      <div style="display: flex; gap: 10px; margin-bottom: 14px; justify-content: space-between;">
+        <div class="ativ-barra" style="flex: 1;">
+          <select id="ativ-cronograma" onchange="carregarAtividades()"></select>
+          <input type="search" id="ativ-busca" placeholder="Buscar atividade, código ou WTG (ex.: GS_27)" oninput="filtrarAtividades()">
+          <select id="ativ-filtro" onchange="filtrarAtividades()">
+            <option value="todas">Todas</option>
+            <option value="hoje">Em andamento hoje</option>
+            <option value="atrasadas">Atrasadas</option>
+            <option value="proximas">Começam em 15 dias</option>
+            <option value="concluidas">Concluídas</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="abrirNovaAtividade()">➕ Nova</button>
       </div>
       <div class="ativ-kpis" id="ativ-kpis"></div>
       <div class="ativ-tabela-wrap">
@@ -203,6 +206,47 @@
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarCronograma()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-atividade">
+  <div class="modal-content">
+    <div class="modal-header">Nova Atividade</div>
+    <input type="hidden" id="ativ-id-edicao">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="ativ-codigo" placeholder="ex: GS_01, WTG_001">
+      </div>
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="ativ-nome" placeholder="Descrição da atividade">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>EAP (Work Breakdown Structure)</label>
+      <select id="ativ-eap"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Início Previsto</label>
+        <input type="date" id="ativ-inicio-prev">
+      </div>
+      <div class="form-group">
+        <label>Fim Previsto</label>
+        <input type="date" id="ativ-fim-prev">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="ativ-critica" style="width: auto;">
+        Atividade Crítica
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalAtividade()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAtividade()">Salvar</button>
     </div>
   </div>
 </div>
@@ -649,6 +693,91 @@ function filtrarEap() {
       <td>${Number(e.percentual_completo) || 0}%</td>
     </tr>`;
   }).join('');
+}
+
+// ── Formulário de Nova Atividade ────────────────────────────────────────
+async function abrirNovaAtividade() {
+  const cronoId = document.getElementById('ativ-cronograma').value;
+  if (!cronoId) {
+    alert('Selecione um cronograma primeiro');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data: eapItens, error } = await cliente
+      .from('eap_itens')
+      .select('id, codigo, nome')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    const seletorEap = document.getElementById('ativ-eap');
+    seletorEap.innerHTML = '<option value="">-- Sem EAP --</option>' +
+      (eapItens || []).map(e => `<option value="${e.id}">${esc(e.codigo)} - ${esc(e.nome)}</option>`).join('');
+
+    document.getElementById('ativ-id-edicao').value = '';
+    document.getElementById('ativ-codigo').value = '';
+    document.getElementById('ativ-nome').value = '';
+    document.getElementById('ativ-inicio-prev').value = '';
+    document.getElementById('ativ-fim-prev').value = '';
+    document.getElementById('ativ-critica').checked = false;
+
+    document.getElementById('modal-atividade').classList.add('active');
+    document.getElementById('ativ-codigo').focus();
+  } catch (e) {
+    alert('Erro ao carregar EAP: ' + e.message);
+  }
+}
+
+function fecharModalAtividade() {
+  document.getElementById('modal-atividade').classList.remove('active');
+}
+
+async function salvarAtividade() {
+  const codigo = document.getElementById('ativ-codigo').value.trim();
+  const nome = document.getElementById('ativ-nome').value.trim();
+  const eapId = document.getElementById('ativ-eap').value;
+  const inicioPlanj = document.getElementById('ativ-inicio-prev').value;
+  const fimPlanj = document.getElementById('ativ-fim-prev').value;
+  const critica = document.getElementById('ativ-critica').checked ? 1 : 0;
+
+  if (!codigo || !nome || !inicioPlanj || !fimPlanj) {
+    alert('Preencha código, nome e datas');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const cronoId = document.getElementById('ativ-cronograma').value;
+
+    const resp = await cliente
+      .from('planejamento_atividades')
+      .insert([{
+        obra_id: obraId,
+        cronograma_id: cronoId,
+        codigo,
+        nome,
+        eap_id: eapId || null,
+        inicio_planejado: inicioPlanj,
+        fim_planejado: fimPlanj,
+        critica
+      }]);
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalAtividade();
+    carregarAtividades();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
+  }
 }
 
 // Inicializar quando DOM estiver pronto e B3Obras disponível
