@@ -74,7 +74,14 @@
     if (!global.supabase || !global.supabase.createClient) {
       throw new Error('supabase-js não carregado — inclua o CDN antes deste script');
     }
-    var c = global.supabase.createClient(o.url, o.anonKey);
+    var c = global.supabase.createClient(o.url, o.anonKey, {
+      auth: {
+        storage: typeof localStorage !== 'undefined' ? localStorage : undefined,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
     _clientes[id] = c;
     return c;
   }
