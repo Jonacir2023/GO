@@ -12,13 +12,13 @@
   var OBRAS = [
     {
       id: 'obra1',
-      nome: 'Obra 1',
+      nome: 'Eólica GranSul',
       url: 'https://ivssgstckfcuiyetxdze.supabase.co',
       anonKey: 'sb_publishable_vSuTiXWhcgCGx2kyj-BZ-Q_kjhoAlSA'
     },
     {
       id: 'obra2',
-      nome: 'Obra 2',
+      nome: 'Obra 2 (vazia)',
       url: 'https://lwjbuzubnxnzkofcrhah.supabase.co',
       anonKey: 'sb_publishable_Un6wOWgITD22F2O-hqj91w_lVT9Beok'
     }
