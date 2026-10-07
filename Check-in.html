@@ -1364,8 +1364,7 @@ document.querySelectorAll('.modal-overlay,.config-modal').forEach(m=>{
 });
 
 initData();
-renderCheckin();
-carregarDaPlanilhaGoogle(false);
+carregarDaPlanilhaGoogle(false).then(() => renderCheckin()).catch(() => renderCheckin());
 </script>
 </body>
 </html>
