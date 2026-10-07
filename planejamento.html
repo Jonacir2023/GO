@@ -53,6 +53,26 @@
     .pct-input { width: 64px; padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; text-align: right; }
     .status.atrasada { background: #ffebee; color: #c62828; }
     .status.cancelada { background: #eee; color: #777; }
+    .eap-nivel0 { padding-left: 12px; font-weight: 600; }
+    .eap-nivel1 { padding-left: 32px; }
+    .eap-nivel2 { padding-left: 52px; }
+    .eap-nivel3 { padding-left: 72px; color: #555; }
+    .eap-nivel4 { padding-left: 92px; color: #888; font-size: 13px; }
+    .gantt-container { overflow-x: auto; position: relative; }
+    .gantt-header { display: flex; background: #f5f5f5; border-bottom: 2px solid #ddd; sticky: top; }
+    .gantt-row-label { width: 200px; padding: 12px; font-weight: 500; font-size: 13px; border-right: 1px solid #ddd; flex-shrink: 0; }
+    .gantt-timeline { display: flex; flex: 1; min-width: 800px; }
+    .gantt-cell { flex: 1; padding: 12px 4px; border-right: 1px solid #e0e0e0; font-size: 11px; text-align: center; color: #666; }
+    .gantt-row { display: flex; align-items: center; border-bottom: 1px solid #e0e0e0; min-height: 40px; background: white; }
+    .gantt-row:hover { background: #f9f9f9; }
+    .gantt-bar { height: 24px; border-radius: 4px; position: relative; cursor: pointer; transition: opacity 0.2s; }
+    .gantt-bar:hover { opacity: 0.8; }
+    .gantt-bar-planejado { background: #e3f2fd; border: 1px solid #1976d2; }
+    .gantt-bar-em_andamento { background: #fff3e0; border: 1px solid #f57c00; }
+    .gantt-bar-concluido { background: #e8f5e9; border: 1px solid #388e3c; }
+    .gantt-bar-atrasada { background: #ffebee; border: 1px solid #c62828; }
+    .gantt-bar-label { font-size: 10px; padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333; }
+    .gantt-hoje { position: absolute; width: 2px; background: #ff6b6b; top: 0; bottom: 0; z-index: 10; opacity: 0.6; }
   </style>
 <link rel="stylesheet" href="tema.css?v=8f27e8ff" media="screen">
 </head>
@@ -65,7 +85,9 @@
 
   <div class="tabs">
     <button class="tab active" onclick="mudarAba('cronogramas')">Cronogramas</button>
+    <button class="tab" onclick="mudarAba('eap')">EAP</button>
     <button class="tab" onclick="mudarAba('atividades')">Atividades</button>
+    <button class="tab" onclick="mudarAba('gantt')">Gantt</button>
     <button class="tab" onclick="mudarAba('restricoes')">Restrições</button>
   </div>
 
@@ -87,17 +109,43 @@
       </table>
     </div>
 
-    <div id="atividades-aba" class="aba-content" style="display: none;">
+    <div id="eap-aba" class="aba-content" style="display: none;">
       <div class="ativ-barra">
-        <select id="ativ-cronograma" onchange="carregarAtividades()"></select>
-        <input type="search" id="ativ-busca" placeholder="Buscar atividade, código ou WTG (ex.: GS_27)" oninput="filtrarAtividades()">
-        <select id="ativ-filtro" onchange="filtrarAtividades()">
-          <option value="todas">Todas</option>
-          <option value="hoje">Em andamento hoje</option>
-          <option value="atrasadas">Atrasadas</option>
-          <option value="proximas">Começam em 15 dias</option>
-          <option value="concluidas">Concluídas</option>
-        </select>
+        <input type="search" id="eap-busca" placeholder="Buscar por nome ou código" oninput="filtrarEap()">
+      </div>
+      <div class="ativ-tabela-wrap">
+        <table class="table" id="eap-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>Início</th>
+              <th>Fim</th>
+              <th>% Completo</th>
+            </tr>
+          </thead>
+          <tbody id="eap-tbody">
+            <tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item de EAP</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="atividades-aba" class="aba-content" style="display: none;">
+      <div style="display: flex; gap: 10px; margin-bottom: 14px; justify-content: space-between;">
+        <div class="ativ-barra" style="flex: 1;">
+          <select id="ativ-cronograma" onchange="carregarAtividades()"></select>
+          <input type="search" id="ativ-busca" placeholder="Buscar atividade, código ou WTG (ex.: GS_27)" oninput="filtrarAtividades()">
+          <select id="ativ-filtro" onchange="filtrarAtividades()">
+            <option value="todas">Todas</option>
+            <option value="hoje">Em andamento hoje</option>
+            <option value="atrasadas">Atrasadas</option>
+            <option value="proximas">Começam em 15 dias</option>
+            <option value="concluidas">Concluídas</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="abrirNovaAtividade()">➕ Nova</button>
       </div>
       <div class="ativ-kpis" id="ativ-kpis"></div>
       <div class="ativ-tabela-wrap">
@@ -118,6 +166,24 @@
       </table>
       </div>
       <div style="text-align:center;margin-top:12px"><button class="btn btn-secondary" id="ativ-mais" style="display:none" onclick="mostrarMaisAtividades()">Mostrar mais</button></div>
+    </div>
+
+    <div id="gantt-aba" class="aba-content" style="display: none;">
+      <div class="ativ-barra" style="margin-bottom: 14px;">
+        <select id="gantt-cronograma" onchange="desenharGantt()"></select>
+        <select id="gantt-escala">
+          <option value="7">Semana</option>
+          <option value="14" selected>2 Semanas</option>
+          <option value="30">Mês</option>
+        </select>
+      </div>
+      <div class="gantt-container" id="gantt-container">
+        <div class="gantt-header">
+          <div class="gantt-row-label">Atividade</div>
+          <div class="gantt-timeline" id="gantt-header-timeline"></div>
+        </div>
+        <div id="gantt-barras"></div>
+      </div>
     </div>
 
     <div id="restricoes-aba" class="aba-content" style="display: none;">
@@ -178,7 +244,48 @@
   </div>
 </div>
 
-<script src="supabase-config.js?v=bbf9d8bc"></script>
+<div class="modal" id="modal-atividade">
+  <div class="modal-content">
+    <div class="modal-header">Nova Atividade</div>
+    <input type="hidden" id="ativ-id-edicao">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="ativ-codigo" placeholder="ex: GS_01, WTG_001">
+      </div>
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="ativ-nome" placeholder="Descrição da atividade">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>EAP (Work Breakdown Structure)</label>
+      <select id="ativ-eap"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Início Previsto</label>
+        <input type="date" id="ativ-inicio-prev">
+      </div>
+      <div class="form-group">
+        <label>Fim Previsto</label>
+        <input type="date" id="ativ-fim-prev">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="ativ-critica" style="width: auto;">
+        Atividade Crítica
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalAtividade()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAtividade()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="supabase-config.js?v=45fa7d1f"></script>
 <script>
 /* BUILDLY_ESPACO_PROPRIO — isolamento de localStorage */
 (function () {
@@ -574,17 +681,253 @@ async function mudarStatusRestricao(id, status) {
   carregarRestricoes();
 }
 
+// ── EAP Hierárquica ──────────────────────────────────────────────────────────
+let _eapItens = [];
+function calcularNivel(eapId, todos, nivelMemo = {}) {
+  if (nivelMemo[eapId] !== undefined) return nivelMemo[eapId];
+  const item = todos.find(e => e.id === eapId);
+  if (!item || !item.pai_id) { nivelMemo[eapId] = 0; return 0; }
+  nivelMemo[eapId] = 1 + calcularNivel(item.pai_id, todos, nivelMemo);
+  return nivelMemo[eapId];
+}
+async function carregarEap() {
+  const tbody = document.getElementById('eap-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const { data, error } = await buscarTudo(() => B3Obras.cliente()
+      .from('eap_itens').select('*').eq('obra_id', B3Obras.atualId()).order('ordem', { ascending: true }));
+    if (error) throw error;
+    _eapItens = data || [];
+    filtrarEap();
+  } catch (e) {
+    console.error('Erro ao carregar EAP:', e);
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Erro: ' + esc(e.message) + '</td></tr>';
+  }
+}
+function filtrarEap() {
+  const busca = (document.getElementById('eap-busca').value || '').toLowerCase();
+  const tbody = document.getElementById('eap-tbody');
+  const nivelMemo = {};
+  const filtrados = _eapItens.filter(e =>
+    !busca || esc(e.codigo).toLowerCase().includes(busca) || esc(e.nome).toLowerCase().includes(busca)
+  );
+  if (!filtrados.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item encontrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtrados.map(e => {
+    const nivel = calcularNivel(e.id, _eapItens, nivelMemo);
+    const nivelCls = 'eap-nivel' + Math.min(nivel, 4);
+    return `<tr>
+      <td class="${nivelCls}">${esc(e.codigo)}</td>
+      <td>${esc(e.nome)}</td>
+      <td>${esc(e.tipo)}</td>
+      <td>${br(e.data_inicio)}</td>
+      <td>${br(e.data_fim)}</td>
+      <td>${Number(e.percentual_completo) || 0}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Formulário de Nova Atividade ────────────────────────────────────────
+async function abrirNovaAtividade() {
+  const cronoId = document.getElementById('ativ-cronograma').value;
+  if (!cronoId) {
+    alert('Selecione um cronograma primeiro');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data: eapItens, error } = await cliente
+      .from('eap_itens')
+      .select('id, codigo, nome')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    const seletorEap = document.getElementById('ativ-eap');
+    seletorEap.innerHTML = '<option value="">-- Sem EAP --</option>' +
+      (eapItens || []).map(e => `<option value="${e.id}">${esc(e.codigo)} - ${esc(e.nome)}</option>`).join('');
+
+    document.getElementById('ativ-id-edicao').value = '';
+    document.getElementById('ativ-codigo').value = '';
+    document.getElementById('ativ-nome').value = '';
+    document.getElementById('ativ-inicio-prev').value = '';
+    document.getElementById('ativ-fim-prev').value = '';
+    document.getElementById('ativ-critica').checked = false;
+
+    document.getElementById('modal-atividade').classList.add('active');
+    document.getElementById('ativ-codigo').focus();
+  } catch (e) {
+    alert('Erro ao carregar EAP: ' + e.message);
+  }
+}
+
+function fecharModalAtividade() {
+  document.getElementById('modal-atividade').classList.remove('active');
+}
+
+async function salvarAtividade() {
+  const codigo = document.getElementById('ativ-codigo').value.trim();
+  const nome = document.getElementById('ativ-nome').value.trim();
+  const eapId = document.getElementById('ativ-eap').value;
+  const inicioPlanj = document.getElementById('ativ-inicio-prev').value;
+  const fimPlanj = document.getElementById('ativ-fim-prev').value;
+  const critica = document.getElementById('ativ-critica').checked ? 1 : 0;
+
+  if (!codigo || !nome || !inicioPlanj || !fimPlanj) {
+    alert('Preencha código, nome e datas');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const cronoId = document.getElementById('ativ-cronograma').value;
+
+    const resp = await cliente
+      .from('planejamento_atividades')
+      .insert([{
+        obra_id: obraId,
+        cronograma_id: cronoId,
+        codigo,
+        nome,
+        eap_id: eapId || null,
+        inicio_planejado: inicioPlanj,
+        fim_planejado: fimPlanj,
+        critica
+      }]);
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalAtividade();
+    carregarAtividades();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
+  }
+}
+
+// ── Gantt/Timeline ──────────────────────────────────────────────────────
+async function desenharGantt() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cronoId = document.getElementById('gantt-cronograma').value;
+    if (!cronoId) return;
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const escala = parseInt(document.getElementById('gantt-escala').value) || 14;
+
+    const ativs = await buscarTudo(() => cliente.from('planejamento_atividades')
+      .select('id,codigo,nome,inicio_planejado,fim_planejado,percentual_real,critica')
+      .eq('obra_id', obraId).eq('cronograma_id', cronoId).order('inicio_planejado'));
+
+    if (!ativs.length) {
+      document.getElementById('gantt-barras').innerHTML = '<div class="empty-state"><i class="fas fa-chart-gantt"></i>Nenhuma atividade</div>';
+      return;
+    }
+
+    const hoje = hojeLocal();
+    const datas = ativs.flatMap(a => [a.inicio_planejado, a.fim_planejado]).filter(Boolean);
+    const minData = datas.length ? datas.sort()[0] : hoje;
+    const maxData = datas.length ? datas.sort().reverse()[0] : hoje;
+
+    const pxPorDia = 40;
+    const diasTotal = Math.max(escala * 2, diasEntre(minData, maxData) + 7);
+    const widthTotal = diasTotal * pxPorDia;
+
+    renderizarHeaderGantt(minData, diasTotal, pxPorDia);
+    renderizarBarrasGantt(ativs, minData, pxPorDia, hoje);
+  } catch (e) {
+    console.error('Erro ao desenhar Gantt:', e);
+    document.getElementById('gantt-barras').innerHTML = '<div class="empty-state">Erro: ' + esc(e.message) + '</div>';
+  }
+}
+
+function renderizarHeaderGantt(dataInicio, diasTotal, pxPorDia) {
+  const header = document.getElementById('gantt-header-timeline');
+  const cells = [];
+  for (let i = 0; i < diasTotal; i++) {
+    const data = somaDias(dataInicio, i);
+    const d = new Date(data + 'T00:00:00');
+    const dia = d.getDate();
+    const mes = d.getMonth() + 1;
+    const mostrar = i % 7 === 0;
+    cells.push(`<div class="gantt-cell" style="width: ${pxPorDia}px; border-right: ${mostrar ? '2px solid #999' : '1px solid #ddd'};">${mostrar ? dia + '/' + mes : ''}</div>`);
+  }
+  header.innerHTML = cells.join('');
+}
+
+function renderizarBarrasGantt(ativs, dataInicio, pxPorDia, hoje) {
+  const barras = document.getElementById('gantt-barras');
+  const widthTotal = Math.max(800, ativs.length > 0 ? 1400 : 800);
+  const hojePixel = diasEntre(dataInicio, hoje) * pxPorDia;
+
+  barras.innerHTML = ativs.map(a => {
+    if (!a.inicio_planejado || !a.fim_planejado) return '';
+    const inicio = diasEntre(dataInicio, a.inicio_planejado);
+    const fim = diasEntre(dataInicio, a.fim_planejado);
+    const duracao = fim - inicio;
+    const left = inicio * pxPorDia;
+    const width = Math.max(1, duracao * pxPorDia);
+
+    const sit = situacao(a, hoje)[0];
+    const barClass = 'gantt-bar gantt-bar-' + sit;
+    const label = esc(a.codigo) + ' - ' + esc(a.nome.substring(0, 40));
+
+    return `<div class="gantt-row">
+      <div class="gantt-row-label">${label}</div>
+      <div class="gantt-timeline" style="position: relative; width: ${widthTotal}px;">
+        <div class="${barClass}" style="left: ${left}px; width: ${width}px;">
+          <div class="gantt-bar-label">${a.percentual_real}%</div>
+        </div>
+        ${hojePixel > 0 ? `<div class="gantt-hoje" style="left: ${hojePixel}px;"></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // Inicializar quando DOM estiver pronto e B3Obras disponível
 window.addEventListener('DOMContentLoaded', () => {
   if (window.B3Obras) {
     (async () => {
       await carregarCronogramas();
       await preencherSeletorCronogramas();
+      await preencherSeletorCronogramasGantt();
       carregarAtividades();
+      carregarEap();
       carregarRestricoes();
     })();
   }
 });
+
+async function preencherSeletorCronogramasGantt() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const { data } = await cliente
+      .from('planejamento_cronogramas')
+      .select('id, nome')
+      .eq('obra_id', obraId)
+      .order('criado_em', { ascending: false });
+
+    const seletor = document.getElementById('gantt-cronograma');
+    if (data && data.length) {
+      seletor.innerHTML = data.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+      seletor.value = data[0].id;
+    }
+  } catch (e) {
+    console.error('Erro ao preencher seletor Gantt:', e);
+  }
+}
 </script>
 </body>
 </html>

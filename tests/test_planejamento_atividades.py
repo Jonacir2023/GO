@@ -91,7 +91,7 @@ with sync_playwright() as p:
     page.clock.install(time="2026-10-07T00:00:00Z")
     page.goto(f"{BASE}/planejamento.html")
     page.wait_for_timeout(1500)
-    page.evaluate("document.querySelectorAll('.tab')[1].click()")
+    page.evaluate("document.querySelectorAll('.tab')[2].click()")
     page.wait_for_timeout(600)
 
     check(page.evaluate("hojeLocal()") == "2026-10-06", "hoje é a data local (06/10), não a UTC (07/10)")
@@ -136,7 +136,7 @@ with sync_playwright() as p:
     check(a1["percentual_real"] == 100, "% acima de 100 é limitado a 100")
 
     # ---- Restrições ----
-    page.evaluate("document.querySelectorAll('.tab')[2].click()")
+    page.evaluate("document.querySelectorAll('.tab')[4].click()")
     page.fill("#restr-descricao", "Licença da central de concreto")
     page.select_option("#restr-criticidade", "critica")
     page.fill("#restr-responsavel", "Meio Ambiente")
