@@ -53,6 +53,11 @@
     .pct-input { width: 64px; padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; text-align: right; }
     .status.atrasada { background: #ffebee; color: #c62828; }
     .status.cancelada { background: #eee; color: #777; }
+    .eap-nivel0 { padding-left: 12px; font-weight: 600; }
+    .eap-nivel1 { padding-left: 32px; }
+    .eap-nivel2 { padding-left: 52px; }
+    .eap-nivel3 { padding-left: 72px; color: #555; }
+    .eap-nivel4 { padding-left: 92px; color: #888; font-size: 13px; }
   </style>
 <link rel="stylesheet" href="tema.css?v=8f27e8ff" media="screen">
 </head>
@@ -65,6 +70,7 @@
 
   <div class="tabs">
     <button class="tab active" onclick="mudarAba('cronogramas')">Cronogramas</button>
+    <button class="tab" onclick="mudarAba('eap')">EAP</button>
     <button class="tab" onclick="mudarAba('atividades')">Atividades</button>
     <button class="tab" onclick="mudarAba('restricoes')">Restrições</button>
   </div>
@@ -85,6 +91,29 @@
           <tr><td colspan="5" class="empty-state"><i class="fas fa-chart-gantt"></i>Nenhum cronograma</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <div id="eap-aba" class="aba-content" style="display: none;">
+      <div class="ativ-barra">
+        <input type="search" id="eap-busca" placeholder="Buscar por nome ou código" oninput="filtrarEap()">
+      </div>
+      <div class="ativ-tabela-wrap">
+        <table class="table" id="eap-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>Início</th>
+              <th>Fim</th>
+              <th>% Completo</th>
+            </tr>
+          </thead>
+          <tbody id="eap-tbody">
+            <tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item de EAP</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div id="atividades-aba" class="aba-content" style="display: none;">
@@ -574,6 +603,54 @@ async function mudarStatusRestricao(id, status) {
   carregarRestricoes();
 }
 
+// ── EAP Hierárquica ──────────────────────────────────────────────────────────
+let _eapItens = [];
+function calcularNivel(eapId, todos, nivelMemo = {}) {
+  if (nivelMemo[eapId] !== undefined) return nivelMemo[eapId];
+  const item = todos.find(e => e.id === eapId);
+  if (!item || !item.pai_id) { nivelMemo[eapId] = 0; return 0; }
+  nivelMemo[eapId] = 1 + calcularNivel(item.pai_id, todos, nivelMemo);
+  return nivelMemo[eapId];
+}
+async function carregarEap() {
+  const tbody = document.getElementById('eap-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const { data, error } = await buscarTudo(() => B3Obras.cliente()
+      .from('eap_itens').select('*').eq('obra_id', B3Obras.atualId()).order('ordem', { ascending: true }));
+    if (error) throw error;
+    _eapItens = data || [];
+    filtrarEap();
+  } catch (e) {
+    console.error('Erro ao carregar EAP:', e);
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Erro: ' + esc(e.message) + '</td></tr>';
+  }
+}
+function filtrarEap() {
+  const busca = (document.getElementById('eap-busca').value || '').toLowerCase();
+  const tbody = document.getElementById('eap-tbody');
+  const nivelMemo = {};
+  const filtrados = _eapItens.filter(e =>
+    !busca || esc(e.codigo).toLowerCase().includes(busca) || esc(e.nome).toLowerCase().includes(busca)
+  );
+  if (!filtrados.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item encontrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtrados.map(e => {
+    const nivel = calcularNivel(e.id, _eapItens, nivelMemo);
+    const nivelCls = 'eap-nivel' + Math.min(nivel, 4);
+    return `<tr>
+      <td class="${nivelCls}">${esc(e.codigo)}</td>
+      <td>${esc(e.nome)}</td>
+      <td>${esc(e.tipo)}</td>
+      <td>${br(e.data_inicio)}</td>
+      <td>${br(e.data_fim)}</td>
+      <td>${Number(e.percentual_completo) || 0}%</td>
+    </tr>`;
+  }).join('');
+}
+
 // Inicializar quando DOM estiver pronto e B3Obras disponível
 window.addEventListener('DOMContentLoaded', () => {
   if (window.B3Obras) {
@@ -581,6 +658,7 @@ window.addEventListener('DOMContentLoaded', () => {
       await carregarCronogramas();
       await preencherSeletorCronogramas();
       carregarAtividades();
+      carregarEap();
       carregarRestricoes();
     })();
   }
