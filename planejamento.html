@@ -58,6 +58,21 @@
     .eap-nivel2 { padding-left: 52px; }
     .eap-nivel3 { padding-left: 72px; color: #555; }
     .eap-nivel4 { padding-left: 92px; color: #888; font-size: 13px; }
+    .gantt-container { overflow-x: auto; position: relative; }
+    .gantt-header { display: flex; background: #f5f5f5; border-bottom: 2px solid #ddd; sticky: top; }
+    .gantt-row-label { width: 200px; padding: 12px; font-weight: 500; font-size: 13px; border-right: 1px solid #ddd; flex-shrink: 0; }
+    .gantt-timeline { display: flex; flex: 1; min-width: 800px; }
+    .gantt-cell { flex: 1; padding: 12px 4px; border-right: 1px solid #e0e0e0; font-size: 11px; text-align: center; color: #666; }
+    .gantt-row { display: flex; align-items: center; border-bottom: 1px solid #e0e0e0; min-height: 40px; background: white; }
+    .gantt-row:hover { background: #f9f9f9; }
+    .gantt-bar { height: 24px; border-radius: 4px; position: relative; cursor: pointer; transition: opacity 0.2s; }
+    .gantt-bar:hover { opacity: 0.8; }
+    .gantt-bar-planejado { background: #e3f2fd; border: 1px solid #1976d2; }
+    .gantt-bar-em_andamento { background: #fff3e0; border: 1px solid #f57c00; }
+    .gantt-bar-concluido { background: #e8f5e9; border: 1px solid #388e3c; }
+    .gantt-bar-atrasada { background: #ffebee; border: 1px solid #c62828; }
+    .gantt-bar-label { font-size: 10px; padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333; }
+    .gantt-hoje { position: absolute; width: 2px; background: #ff6b6b; top: 0; bottom: 0; z-index: 10; opacity: 0.6; }
   </style>
 <link rel="stylesheet" href="tema.css?v=8f27e8ff" media="screen">
 </head>
@@ -72,6 +87,7 @@
     <button class="tab active" onclick="mudarAba('cronogramas')">Cronogramas</button>
     <button class="tab" onclick="mudarAba('eap')">EAP</button>
     <button class="tab" onclick="mudarAba('atividades')">Atividades</button>
+    <button class="tab" onclick="mudarAba('gantt')">Gantt</button>
     <button class="tab" onclick="mudarAba('restricoes')">Restrições</button>
   </div>
 
@@ -150,6 +166,24 @@
       </table>
       </div>
       <div style="text-align:center;margin-top:12px"><button class="btn btn-secondary" id="ativ-mais" style="display:none" onclick="mostrarMaisAtividades()">Mostrar mais</button></div>
+    </div>
+
+    <div id="gantt-aba" class="aba-content" style="display: none;">
+      <div class="ativ-barra" style="margin-bottom: 14px;">
+        <select id="gantt-cronograma" onchange="desenharGantt()"></select>
+        <select id="gantt-escala">
+          <option value="7">Semana</option>
+          <option value="14" selected>2 Semanas</option>
+          <option value="30">Mês</option>
+        </select>
+      </div>
+      <div class="gantt-container" id="gantt-container">
+        <div class="gantt-header">
+          <div class="gantt-row-label">Atividade</div>
+          <div class="gantt-timeline" id="gantt-header-timeline"></div>
+        </div>
+        <div id="gantt-barras"></div>
+      </div>
     </div>
 
     <div id="restricoes-aba" class="aba-content" style="display: none;">
@@ -780,18 +814,120 @@ async function salvarAtividade() {
   }
 }
 
+// ── Gantt/Timeline ──────────────────────────────────────────────────────
+async function desenharGantt() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cronoId = document.getElementById('gantt-cronograma').value;
+    if (!cronoId) return;
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const escala = parseInt(document.getElementById('gantt-escala').value) || 14;
+
+    const ativs = await buscarTudo(() => cliente.from('planejamento_atividades')
+      .select('id,codigo,nome,inicio_planejado,fim_planejado,percentual_real,critica')
+      .eq('obra_id', obraId).eq('cronograma_id', cronoId).order('inicio_planejado'));
+
+    if (!ativs.length) {
+      document.getElementById('gantt-barras').innerHTML = '<div class="empty-state"><i class="fas fa-chart-gantt"></i>Nenhuma atividade</div>';
+      return;
+    }
+
+    const hoje = hojeLocal();
+    const datas = ativs.flatMap(a => [a.inicio_planejado, a.fim_planejado]).filter(Boolean);
+    const minData = datas.length ? datas.sort()[0] : hoje;
+    const maxData = datas.length ? datas.sort().reverse()[0] : hoje;
+
+    const pxPorDia = 40;
+    const diasTotal = Math.max(escala * 2, diasEntre(minData, maxData) + 7);
+    const widthTotal = diasTotal * pxPorDia;
+
+    renderizarHeaderGantt(minData, diasTotal, pxPorDia);
+    renderizarBarrasGantt(ativs, minData, pxPorDia, hoje);
+  } catch (e) {
+    console.error('Erro ao desenhar Gantt:', e);
+    document.getElementById('gantt-barras').innerHTML = '<div class="empty-state">Erro: ' + esc(e.message) + '</div>';
+  }
+}
+
+function renderizarHeaderGantt(dataInicio, diasTotal, pxPorDia) {
+  const header = document.getElementById('gantt-header-timeline');
+  const cells = [];
+  for (let i = 0; i < diasTotal; i++) {
+    const data = somaDias(dataInicio, i);
+    const d = new Date(data + 'T00:00:00');
+    const dia = d.getDate();
+    const mes = d.getMonth() + 1;
+    const mostrar = i % 7 === 0;
+    cells.push(`<div class="gantt-cell" style="width: ${pxPorDia}px; border-right: ${mostrar ? '2px solid #999' : '1px solid #ddd'};">${mostrar ? dia + '/' + mes : ''}</div>`);
+  }
+  header.innerHTML = cells.join('');
+}
+
+function renderizarBarrasGantt(ativs, dataInicio, pxPorDia, hoje) {
+  const barras = document.getElementById('gantt-barras');
+  const widthTotal = Math.max(800, ativs.length > 0 ? 1400 : 800);
+  const hojePixel = diasEntre(dataInicio, hoje) * pxPorDia;
+
+  barras.innerHTML = ativs.map(a => {
+    if (!a.inicio_planejado || !a.fim_planejado) return '';
+    const inicio = diasEntre(dataInicio, a.inicio_planejado);
+    const fim = diasEntre(dataInicio, a.fim_planejado);
+    const duracao = fim - inicio;
+    const left = inicio * pxPorDia;
+    const width = Math.max(1, duracao * pxPorDia);
+
+    const sit = situacao(a, hoje)[0];
+    const barClass = 'gantt-bar gantt-bar-' + sit;
+    const label = esc(a.codigo) + ' - ' + esc(a.nome.substring(0, 40));
+
+    return `<div class="gantt-row">
+      <div class="gantt-row-label">${label}</div>
+      <div class="gantt-timeline" style="position: relative; width: ${widthTotal}px;">
+        <div class="${barClass}" style="left: ${left}px; width: ${width}px;">
+          <div class="gantt-bar-label">${a.percentual_real}%</div>
+        </div>
+        ${hojePixel > 0 ? `<div class="gantt-hoje" style="left: ${hojePixel}px;"></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // Inicializar quando DOM estiver pronto e B3Obras disponível
 window.addEventListener('DOMContentLoaded', () => {
   if (window.B3Obras) {
     (async () => {
       await carregarCronogramas();
       await preencherSeletorCronogramas();
+      await preencherSeletorCronogramasGantt();
       carregarAtividades();
       carregarEap();
       carregarRestricoes();
     })();
   }
 });
+
+async function preencherSeletorCronogramasGantt() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const { data } = await cliente
+      .from('planejamento_cronogramas')
+      .select('id, nome')
+      .eq('obra_id', obraId)
+      .order('criado_em', { ascending: false });
+
+    const seletor = document.getElementById('gantt-cronograma');
+    if (data && data.length) {
+      seletor.innerHTML = data.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+      seletor.value = data[0].id;
+    }
+  } catch (e) {
+    console.error('Erro ao preencher seletor Gantt:', e);
+  }
+}
 </script>
 </body>
 </html>

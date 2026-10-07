@@ -136,7 +136,7 @@ with sync_playwright() as p:
     check(a1["percentual_real"] == 100, "% acima de 100 é limitado a 100")
 
     # ---- Restrições ----
-    page.evaluate("document.querySelectorAll('.tab')[3].click()")
+    page.evaluate("document.querySelectorAll('.tab')[4].click()")
     page.fill("#restr-descricao", "Licença da central de concreto")
     page.select_option("#restr-criticidade", "critica")
     page.fill("#restr-responsavel", "Meio Ambiente")
