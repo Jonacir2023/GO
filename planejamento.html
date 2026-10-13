@@ -85,9 +85,8 @@
 
   <div class="tabs">
     <button class="tab active" onclick="mudarAba('cronogramas')">Cronogramas</button>
-    <button class="tab" onclick="mudarAba('eap')">EAP</button>
     <button class="tab" onclick="mudarAba('atividades')">Atividades</button>
-    <button class="tab" onclick="mudarAba('gantt')">Gantt</button>
+    <button class="tab" onclick="mudarAba('riscos')">Controle de Riscos</button>
     <button class="tab" onclick="mudarAba('restricoes')">Restrições</button>
   </div>
 
@@ -107,29 +106,6 @@
           <tr><td colspan="5" class="empty-state"><i class="fas fa-chart-gantt"></i>Nenhum cronograma</td></tr>
         </tbody>
       </table>
-    </div>
-
-    <div id="eap-aba" class="aba-content" style="display: none;">
-      <div class="ativ-barra">
-        <input type="search" id="eap-busca" placeholder="Buscar por nome ou código" oninput="filtrarEap()">
-      </div>
-      <div class="ativ-tabela-wrap">
-        <table class="table" id="eap-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Nome</th>
-              <th>Tipo</th>
-              <th>Início</th>
-              <th>Fim</th>
-              <th>% Completo</th>
-            </tr>
-          </thead>
-          <tbody id="eap-tbody">
-            <tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item de EAP</td></tr>
-          </tbody>
-        </table>
-      </div>
     </div>
 
     <div id="atividades-aba" class="aba-content" style="display: none;">
@@ -168,21 +144,93 @@
       <div style="text-align:center;margin-top:12px"><button class="btn btn-secondary" id="ativ-mais" style="display:none" onclick="mostrarMaisAtividades()">Mostrar mais</button></div>
     </div>
 
-    <div id="gantt-aba" class="aba-content" style="display: none;">
-      <div class="ativ-barra" style="margin-bottom: 14px;">
-        <select id="gantt-cronograma" onchange="desenharGantt()"></select>
-        <select id="gantt-escala">
-          <option value="7">Semana</option>
-          <option value="14" selected>2 Semanas</option>
-          <option value="30">Mês</option>
-        </select>
+    <div id="riscos-aba" class="aba-content" style="display: none;">
+      <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+        <button class="btn btn-primary" onclick="abrirNovoRisco()">➕ Novo Risco</button>
+        <button class="btn btn-secondary" onclick="mudarSubAbas('registro')">Registro de Riscos</button>
+        <button class="btn btn-secondary" onclick="mudarSubAbas('acoes')">Ações de Mitigação</button>
+        <button class="btn btn-secondary" onclick="mudarSubAbas('cobertura')">Cobertura do Cronograma</button>
+        <button class="btn btn-secondary" onclick="mudarSubAbas('priorizacao')">Matriz PMI</button>
       </div>
-      <div class="gantt-container" id="gantt-container">
-        <div class="gantt-header">
-          <div class="gantt-row-label">Atividade</div>
-          <div class="gantt-timeline" id="gantt-header-timeline"></div>
+
+      <div id="riscos-registro-aba">
+        <div class="ativ-barra">
+          <input type="search" id="riscos-busca" placeholder="Buscar por código, causa ou responsável" oninput="filtrarRiscos()">
+          <select id="riscos-filtro" onchange="filtrarRiscos()">
+            <option value="todos">Todos</option>
+            <option value="aberto">Aberto</option>
+            <option value="mitigado">Mitigado</option>
+            <option value="concretizado">Concretizado</option>
+          </select>
         </div>
-        <div id="gantt-barras"></div>
+        <table class="table" id="riscos-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Causa</th>
+              <th>Evento</th>
+              <th>Consequência</th>
+              <th>Prob.</th>
+              <th>Impacto</th>
+              <th>Prioridade</th>
+              <th>Responsável</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="riscos-tbody">
+            <tr><td colspan="10" class="empty-state"><i class="fas fa-shield-alt"></i>Nenhum risco cadastrado</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="riscos-acoes-aba" style="display: none;">
+        <table class="table" id="acoes-table">
+          <thead>
+            <tr>
+              <th>Risco</th>
+              <th>Ação</th>
+              <th>Responsável</th>
+              <th>Data Limite</th>
+              <th>Custo (R$)</th>
+              <th>Status</th>
+              <th>Evidência</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="acoes-tbody">
+            <tr><td colspan="8" class="empty-state"><i class="fas fa-check-circle"></i>Nenhuma ação cadastrada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="riscos-cobertura-aba" style="display: none;">
+        <div class="ativ-barra" style="margin-bottom: 14px;">
+          <select id="cobertura-cronograma" onchange="carregarCobertura()"></select>
+          <input type="search" id="cobertura-busca" placeholder="Buscar por atividade" oninput="filtrarCobertura()">
+        </div>
+        <table class="table" id="cobertura-table">
+          <thead>
+            <tr>
+              <th>Atividade</th>
+              <th>Riscos Associados</th>
+              <th>Revisado Por</th>
+              <th>Data Revisão</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="cobertura-tbody">
+            <tr><td colspan="5" class="empty-state"><i class="fas fa-check-square"></i>Nenhuma atividade mapeada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="riscos-priorizacao-aba" style="display: none;">
+        <div class="priorizacao-info">
+          <p><strong>Matriz de Priorização PMI (Probabilidade × Impacto)</strong></p>
+          <p>Prioridade = Probabilidade × MAIOR(Impacto Prazo, Impacto Custo)</p>
+        </div>
+        <canvas id="priorizacao-canvas" width="600" height="600"></canvas>
       </div>
     </div>
 
@@ -900,9 +948,7 @@ window.addEventListener('DOMContentLoaded', () => {
     (async () => {
       await carregarCronogramas();
       await preencherSeletorCronogramas();
-      await preencherSeletorCronogramasGantt();
       carregarAtividades();
-      carregarEap();
       carregarRestricoes();
     })();
   }
