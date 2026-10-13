@@ -1,22 +1,26 @@
 -- ============================================================
--- CRONOGRAMA F1 - PARTE 1: Limpeza + EAP + Cronograma
+-- CRONOGRAMA F1 - PARTE 1: EAP (365 itens com hierarquia)
 -- ============================================================
--- Execute no Supabase SQL Editor
--- Cole em: https://supabase.com/dashboard/project/ivssgstckfcuiyetxdze/sql/new
+-- OBRA 1 (ivssgstckfcuiyetxdze)
+-- Importar ANTES de PARTE_2
 
 -- 1. Limpar dados antigos Obra 1
 DELETE FROM planejamento_atividades WHERE obra_id = 'obra1';
 DELETE FROM eap_itens WHERE obra_id = 'obra1';
-DELETE FROM planejamento_cronogramas WHERE obra_id = 'obra1';
+DELETE FROM planejamento_cronogramas WHERE nome LIKE 'Cronograma F1%' AND obra_id = 'obra1';
 
--- 2. Inserir novo cronograma
-INSERT INTO planejamento_cronogramas (nome, descricao, baseline, inicio, fim, obra_id)
-VALUES ('Cronograma F1', 'BOP CIVIL + RMT - COMPLEXO GRAN SUL (STATKRAFT)', true, '2026-10-01'::date, '2028-07-31'::date, 'obra1')
+-- 2. Inserir novo cronograma baseline
+INSERT INTO planejamento_cronogramas 
+  (nome, descricao, baseline, inicio, fim, obra_id)
+VALUES 
+  ('Cronograma F1', 'BOP CIVIL + RMT — COMPLEXO EÓLICO GRAN SUL (STATKRAFT)', true, '2026-10-01'::date, '2028-07-31'::date, 'obra1')
 ON CONFLICT DO NOTHING;
 
--- 3. Inserir EAP (365 pacotes com hierarquia)
-INSERT INTO eap_itens (codigo, nome, nivel, obra_id, inicio_planejado, fim_planejado, pai_id)
+-- 3. Inserir 365 itens EAP com hierarquia (linhas 5–369 da planilha)
+INSERT INTO eap_itens 
+  (codigo, nome, nivel, obra_id, inicio_planejado, fim_planejado, pai_id)
 VALUES
+
 ('01', 'BOP CIVIL E RMT - COMPLEXO GRAN SUL - STATKRAFT', 0, 'obra1', '2026-10-01'::date, '2028-07-31'::date, NULL),
 ('01.01', 'MARCOS', 1, 'obra1', '2026-10-01'::date, '2028-03-24'::date, (SELECT id FROM eap_itens WHERE codigo = '01' AND obra_id = 'obra1' LIMIT 1)),
 ('01.01.01', 'MARCOS', 2, 'obra1', '2026-10-01'::date, '2028-03-24'::date, (SELECT id FROM eap_itens WHERE codigo = '01.01' AND obra_id = 'obra1' LIMIT 1)),
@@ -382,4 +386,4 @@ VALUES
 ('01.06.01.02.11.02', 'SINALIZAÇÃO VERTICAL', 5, 'obra1', '2027-10-18'::date, '2027-10-27'::date, (SELECT id FROM eap_itens WHERE codigo = '01.06.01.02.11' AND obra_id = 'obra1' LIMIT 1)),
 ('01.07', 'DESMOBILIZAÇÃO', 1, 'obra1', '2028-05-10'::date, '2028-07-31'::date, (SELECT id FROM eap_itens WHERE codigo = '01' AND obra_id = 'obra1' LIMIT 1)),
 ('01.07.01', 'DESMOBILIZAÇÃO - FASE 1', 2, 'obra1', '2028-05-10'::date, '2028-06-30'::date, (SELECT id FROM eap_itens WHERE codigo = '01.07' AND obra_id = 'obra1' LIMIT 1))
-ON CONFLICT DO NOTHING;
+ON CONFLICT (codigo, obra_id) DO NOTHING;
