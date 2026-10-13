@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUILDLy SQL Editor — Obra 2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 16px;
+    }
+    h1 { color: #58a6ff; font-size: 24px; margin-bottom: 4px; }
+    .subtitle { color: #8b949e; font-size: 14px; }
+    .obra-badge { 
+      display: inline-block;
+      background: #f85149;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      margin-left: 8px;
+      font-weight: 600;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #30363d;
+    }
+    .tab {
+      padding: 12px 16px;
+      background: #0d1117;
+      border: none;
+      color: #8b949e;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab:active { color: #58a6ff; border-bottom-color: #58a6ff; }
+    .tab.active { color: #58a6ff; border-bottom-color: #58a6ff; }
+    .section { display: none; }
+    .section.active { display: block; }
+    textarea {
+      width: 100%;
+      height: 60vh;
+      background: #0d1117;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      font-family: "Monaco", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      resize: none;
+      margin-bottom: 12px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 16px;
+      background: #238636;
+      color: white;
+      border: 1px solid #2ea043;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    button:active { background: #2ea043; }
+    button.secondary {
+      background: #1f6feb;
+      border-color: #388bfd;
+    }
+    button.secondary:active { background: #388bfd; }
+    .info {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-left: 3px solid #f85149;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    .steps {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .steps ol { margin-left: 20px; }
+    .steps li { margin-bottom: 12px; }
+    .step-code {
+      background: #161b22;
+      padding: 8px;
+      border-radius: 4px;
+      display: inline-block;
+      font-family: monospace;
+      margin-top: 4px;
+    }
+    .link-button {
+      display: inline-block;
+      padding: 10px 16px;
+      background: #1f6feb;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .success-msg {
+      display: none;
+      background: #238636;
+      color: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      animation: fadeOut 3s;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+<link rel="stylesheet" href="tema.css?v=8f27e8ff" media="screen">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📊 BUILDLy SQL Editor <span class="obra-badge">OBRA 2</span></h1>
+      <p class="subtitle">EAP + Cronograma Import para Obra 2</p>
+    </header>
+
+    <div class="info">
+      ⚠️ <strong>Obra 2</strong> (lwjbuzubnxnzkofcrhah) — Cole cada script no editor SQL do Supabase e execute. Cada um é idempotente (seguro rodar múltiplas vezes).
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab(0)">📋 PARTE 1: Cronograma + EAP</button>
+      <button class="tab" onclick="showTab(1)">📋 PARTE 2: Atividades</button>
+      <button class="tab" onclick="showTab(2)">📖 Instruções</button>
+    </div>
+
+    <!-- PARTE 1 -->
+    <div class="section active">
+      <div id="success1" class="success-msg">✅ Copiado!</div>
+      <p style="margin-bottom: 12px; font-size: 13px; color: #8b949e;">
+        <strong>Cronograma Rev. 05 + 405 pacotes EAP</strong><br>
+        Tempo: ~5-10 segundos
+      </p>
+      <textarea id="parte1" readonly></textarea>
+      <div class="actions">
+        <button onclick="copiar('parte1', 'success1')">📋 Copiar PARTE 1</button>
+        <a href="https://supabase.com/dashboard/project/lwjbuzubnxnzkofcrhah/sql/new" class="link-button" target="_blank">🔗 Abrir Supabase Obra 2</a>
+      </div>
+    </div>
+
+    <!-- PARTE 2 -->
+    <div class="section">
+      <div id="success2" class="success-msg">✅ Copiado!</div>
+      <p style="margin-bottom: 12px; font-size: 13px; color: #8b949e;">
+        <strong>2077 Atividades</strong><br>
+        Tempo: ~20-30 segundos<br>
+        ⚠️ Execute PARTE 1 antes!
+      </p>
+      <textarea id="parte2" readonly></textarea>
+      <div class="actions">
+        <button onclick="copiar('parte2', 'success2')">📋 Copiar PARTE 2</button>
+        <a href="https://supabase.com/dashboard/project/lwjbuzubnxnzkofcrhah/sql/new" class="link-button" target="_blank">🔗 Abrir Supabase Obra 2</a>
+      </div>
+    </div>
+
+    <!-- INSTRUÇÕES -->
+    <div class="section">
+      <div class="steps">
+        <h3 style="margin-bottom: 12px; color: #f85149;">🚀 Como executar:</h3>
+        <ol>
+          <li><strong>Copie PARTE 1</strong><br>
+            Clique no botão acima
+          </li>
+          <li><strong>Abra Supabase SQL Editor (Obra 2)</strong><br>
+            <a href="https://supabase.com/dashboard/project/lwjbuzubnxnzkofcrhah/sql/new" target="_blank">Clique aqui</a>
+          </li>
+          <li><strong>Cole e execute PARTE 1</strong><br>
+            Cmd+A, Delete, Cmd+V, Cmd+Enter<br>
+            Aguarde 5-10 segundos
+          </li>
+          <li><strong>Copie PARTE 2</strong><br>
+            Volte aqui, clique no botão de PARTE 2
+          </li>
+          <li><strong>Cole e execute PARTE 2</strong><br>
+            Repita o passo 3, aguarde 20-30 segundos
+          </li>
+          <li><strong>Teste no app</strong><br>
+            <a href="https://jonacir2023.github.io/GO/" target="_blank">Abra o BUILDLy</a><br>
+            Planejamento → Trocar para Obra 2 → EAP ou Cronograma
+          </li>
+        </ol>
+
+        <h3 style="margin: 16px 0 12px; color: #f85149;">❓ Se der erro:</h3>
+        <ul style="margin-left: 20px;">
+          <li><strong>"ON CONFLICT":</strong> Dados já existem — tudo OK</li>
+          <li><strong>"Foreign key":</strong> Rode PARTE 1 completamente</li>
+          <li><strong>Timeout:</strong> Aguarde 30s e tente novamente</li>
+        </ul>
+
+        <h3 style="margin: 16px 0 12px; color: #f85149;">📊 Resumo:</h3>
+        <ul style="margin-left: 20px;">
+          <li>1 cronograma (Rev. 05, 2026-10-01 a 2028-07-31)</li>
+          <li>405 pacotes EAP com hierarquia</li>
+          <li>2077 atividades</li>
+          <li>Obra: Eólica GranSul (Obra 2)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const parte1El = document.getElementById('parte1');
+    const parte2El = document.getElementById('parte2');
+
+    async function loadSQL() {
+      try {
+        const p1 = await fetch('/PARTE_1_cronograma_eap_OBRA2.sql').then(r => r.text());
+        parte1El.value = p1;
+      } catch {
+        parte1El.value = '-- Erro ao carregar PARTE 1\n-- Por favor, abra o arquivo diretamente no editor do Supabase';
+      }
+
+      try {
+        const p2 = await fetch('/PARTE_2_atividades_OBRA2.sql').then(r => r.text());
+        parte2El.value = p2;
+      } catch {
+        parte2El.value = '-- Erro ao carregar PARTE 2\n-- Por favor, abra o arquivo diretamente no editor do Supabase';
+      }
+    }
+
+    loadSQL();
+
+    function showTab(index) {
+      const tabs = document.querySelectorAll('.tab');
+      const sections = document.querySelectorAll('.section');
+
+      tabs.forEach((t, i) => t.classList.toggle('active', i === index));
+      sections.forEach((s, i) => s.classList.toggle('active', i === index));
+    }
+
+    function copiar(textareId, successId) {
+      const textarea = document.getElementById(textareId);
+      textarea.select();
+      document.execCommand('copy');
+
+      const successMsg = document.getElementById(successId);
+      successMsg.style.display = 'block';
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

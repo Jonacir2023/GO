@@ -13,8 +13,9 @@ o git não guarda.
 
 | Dia | Alterações |
 |---|---|
-| [[Registro/2026-10-13]] | 4 |
-| [[Registro/2026-10-07]] | 9 |
+| [[Registro/2026-10-10]] | 8 |
+| [[Registro/2026-10-09]] | 4 |
+| [[Registro/2026-10-07]] | 12 |
 | [[Registro/2026-10-06]] | 17 |
 | [[Registro/2026-10-05]] | 28 |
 | [[Registro/2026-10-04]] | 4 |
