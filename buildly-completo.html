@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="3beb38bc"</script>
+<script>/*build*/window.BUILD_ID="bf5f2d5e"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -621,13 +621,6 @@ window.B3_CASCA = true;
         <p>Equipamentos e veículos</p>
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-      <div class="home-card extra" data-mod="eap" data-cor="indigo" onclick="switchTab('eap')">
-        <button class="fav" data-fav="eap" onclick="alternarFavorito('eap', event)" aria-label="Favoritar EAP"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
-        <div class="ico g-indigo"><svg viewBox="0 0 24 24"><use href="#i-layers"/></svg></div>
-        <h3>EAP</h3>
-        <p>Estrutura analítica</p>
-        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
-      </div>
       <div class="home-card extra" data-mod="financeiro" data-cor="emerald" onclick="switchTab('financeiro')">
         <button class="fav" data-fav="financeiro" onclick="alternarFavorito('financeiro', event)" aria-label="Favoritar Financeiro"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></button>
         <div class="ico g-emerald"><svg viewBox="0 0 24 24"><use href="#i-card"/></svg></div>
@@ -943,11 +936,6 @@ window.B3_CASCA = true;
   <iframe id="manutencao-iframe" src="manutencao.html?v=b9942443" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
-<!-- EAP PAGE (Estrutura Analítica do Projeto) -->
-<div class="page" id="page-eap">
-  <iframe id="eap-iframe" src="eap.html?v=b062a0ef" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
-</div>
-
 <!-- PLANEJAMENTO PAGE (Cronogramas e atividades) -->
 <div class="page" id="page-planejamento">
   <iframe id="planejamento-iframe" src="planejamento.html?v=fbae5ecd" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
@@ -1211,8 +1199,8 @@ function switchTab(tab, el) {
 // ═══════════════════════════════════════════════════════════════
 // CASCA — hero, barra inferior e painéis (padrão visual claro)
 // ═══════════════════════════════════════════════════════════════
-const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Medição", "desc": "Quantidades e avanço físico", "i": "ruler", "c": "slate", "t": "MEDIÇÕES", "s": "Quantidades e avanço físico"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "eap": {"nome": "EAP", "desc": "Estrutura analítica", "i": "layers", "c": "indigo", "t": "EAP", "s": "Estrutura analítica do projeto"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
-const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "eap", "financeiro", "suprimentos"];
+const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Medição", "desc": "Quantidades e avanço físico", "i": "ruler", "c": "slate", "t": "MEDIÇÕES", "s": "Quantidades e avanço físico"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
+const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "financeiro", "suprimentos"];
 
 function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }
 function _esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
