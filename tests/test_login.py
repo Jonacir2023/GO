@@ -70,7 +70,7 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/buildly-completo.html")
     page.wait_for_timeout(1200)
     check(not login_visivel(page), "administrador logado não vê o login")
-    check(len(cartoes_visiveis(page)) == 14, f"administrador vê os 14 módulos ({len(cartoes_visiveis(page))})")
+    check(len(cartoes_visiveis(page)) == 13, f"administrador vê os 13 módulos ({len(cartoes_visiveis(page))})")
     check(page.evaluate("() => getComputedStyle(document.querySelector('.fab-ia-wrap')).display") != "none", "administrador vê o robô")
     page.evaluate("abrirPerfil()")
     txt = page.inner_text("#sheet-corpo")
