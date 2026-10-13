@@ -67,9 +67,9 @@ with sync_playwright() as p:
     page.wait_for_timeout(1500)
 
     # ---- home ----
-    check(page.locator(".home-card").count() == 14, "home com 14 cartões de módulo")
+    check(page.locator(".home-card").count() == 13, "home com 13 cartões de módulo")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
-    check(visiveis == 14, f"celular mostra os 14 cartões, nenhum escondido ({visiveis})")
+    check(visiveis == 13, f"celular mostra os 13 cartões, nenhum escondido ({visiveis})")
     check(page.locator('.home-card[data-mod="custos"] .selo').inner_text().strip().lower() == "ativo", "selo 'Ativo' do módulo Entradas")
     check(page.evaluate("() => getComputedStyle(document.body).backgroundColor") != "rgb(74, 81, 98)",
           "fundo da casca não é mais o escuro antigo")
@@ -102,7 +102,7 @@ with sync_playwright() as p:
     page.evaluate("fecharSheet()")
     page.locator('#app-nav [data-nav="mais"]').click()
     texto = page.locator("#sheet-corpo").inner_text()
-    check(all(n in texto for n in ["EAP", "Financeiro", "Suprimentos", "Manutenção", "Resumo do Tempo"]),
+    check(all(n in texto for n in ["Financeiro", "Suprimentos", "Manutenção", "Resumo do Tempo"]),
           "Mais traz os módulos extras")
     page.evaluate("fecharSheet()")
 
@@ -127,7 +127,7 @@ with sync_playwright() as p:
     page.evaluate("fecharSheet()")
 
     # ---- módulos: hero compacto, barra, sem rolagem horizontal ----
-    for mod in ["rdo", "custos", "medicao", "documentos", "eap", "planejamento", "financeiro", "suprimentos",
+    for mod in ["rdo", "custos", "medicao", "documentos", "planejamento", "financeiro", "suprimentos",
                 "manutencao", "reuniao", "resumo-tempo", "pauta", "checkin", "obra"]:
         page.evaluate("t => switchTab(t)", mod)
         page.wait_for_timeout(500)
@@ -148,7 +148,7 @@ with sync_playwright() as p:
     check(fr.evaluate("() => document.documentElement.scrollWidth <= window.innerWidth + 1"), "RDO embutido sem rolagem horizontal")
 
     # ---- botões de ação do cabeçalho continuam acessíveis dentro da casca ----
-    for mod, arq, acao in [("custos", "custos.html", "abrirCadastro()"), ("eap", "eap.html", "abrirNovaEAP()"),
+    for mod, arq, acao in [("custos", "custos.html", "abrirCadastro()"),
                            ("planejamento", "planejamento.html", "abrirNovoCronograma()"),
                            ("suprimentos", "suprimentos.html", "abrirNovaRequisicao()")]:
         page.evaluate("t => switchTab(t)", mod)
@@ -173,7 +173,7 @@ with sync_playwright() as p:
     check(page.evaluate("() => document.querySelector('.hero-home').getBoundingClientRect().width > 900"),
           "desktop: hero ocupa a largura útil")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
-    check(visiveis == 14, f"desktop mostra os 14 cartões ({visiveis})")
+    check(visiveis == 13, f"desktop mostra os 13 cartões ({visiveis})")
 
     # ---- auto-atualização: versao.json diferente do carimbo => recarrega uma única vez ----
     velha = ctx.new_page()
