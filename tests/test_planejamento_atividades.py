@@ -41,7 +41,7 @@ for i in range(1, 1206):
 
 BANCO = {
     "planejamento_cronogramas": [{"id": "c1", "obra_id": "obra1", "nome": "Rev. 05 (linha de base)",
-                                  "tipo": "baseline", "data_status": "2026-10-06", "criado_em": "2026-10-06"}],
+                                  "tipo": "baseline", "data_status": "2026-10-06", "criado_em": "2026-10-06", "ativo": True}],
     "planejamento_atividades": ativs,
     "eap_itens": [{"id": "e1", "obra_id": "obra1", "nome": "FUNDAÇÃO DOS AEROGERADORES"}],
     "planejamento_restricoes": [],

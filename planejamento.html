@@ -1049,8 +1049,8 @@ window.addEventListener('DOMContentLoaded', () => {
     (async () => {
       await carregarCronogramas();
       await preencherSeletorCronogramas();
-      carregarAtividades();
-      carregarRestricoes();
+      await carregarAtividades();
+      await carregarRestricoes();
     })();
   }
 });
