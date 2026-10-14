@@ -586,7 +586,7 @@ function mudarAba(aba) {
   document.querySelectorAll('.aba-content').forEach(el => el.style.display = 'none');
   document.getElementById(aba + '-aba').style.display = 'block';
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
+  if (event && event.target) event.target.classList.add('active');
   if (aba === 'atividades') carregarAtividades();
   if (aba === 'eap') carregarEAP();
   if (aba === 'riscos') {
@@ -594,13 +594,6 @@ function mudarAba(aba) {
     preencherSeletorCronogramasCobertura();
     mudarSubAbas('registro');
   }
-}
-
-function mudarSubAbas(subaba) {
-  document.querySelectorAll('[id^="riscos-"][id$="-aba"]').forEach(el => el.style.display = 'none');
-  document.getElementById('riscos-' + subaba + '-aba').style.display = 'block';
-  document.querySelectorAll('#riscos-aba .btn-secondary').forEach(el => el.style.opacity = '0.6');
-  if (event && event.target) event.target.style.opacity = '1';
 }
 
 function abrirNovoCronograma() {
@@ -1723,7 +1716,7 @@ async function apagarRisco() {
 
 // ── Sub-abas do módulo de Riscos ────────────────────────────────────────
 function mudarSubAbas(subaba) {
-  document.querySelectorAll('[id^="riscos-"][id$="-aba"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('#riscos-registro-aba, #riscos-acoes-aba, #riscos-cobertura-aba, #riscos-priorizacao-aba').forEach(el => el.style.display = 'none');
   document.getElementById('riscos-' + subaba + '-aba').style.display = 'block';
 
   if (subaba === 'acoes') carregarAcoes();
