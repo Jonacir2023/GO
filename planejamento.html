@@ -122,7 +122,10 @@
             <option value="concluidas">Concluídas</option>
           </select>
         </div>
-        <button class="btn btn-primary" onclick="abrirNovaAtividade()">➕ Nova</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-primary" onclick="abrirImportarCronograma()">📥 Importar</button>
+          <button class="btn btn-primary" onclick="abrirNovaAtividade()">➕ Nova</button>
+        </div>
       </div>
       <div class="ativ-kpis" id="ativ-kpis"></div>
       <div class="ativ-tabela-wrap">
@@ -133,12 +136,13 @@
             <th>Atividade</th>
             <th>Situação</th>
             <th>% Real</th>
+            <th>Predecessora</th>
             <th>Início prev.</th>
             <th>Fim prev.</th>
           </tr>
         </thead>
         <tbody id="atividades-tbody">
-          <tr><td colspan="6" class="empty-state"><i class="fas fa-tasks"></i>Nenhuma atividade</td></tr>
+          <tr><td colspan="7" class="empty-state"><i class="fas fa-tasks"></i>Nenhuma atividade</td></tr>
         </tbody>
       </table>
       </div>
@@ -396,6 +400,46 @@
       <button class="btn btn-secondary" onclick="fecharModalEap()">Cancelar</button>
       <button class="btn btn-primary" id="eap-btn-delete" style="display: none; margin-right: auto; background: #c62828;" onclick="apagarEapItem()">🗑️ Apagar</button>
       <button class="btn btn-primary" onclick="salvarEapItem()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-importar-cronograma">
+  <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-header">Importar Cronograma</div>
+    <div style="margin-bottom: 20px;">
+      <div id="import-drag-area" style="border: 2px dashed #ccc; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='white'" ondrop="importarCronogramaArquivo(event)" ondragover="event.preventDefault(); event.stopPropagation();">
+        <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #666; display: block; margin-bottom: 10px;"></i>
+        <p style="margin: 0; color: #666; font-weight: 500;">Arraste o arquivo Excel ou CSV aqui</p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">ou clique para selecionar</p>
+        <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importarCronogramaArquivo(event)">
+      </div>
+      <script>
+        document.getElementById('import-drag-area').addEventListener('click', () => document.getElementById('import-file-input').click());
+      </script>
+    </div>
+    <div id="import-preview" style="display: none; margin-bottom: 20px;">
+      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Preview das atividades a importar</h3>
+      <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px;">
+        <table class="table" style="margin: 0;">
+          <thead>
+            <tr style="position: sticky; top: 0;">
+              <th style="width: 80px;">Código</th>
+              <th>Nome</th>
+              <th style="width: 120px;">Predecessora</th>
+              <th style="width: 100px;">Início</th>
+              <th style="width: 100px;">Fim</th>
+            </tr>
+          </thead>
+          <tbody id="import-preview-tbody"></tbody>
+        </table>
+      </div>
+      <p id="import-preview-info" style="margin-top: 10px; font-size: 12px; color: #666;"></p>
+    </div>
+    <div id="import-errors" style="display: none; margin-bottom: 20px; padding: 12px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 6px; color: #c62828; font-size: 13px;"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalImportarCronograma()">Cancelar</button>
+      <button class="btn btn-primary" id="import-btn-confirmar" style="display: none;" onclick="confirmarImportarCronograma()">✓ Importar</button>
     </div>
   </div>
 </div>
@@ -799,7 +843,7 @@ async function carregarAtividades() {
     const obraId = B3Obras.atualId();
     const [ativs, eap] = await Promise.all([
       buscarTudo(() => cliente.from('planejamento_atividades')
-        .select('id,codigo,nome,eap_id,inicio_planejado,fim_planejado,inicio_real,fim_real,percentual_real,critica')
+        .select('id,codigo,nome,eap_id,inicio_planejado,fim_planejado,inicio_real,fim_real,percentual_real,critica,predecessora')
         .eq('obra_id', obraId).eq('cronograma_id', cronoId).order('inicio_planejado').order('codigo')),
       buscarTudo(() => cliente.from('eap_itens').select('id,nome').eq('obra_id', obraId))
     ]);
@@ -842,7 +886,7 @@ function mostrarMaisAtividades() {
   const hoje = hojeLocal();
   const tbody = document.getElementById('atividades-tbody');
   if (!_ativsFiltradas.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-tasks"></i>Nenhuma atividade</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-tasks"></i>Nenhuma atividade</td></tr>';
     document.getElementById('ativ-mais').style.display = 'none';
     return;
   }
@@ -854,6 +898,7 @@ function mostrarMaisAtividades() {
       <td>${esc(a.nome)}<span class="ativ-grupo">${esc(_eapNomes[a.eap_id] || '')}</span></td>
       <td><span class="status ${s[0]}">${s[1]}</span></td>
       <td><input class="pct-input" type="number" min="0" max="100" step="5" value="${Number(a.percentual_real) || 0}" onchange="event.stopPropagation(); salvarPercentual('${a.id}', this)"></td>
+      <td>${esc(a.predecessora || '-')}</td>
       <td>${br(a.inicio_planejado)}</td>
       <td>${br(a.fim_planejado)}</td>
     </tr>`;
@@ -2244,6 +2289,216 @@ async function desenharMatrizPmi() {
     ctx.fillStyle = '#ffffcc'; ctx.fillRect(w - 50, 40, 10, 10);
   } catch (e) {
     console.error('Erro ao desenhar matriz PMI:', e);
+  }
+}
+
+// ── Importação de Cronograma ────────────────────────────────────────
+let _importCronogramaData = [];
+
+async function abrirImportarCronograma() {
+  const cronoId = document.getElementById('ativ-cronograma').value;
+  if (!cronoId) {
+    alert('Selecione um cronograma primeiro');
+    return;
+  }
+  _importCronogramaData = [];
+  document.getElementById('modal-importar-cronograma').classList.add('active');
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-errors').style.display = 'none';
+  document.getElementById('import-btn-confirmar').style.display = 'none';
+  document.getElementById('import-file-input').value = '';
+}
+
+function fecharModalImportarCronograma() {
+  document.getElementById('modal-importar-cronograma').classList.remove('active');
+  _importCronogramaData = [];
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-errors').style.display = 'none';
+}
+
+async function importarCronogramaArquivo(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const arquivos = event.dataTransfer?.files || event.target?.files || [];
+  if (!arquivos.length) return;
+
+  const arquivo = arquivos[0];
+  const ext = arquivo.name.split('.').pop().toLowerCase();
+
+  try {
+    document.getElementById('import-errors').style.display = 'none';
+    let linhas = [];
+
+    if (ext === 'csv') {
+      const texto = await arquivo.text();
+      linhas = texto.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
+    } else if (ext === 'xlsx' || ext === 'xls') {
+      // Usar fetch para carregar sheetjs da CDN
+      if (!window.XLSX) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js';
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+      const arrayBuffer = await arquivo.arrayBuffer();
+      const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      linhas = jsonData.filter(l => l && l.length > 0);
+    } else {
+      throw new Error('Formato de arquivo não suportado. Use .xlsx, .xls ou .csv');
+    }
+
+    if (linhas.length < 2) {
+      throw new Error('O arquivo deve ter cabeçalho e pelo menos 1 linha de dados');
+    }
+
+    // Processar linhas
+    _importCronogramaData = [];
+    const erros = [];
+
+    for (let i = 1; i < linhas.length; i++) {
+      const linha = linhas[i];
+      if (!linha || linha.length < 5) continue;
+
+      const codigo = String(linha[0] || '').trim();
+      const nome = String(linha[1] || '').trim();
+      const predecessora = String(linha[2] || '').trim();
+      const dataInicio = String(linha[3] || '').trim();
+      const dataFim = String(linha[4] || '').trim();
+
+      if (!codigo || !nome) {
+        erros.push(`Linha ${i + 1}: Código e Nome são obrigatórios`);
+        continue;
+      }
+
+      // Converter datas DD/MM/YYYY → YYYY-MM-DD
+      let inicio = converterData(dataInicio);
+      let fim = converterData(dataFim);
+
+      if (!inicio || !fim) {
+        erros.push(`Linha ${i + 1}: Datas inválidas (use DD/MM/YYYY)`);
+        continue;
+      }
+
+      _importCronogramaData.push({
+        codigo,
+        nome,
+        predecessora: predecessora || null,
+        inicio_planejado: inicio,
+        fim_planejado: fim
+      });
+    }
+
+    if (erros.length) {
+      document.getElementById('import-errors').style.display = 'block';
+      document.getElementById('import-errors').textContent = erros.join('\n');
+    }
+
+    // Mostrar preview
+    if (_importCronogramaData.length) {
+      document.getElementById('import-preview').style.display = 'block';
+      document.getElementById('import-preview-tbody').innerHTML = _importCronogramaData.map(d => `
+        <tr>
+          <td>${esc(d.codigo)}</td>
+          <td>${esc(d.nome)}</td>
+          <td>${esc(d.predecessora || '-')}</td>
+          <td>${d.inicio_planejado}</td>
+          <td>${d.fim_planejado}</td>
+        </tr>
+      `).join('');
+      document.getElementById('import-preview-info').textContent =
+        `${_importCronogramaData.length} atividade(s) pronta(s) para importar`;
+      document.getElementById('import-btn-confirmar').style.display = 'inline-block';
+    }
+  } catch (e) {
+    document.getElementById('import-errors').style.display = 'block';
+    document.getElementById('import-errors').textContent = '⚠️ Erro ao processar arquivo: ' + e.message;
+    console.error('Erro:', e);
+  }
+}
+
+function converterData(dataStr) {
+  if (!dataStr) return null;
+  // Tenta múltiplos formatos
+  const formatos = [
+    /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/, // DD/MM/YYYY ou DD/MM/YY
+    /^(\d{4})-(\d{2})-(\d{2})$/         // YYYY-MM-DD
+  ];
+
+  for (const fmt of formatos) {
+    const m = dataStr.match(fmt);
+    if (m) {
+      let [, a, b, c] = m;
+      if (c.length === 2) c = c < 50 ? '20' + c : '19' + c;
+
+      if (c.length === 4 && Number(a) <= 31) {
+        // Formato DD/MM/YYYY
+        const d = new Date(Number(c), Number(b) - 1, Number(a));
+        if (d.getDate() !== Number(a)) return null;
+        return c + '-' + b.padStart(2, '0') + '-' + a.padStart(2, '0');
+      } else if (c.length === 4 && Number(a) > 1900) {
+        // Formato YYYY-MM-DD
+        return a + '-' + b + '-' + c;
+      }
+    }
+  }
+  return null;
+}
+
+async function confirmarImportarCronograma() {
+  try {
+    if (!_importCronogramaData.length) {
+      alert('Nenhuma atividade para importar');
+      return;
+    }
+
+    const cronoId = document.getElementById('ativ-cronograma').value;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    if (!cronoId || !cliente || !obraId) throw new Error('Contexto inválido');
+
+    // Buscar EAP padrão (primeiro item ou criar)
+    let eapId = '';
+    const eapResp = await cliente.from('eap_itens').select('id').eq('obra_id', obraId).limit(1);
+    if (eapResp.data && eapResp.data.length) {
+      eapId = eapResp.data[0].id;
+    }
+
+    document.getElementById('import-btn-confirmar').disabled = true;
+    document.getElementById('import-btn-confirmar').textContent = '⏳ Importando…';
+
+    const rows = _importCronogramaData.map(d => ({
+      obra_id: obraId,
+      cronograma_id: cronoId,
+      eap_id: eapId || null,
+      codigo: d.codigo,
+      nome: d.nome,
+      inicio_planejado: d.inicio_planejado,
+      fim_planejado: d.fim_planejado,
+      predecessora: d.predecessora,
+      percentual_real: 0,
+      critica: false
+    }));
+
+    const { error } = await cliente.from('planejamento_atividades').insert(rows);
+
+    if (error) throw error;
+
+    alert(`✓ ${rows.length} atividade(s) importada(s) com sucesso!`);
+    fecharModalImportarCronograma();
+    carregarAtividades();
+  } catch (e) {
+    alert('Erro ao importar: ' + e.message);
+    console.error('Erro:', e);
+  } finally {
+    document.getElementById('import-btn-confirmar').disabled = false;
+    document.getElementById('import-btn-confirmar').textContent = '✓ Importar';
   }
 }
 </script>
