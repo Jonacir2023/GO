@@ -961,7 +961,7 @@ async function carregarAtividades() {
     const [ativs, eap] = await Promise.all([
       buscarTudo(() => cliente.from('planejamento_atividades')
         .select('id,codigo,nome,eap_id,inicio_planejado,fim_planejado,inicio_real,fim_real,percentual_real,critica,predecessora')
-        .eq('obra_id', obraId).eq('cronograma_id', cronoId).order('inicio_planejado').order('codigo')),
+        .eq('obra_id', obraId).eq('cronograma_id', cronoId)),
       buscarTudo(() => cliente.from('eap_itens').select('id,nome').eq('obra_id', obraId))
     ]);
     _eapNomes = {};
