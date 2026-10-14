@@ -17,6 +17,8 @@
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-secondary { background: #e9ecef; color: #333; }
     .btn-secondary:hover { background: #dee2e6; }
+    .btn-danger { background: #f8d7da; color: #721c24; }
+    .btn-danger:hover { background: #f5c6cb; }
     .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
     .tab { padding: 12px 20px; cursor: pointer; border: none; background: none; font-size: 14px; border-bottom: 3px solid transparent; }
     .tab.active { border-bottom-color: var(--accent); color: var(--accent); font-weight: 600; }
@@ -751,7 +753,10 @@ async function carregarCronogramas() {
         <td>${c.tipo}</td>
         <td>${c.data_status || '-'}</td>
         <td><span class="status planejado">Ativo</span></td>
-        <td><button class="btn btn-secondary" onclick="editarCronograma('${c.id}')">✎ Editar</button></td>
+        <td style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary" onclick="editarCronograma('${c.id}')">✎ Editar</button>
+          <button class="btn btn-danger" onclick="deletarCronograma('${c.id}', '${c.nome.replace(/'/g, "\\'")}')">🗑 Deletar</button>
+        </td>
       </tr>
     `).join('');
   } catch (e) {
@@ -789,6 +794,45 @@ async function editarCronograma(id) {
     document.getElementById('nome').focus();
   } catch (e) {
     alert('Erro ao editar: ' + e.message);
+  }
+}
+
+async function deletarCronograma(id, nome) {
+  if (!confirm(`Deseja deletar o cronograma "${nome}" e todas as suas atividades?\n\nEsta ação não pode ser desfeita.`)) {
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    // 1. Deletar todas as atividades do cronograma
+    const ativResp = await cliente.from('planejamento_atividades')
+      .delete()
+      .eq('cronograma_id', id)
+      .eq('obra_id', obraId);
+
+    if (ativResp.error) throw ativResp.error;
+
+    // 2. Deletar o cronograma
+    const cronoResp = await cliente.from('planejamento_cronogramas')
+      .delete()
+      .eq('id', id)
+      .eq('obra_id', obraId);
+
+    if (cronoResp.error) throw cronoResp.error;
+
+    alert(`✓ Cronograma "${nome}" deletado com sucesso.`);
+    carregarCronogramas();
+    preencherSeletorCronogramas();
+  } catch (e) {
+    alert('Erro ao deletar: ' + e.message);
+    console.error('Erro:', e);
   }
 }
 
