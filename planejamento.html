@@ -169,13 +169,14 @@
             <tr>
               <th style="width: 100px;">Código</th>
               <th>Descrição</th>
+              <th style="width: 80px;">Prazo (d)</th>
               <th style="width: 100px;">Data Início</th>
               <th style="width: 100px;">Data Fim</th>
               <th style="width: 120px;">% Executado</th>
             </tr>
           </thead>
           <tbody id="eap-tbody">
-            <tr><td colspan="5" class="empty-state"><i class="fas fa-sitemap"></i>Selecione um cronograma</td></tr>
+            <tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item da EAP</td></tr>
           </tbody>
         </table>
       </div>
@@ -501,6 +502,7 @@
             <tr style="position: sticky; top: 0;">
               <th style="width: 100px;">Código</th>
               <th>Nome</th>
+              <th style="width: 80px;">Prazo (d)</th>
               <th style="width: 100px;">Data Início</th>
               <th style="width: 100px;">Data Fim</th>
               <th style="width: 100px;">% Executado</th>
@@ -1497,7 +1499,7 @@ async function carregarEAP() {
   const tbody = document.getElementById('eap-tbody');
   try {
     if (!window.B3Obras || !window.B3Obras.cliente) return;
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Carregando…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Carregando…</td></tr>';
 
     const cliente = B3Obras.cliente();
     const obraId = B3Obras.atualId();
@@ -1505,7 +1507,7 @@ async function carregarEAP() {
 
     const [eap, ativs] = await Promise.all([
       buscarTudo(() => cliente.from('eap_itens')
-        .select('id,codigo,nome,data_inicio,data_fim,pai_id')
+        .select('id,codigo,nome,prazo,data_inicio,data_fim,pai_id')
         .eq('obra_id', obraId)
         .order('codigo')),
       buscarTudo(() => cliente.from('planejamento_atividades')
@@ -1522,7 +1524,7 @@ async function carregarEAP() {
     filtrarEAP();
   } catch (e) {
     console.error('Erro ao carregar EAP:', e);
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
   }
 }
 
@@ -1551,7 +1553,7 @@ function filtrarEAP() {
 
   const tbody = document.getElementById('eap-tbody');
   if (!_eapTabFiltrados.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item da EAP</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item da EAP</td></tr>';
     return;
   }
 
@@ -1571,6 +1573,7 @@ function filtrarEAP() {
     <tr onclick="editarEapItem('${item.id}')" style="cursor: pointer;">
       <td class="${nivelClasses[nivel] || 'eap-nivel4'}">${esc(item.codigo || '-')}</td>
       <td>${esc(item.nome || '-')}</td>
+      <td>${esc(item.prazo || '-')}</td>
       <td>${br(item.data_inicio)}</td>
       <td>${br(item.data_fim)}</td>
       <td>${percentual}%</td>
@@ -1593,7 +1596,7 @@ async function limparEAP() {
     if (!obraId) throw new Error('Obra não selecionada');
 
     const tbody = document.getElementById('eap-tbody');
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Deletando…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Deletando…</td></tr>';
 
     // Buscar todos os eap_itens da obra
     const { data: itens, error: erroLista } = await cliente.from('eap_itens')
@@ -3008,13 +3011,14 @@ async function importarEapArquivo(event) {
 
     for (let i = 1; i < linhas.length; i++) {
       const linha = linhas[i];
-      if (!linha || linha.length < 5) continue;
+      if (!linha || linha.length < 6) continue;
 
       const codigo = String(linha[0] || '').trim();
       const nome = String(linha[1] || '').trim();
-      const dataInicio = String(linha[2] || '').trim();
-      const dataFim = String(linha[3] || '').trim();
-      const percentual = String(linha[4] || '0').trim();
+      const prazo = String(linha[2] || '').trim();
+      const dataInicio = String(linha[3] || '').trim();
+      const dataFim = String(linha[4] || '').trim();
+      const percentual = String(linha[5] || '0').trim();
 
       if (!codigo || !nome) {
         erros.push(`Linha ${i + 1}: Código e Nome são obrigatórios`);
@@ -3026,7 +3030,7 @@ async function importarEapArquivo(event) {
       let fim = converterData(dataFim);
 
       if (!inicio || !fim) {
-        erros.push(`Linha ${i + 1}: Datas inválidas (use DD/MM/YYYY)`);
+        erros.push(`Linha ${i + 1}: Datas inválidas (use DD/MM/YYYY ou YYYY-MM-DD)`);
         continue;
       }
 
@@ -3040,6 +3044,7 @@ async function importarEapArquivo(event) {
       _importEapData.push({
         codigo,
         nome,
+        prazo: prazo || null,
         data_inicio: inicio,
         data_fim: fim,
         percentual_executado: pct
@@ -3058,6 +3063,7 @@ async function importarEapArquivo(event) {
         <tr>
           <td>${esc(d.codigo)}</td>
           <td>${esc(d.nome)}</td>
+          <td>${esc(d.prazo || '-')}</td>
           <td>${d.data_inicio}</td>
           <td>${d.data_fim}</td>
           <td style="text-align: right;">${d.percentual_executado}%</td>
@@ -3138,6 +3144,7 @@ async function confirmarImportarEap() {
       obra_id: obraId,
       codigo: d.codigo,
       nome: d.nome,
+      prazo: d.prazo || null,
       data_inicio: d.data_inicio,
       data_fim: d.data_fim,
       percentual_executado: d.percentual_executado,
