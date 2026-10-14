@@ -600,7 +600,7 @@ function mudarSubAbas(subaba) {
   document.querySelectorAll('[id^="riscos-"][id$="-aba"]').forEach(el => el.style.display = 'none');
   document.getElementById('riscos-' + subaba + '-aba').style.display = 'block';
   document.querySelectorAll('#riscos-aba .btn-secondary').forEach(el => el.style.opacity = '0.6');
-  event.target.style.opacity = '1';
+  if (event && event.target) event.target.style.opacity = '1';
 }
 
 function abrirNovoCronograma() {
