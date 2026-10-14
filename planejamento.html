@@ -447,6 +447,7 @@
             <tr style="position: sticky; top: 0;">
               <th style="width: 80px;">Código</th>
               <th>Nome</th>
+              <th style="width: 80px;">Prazo</th>
               <th style="width: 120px;">Predecessora</th>
               <th style="width: 100px;">Início</th>
               <th style="width: 100px;">Fim</th>
@@ -2432,6 +2433,7 @@ async function importarCronogramaArquivo(event) {
         <tr>
           <td>${esc(d.codigo)}</td>
           <td>${esc(d.nome)}</td>
+          <td>${esc(d.prazo || '-')}</td>
           <td>${esc(d.predecessora || '-')}</td>
           <td>${d.inicio_planejado}</td>
           <td>${d.fim_planejado}</td>
@@ -2535,6 +2537,7 @@ async function confirmarImportarCronograma() {
       eap_id: eapId || null,
       codigo: d.codigo,
       nome: d.nome,
+      prazo: d.prazo || null,
       inicio_planejado: d.inicio_planejado,
       fim_planejado: d.fim_planejado,
       predecessora: d.predecessora,
