@@ -93,6 +93,9 @@
 
   <div class="content">
     <div id="cronogramas-aba" class="aba-content">
+      <div style="margin-bottom: 14px;">
+        <button class="btn btn-primary" onclick="abrirImportarCronograma()">📥 Importar Cronograma</button>
+      </div>
       <table class="table" id="cronogramas-table">
         <thead>
           <tr>
@@ -122,10 +125,7 @@
             <option value="concluidas">Concluídas</option>
           </select>
         </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-primary" onclick="abrirImportarCronograma()">📥 Importar</button>
-          <button class="btn btn-primary" onclick="abrirNovaAtividade()">➕ Nova</button>
-        </div>
+        <button class="btn btn-primary" onclick="abrirNovaAtividade()">➕ Nova</button>
       </div>
       <div class="ativ-kpis" id="ativ-kpis"></div>
       <div class="ativ-tabela-wrap">
@@ -407,6 +407,26 @@
 <div class="modal" id="modal-importar-cronograma">
   <div class="modal-content" style="max-width: 800px;">
     <div class="modal-header">Importar Cronograma</div>
+    <div style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 6px;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome do Cronograma</label>
+          <input type="text" id="import-crono-nome" placeholder="ex: Baseline, Reprogramação 01">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="import-crono-tipo">
+            <option value="baseline">Baseline</option>
+            <option value="controle">Controle</option>
+            <option value="reprogramacao">Reprogramação</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Data de Status</label>
+        <input type="date" id="import-crono-data">
+      </div>
+    </div>
     <div style="margin-bottom: 20px;">
       <div id="import-drag-area" style="border: 2px dashed #ccc; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='white'" ondrop="importarCronogramaArquivo(event)" ondragover="event.preventDefault(); event.stopPropagation();">
         <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #666; display: block; margin-bottom: 10px;"></i>
@@ -2296,17 +2316,15 @@ async function desenharMatrizPmi() {
 let _importCronogramaData = [];
 
 async function abrirImportarCronograma() {
-  const cronoId = document.getElementById('ativ-cronograma').value;
-  if (!cronoId) {
-    alert('Selecione um cronograma primeiro');
-    return;
-  }
   _importCronogramaData = [];
   document.getElementById('modal-importar-cronograma').classList.add('active');
   document.getElementById('import-preview').style.display = 'none';
   document.getElementById('import-errors').style.display = 'none';
   document.getElementById('import-btn-confirmar').style.display = 'none';
   document.getElementById('import-file-input').value = '';
+  document.getElementById('import-crono-nome').value = '';
+  document.getElementById('import-crono-tipo').value = 'baseline';
+  document.getElementById('import-crono-data').value = hojeLocal();
 }
 
 function fecharModalImportarCronograma() {
@@ -2457,22 +2475,46 @@ async function confirmarImportarCronograma() {
       return;
     }
 
-    const cronoId = document.getElementById('ativ-cronograma').value;
     const cliente = B3Obras.cliente();
     const obraId = B3Obras.atualId();
 
-    if (!cronoId || !cliente || !obraId) throw new Error('Contexto inválido');
+    if (!cliente || !obraId) throw new Error('Contexto inválido');
 
-    // Buscar EAP padrão (primeiro item ou criar)
+    const nomeCrono = document.getElementById('import-crono-nome').value.trim();
+    const tipoCrono = document.getElementById('import-crono-tipo').value;
+    const dataCrono = document.getElementById('import-crono-data').value;
+
+    if (!nomeCrono) {
+      alert('Nome do cronograma é obrigatório');
+      return;
+    }
+
+    document.getElementById('import-btn-confirmar').disabled = true;
+    document.getElementById('import-btn-confirmar').textContent = '⏳ Importando…';
+
+    // 1. Criar o cronograma
+    const cronoResp = await cliente.from('planejamento_cronogramas').insert({
+      obra_id: obraId,
+      nome: nomeCrono,
+      tipo: tipoCrono,
+      data_status: dataCrono,
+      criado_em: new Date().toISOString(),
+      atualizado_em: new Date().toISOString()
+    }).select();
+
+    if (cronoResp.error) throw cronoResp.error;
+    if (!cronoResp.data || !cronoResp.data[0]) throw new Error('Falha ao criar cronograma');
+
+    const cronoId = cronoResp.data[0].id;
+
+    // 2. Buscar EAP padrão
     let eapId = '';
     const eapResp = await cliente.from('eap_itens').select('id').eq('obra_id', obraId).limit(1);
     if (eapResp.data && eapResp.data.length) {
       eapId = eapResp.data[0].id;
     }
 
-    document.getElementById('import-btn-confirmar').disabled = true;
-    document.getElementById('import-btn-confirmar').textContent = '⏳ Importando…';
-
+    // 3. Inserir atividades
     const rows = _importCronogramaData.map(d => ({
       obra_id: obraId,
       cronograma_id: cronoId,
@@ -2483,16 +2525,18 @@ async function confirmarImportarCronograma() {
       fim_planejado: d.fim_planejado,
       predecessora: d.predecessora,
       percentual_real: 0,
-      critica: false
+      critica: false,
+      criado_em: new Date().toISOString(),
+      atualizado_em: new Date().toISOString()
     }));
 
-    const { error } = await cliente.from('planejamento_atividades').insert(rows);
+    const ativResp = await cliente.from('planejamento_atividades').insert(rows);
 
-    if (error) throw error;
+    if (ativResp.error) throw ativResp.error;
 
-    alert(`✓ ${rows.length} atividade(s) importada(s) com sucesso!`);
+    alert(`✓ Cronograma "${nomeCrono}" importado com ${rows.length} atividade(s)!`);
     fecharModalImportarCronograma();
-    carregarAtividades();
+    carregarCronogramas();
   } catch (e) {
     alert('Erro ao importar: ' + e.message);
     console.error('Erro:', e);
