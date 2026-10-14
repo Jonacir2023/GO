@@ -151,6 +151,7 @@
           <select id="eap-cronograma" onchange="carregarEAP()"></select>
           <input type="search" id="eap-busca" placeholder="Buscar por código ou nome" oninput="filtrarEAP()">
         </div>
+        <button class="btn btn-primary" onclick="abrirNovoEapItem()">➕ Novo Item EAP</button>
       </div>
       <div class="ativ-tabela-wrap">
         <table class="table" id="eap-table">
@@ -354,7 +355,44 @@
     </div>
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="fecharModalAtividade()">Cancelar</button>
+      <button class="btn btn-primary" id="ativ-btn-delete" style="display: none; margin-right: auto; background: #c62828;" onclick="apagarAtividade()">🗑️ Apagar</button>
       <button class="btn btn-primary" onclick="salvarAtividade()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-eap">
+  <div class="modal-content">
+    <div class="modal-header">Nova Item EAP</div>
+    <input type="hidden" id="eap-id-edicao">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="eap-codigo" placeholder="ex: WBS_001">
+      </div>
+      <div class="form-group">
+        <label>Nome/Descrição</label>
+        <input type="text" id="eap-nome" placeholder="Descrição do item EAP">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Item Pai (opcional)</label>
+      <select id="eap-pai"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data de Início</label>
+        <input type="date" id="eap-data-inicio">
+      </div>
+      <div class="form-group">
+        <label>Data de Fim</label>
+        <input type="date" id="eap-data-fim">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalEap()">Cancelar</button>
+      <button class="btn btn-primary" id="eap-btn-delete" style="display: none; margin-right: auto; background: #c62828;" onclick="apagarEapItem()">🗑️ Apagar</button>
+      <button class="btn btn-primary" onclick="salvarEapItem()">Salvar</button>
     </div>
   </div>
 </div>
@@ -661,11 +699,11 @@ function mostrarMaisAtividades() {
   const fatia = _ativsFiltradas.slice(_ativsVisiveis, _ativsVisiveis + ATIV_PAGINA);
   tbody.insertAdjacentHTML('beforeend', fatia.map(a => {
     const s = situacao(a, hoje);
-    return `<tr>
+    return `<tr onclick="editarAtividade('${a.id}')" style="cursor: pointer;">
       <td>${esc(a.codigo)}</td>
       <td>${esc(a.nome)}<span class="ativ-grupo">${esc(_eapNomes[a.eap_id] || '')}</span></td>
       <td><span class="status ${s[0]}">${s[1]}</span></td>
-      <td><input class="pct-input" type="number" min="0" max="100" step="5" value="${Number(a.percentual_real) || 0}" onchange="salvarPercentual('${a.id}', this)"></td>
+      <td><input class="pct-input" type="number" min="0" max="100" step="5" value="${Number(a.percentual_real) || 0}" onchange="event.stopPropagation(); salvarPercentual('${a.id}', this)"></td>
       <td>${br(a.inicio_planejado)}</td>
       <td>${br(a.fim_planejado)}</td>
     </tr>`;
@@ -859,6 +897,42 @@ function fecharModalAtividade() {
   document.getElementById('modal-atividade').classList.remove('active');
 }
 
+async function editarAtividade(id) {
+  const atividade = _ativs.find(a => a.id === id);
+  if (!atividade) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data: eapItens, error } = await cliente
+      .from('eap_itens')
+      .select('id, codigo, nome')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    const seletorEap = document.getElementById('ativ-eap');
+    seletorEap.innerHTML = '<option value="">-- Sem EAP --</option>' +
+      (eapItens || []).map(e => `<option value="${e.id}">${esc(e.codigo)} - ${esc(e.nome)}</option>`).join('');
+
+    document.getElementById('ativ-id-edicao').value = id;
+    document.getElementById('ativ-codigo').value = atividade.codigo || '';
+    document.getElementById('ativ-nome').value = atividade.nome || '';
+    document.getElementById('ativ-eap').value = atividade.eap_id || '';
+    document.getElementById('ativ-inicio-prev').value = atividade.inicio_planejado || '';
+    document.getElementById('ativ-fim-prev').value = atividade.fim_planejado || '';
+    document.getElementById('ativ-critica').checked = atividade.critica ? true : false;
+
+    document.getElementById('ativ-btn-delete').style.display = 'inline-block';
+    document.querySelector('#modal-atividade .modal-header').textContent = 'Editar Atividade';
+    document.getElementById('modal-atividade').classList.add('active');
+    document.getElementById('ativ-codigo').focus();
+  } catch (e) {
+    alert('Erro ao carregar dados: ' + e.message);
+  }
+}
+
 async function salvarAtividade() {
   const codigo = document.getElementById('ativ-codigo').value.trim();
   const nome = document.getElementById('ativ-nome').value.trim();
@@ -866,6 +940,7 @@ async function salvarAtividade() {
   const inicioPlanj = document.getElementById('ativ-inicio-prev').value;
   const fimPlanj = document.getElementById('ativ-fim-prev').value;
   const critica = document.getElementById('ativ-critica').checked ? 1 : 0;
+  const idEdicao = document.getElementById('ativ-id-edicao').value;
 
   if (!codigo || !nome || !inicioPlanj || !fimPlanj) {
     alert('Preencha código, nome e datas');
@@ -878,18 +953,31 @@ async function salvarAtividade() {
     const obraId = B3Obras.atualId();
     const cronoId = document.getElementById('ativ-cronograma').value;
 
-    const resp = await cliente
-      .from('planejamento_atividades')
-      .insert([{
-        obra_id: obraId,
-        cronograma_id: cronoId,
-        codigo,
-        nome,
-        eap_id: eapId || null,
-        inicio_planejado: inicioPlanj,
-        fim_planejado: fimPlanj,
-        critica
-      }]);
+    const dados = {
+      codigo,
+      nome,
+      eap_id: eapId || null,
+      inicio_planejado: inicioPlanj,
+      fim_planejado: fimPlanj,
+      critica
+    };
+
+    let resp;
+    if (idEdicao) {
+      resp = await cliente
+        .from('planejamento_atividades')
+        .update(dados)
+        .eq('id', idEdicao)
+        .eq('obra_id', obraId);
+    } else {
+      resp = await cliente
+        .from('planejamento_atividades')
+        .insert([{
+          obra_id: obraId,
+          cronograma_id: cronoId,
+          ...dados
+        }]);
+    }
 
     if (resp.error) {
       alert('Erro: ' + resp.error.message);
@@ -900,6 +988,200 @@ async function salvarAtividade() {
     carregarAtividades();
   } catch (e) {
     alert('Erro ao salvar: ' + e.message);
+  }
+}
+
+async function apagarAtividade() {
+  const idEdicao = document.getElementById('ativ-id-edicao').value;
+  if (!idEdicao) return;
+
+  if (!confirm('Tem certeza que deseja apagar esta atividade? Esta ação não pode ser desfeita.')) {
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const resp = await cliente
+      .from('planejamento_atividades')
+      .delete()
+      .eq('id', idEdicao)
+      .eq('obra_id', obraId);
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalAtividade();
+    carregarAtividades();
+  } catch (e) {
+    alert('Erro ao apagar: ' + e.message);
+  }
+}
+
+// ── Edição de Itens EAP ──────────────────────────────────────────────────
+async function abrirNovoEapItem() {
+  const cronoId = document.getElementById('eap-cronograma').value;
+  if (!cronoId) {
+    alert('Selecione um cronograma primeiro');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data: eapItens } = await cliente
+      .from('eap_itens')
+      .select('id, codigo, nome')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    const seletorPai = document.getElementById('eap-pai');
+    seletorPai.innerHTML = '<option value="">-- Sem Item Pai --</option>' +
+      (eapItens || []).map(e => `<option value="${e.id}">${esc(e.codigo)} - ${esc(e.nome)}</option>`).join('');
+
+    document.getElementById('eap-id-edicao').value = '';
+    document.getElementById('eap-codigo').value = '';
+    document.getElementById('eap-nome').value = '';
+    document.getElementById('eap-data-inicio').value = '';
+    document.getElementById('eap-data-fim').value = '';
+    document.getElementById('eap-pai').value = '';
+
+    document.getElementById('eap-btn-delete').style.display = 'none';
+    document.querySelector('#modal-eap .modal-header').textContent = 'Nova Item EAP';
+    document.getElementById('modal-eap').classList.add('active');
+    document.getElementById('eap-codigo').focus();
+  } catch (e) {
+    alert('Erro ao carregar: ' + e.message);
+  }
+}
+
+async function editarEapItem(id) {
+  const item = _eapTabItens.find(e => e.id === id);
+  if (!item) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data: eapItens } = await cliente
+      .from('eap_itens')
+      .select('id, codigo, nome')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    const seletorPai = document.getElementById('eap-pai');
+    seletorPai.innerHTML = '<option value="">-- Sem Item Pai --</option>' +
+      (eapItens || []).map(e => `<option value="${e.id}">${esc(e.codigo)} - ${esc(e.nome)}</option>`).join('');
+
+    document.getElementById('eap-id-edicao').value = id;
+    document.getElementById('eap-codigo').value = item.codigo || '';
+    document.getElementById('eap-nome').value = item.nome || '';
+    document.getElementById('eap-data-inicio').value = item.data_inicio || '';
+    document.getElementById('eap-data-fim').value = item.data_fim || '';
+    document.getElementById('eap-pai').value = item.pai_id || '';
+
+    document.getElementById('eap-btn-delete').style.display = 'inline-block';
+    document.querySelector('#modal-eap .modal-header').textContent = 'Editar Item EAP';
+    document.getElementById('modal-eap').classList.add('active');
+    document.getElementById('eap-codigo').focus();
+  } catch (e) {
+    alert('Erro ao carregar dados: ' + e.message);
+  }
+}
+
+function fecharModalEap() {
+  document.getElementById('modal-eap').classList.remove('active');
+}
+
+async function salvarEapItem() {
+  const codigo = document.getElementById('eap-codigo').value.trim();
+  const nome = document.getElementById('eap-nome').value.trim();
+  const dataInicio = document.getElementById('eap-data-inicio').value;
+  const dataFim = document.getElementById('eap-data-fim').value;
+  const paiId = document.getElementById('eap-pai').value || null;
+  const idEdicao = document.getElementById('eap-id-edicao').value;
+
+  if (!codigo || !nome) {
+    alert('Preencha código e nome');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const dados = {
+      codigo,
+      nome,
+      data_inicio: dataInicio || null,
+      data_fim: dataFim || null,
+      pai_id: paiId
+    };
+
+    let resp;
+    if (idEdicao) {
+      resp = await cliente
+        .from('eap_itens')
+        .update(dados)
+        .eq('id', idEdicao)
+        .eq('obra_id', obraId);
+    } else {
+      resp = await cliente
+        .from('eap_itens')
+        .insert([{
+          obra_id: obraId,
+          ...dados
+        }]);
+    }
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalEap();
+    carregarEAP();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
+  }
+}
+
+async function apagarEapItem() {
+  const idEdicao = document.getElementById('eap-id-edicao').value;
+  if (!idEdicao) return;
+
+  if (!confirm('Tem certeza que deseja apagar este item da EAP? Esta ação não pode ser desfeita.')) {
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const resp = await cliente
+      .from('eap_itens')
+      .delete()
+      .eq('id', idEdicao)
+      .eq('obra_id', obraId);
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalEap();
+    carregarEAP();
+  } catch (e) {
+    alert('Erro ao apagar: ' + e.message);
   }
 }
 
@@ -964,7 +1246,7 @@ function filtrarEAP() {
   tbody.innerHTML = _eapTabFiltrados.map(item => {
     const nivel = calcularNivelEap(item.id, _eapTabItens, nivelMemo);
     return `
-    <tr>
+    <tr onclick="editarEapItem('${item.id}')" style="cursor: pointer;">
       <td class="${nivelClasses[nivel] || 'eap-nivel4'}">${esc(item.codigo || '-')}</td>
       <td>${esc(item.nome || '-')}</td>
       <td>${br(item.data_inicio)}</td>
