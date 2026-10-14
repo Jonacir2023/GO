@@ -3016,8 +3016,6 @@ async function importarEapArquivo(event) {
       const codigo = String(linha[0] || '').trim();
       const nome = String(linha[1] || '').trim();
       const prazo = String(linha[2] || '').trim();
-      const dataInicio = String(linha[3] || '').trim();
-      const dataFim = String(linha[4] || '').trim();
       const percentual = String(linha[5] || '0').trim();
 
       if (!codigo || !nome) {
@@ -3025,9 +3023,9 @@ async function importarEapArquivo(event) {
         continue;
       }
 
-      // Converter datas DD/MM/YYYY → YYYY-MM-DD
-      let inicio = converterData(dataInicio);
-      let fim = converterData(dataFim);
+      // Converter datas DD/MM/YYYY → YYYY-MM-DD (passa direto, sem String() para preservar Date objects)
+      let inicio = converterData(linha[3]);
+      let fim = converterData(linha[4]);
 
       if (!inicio || !fim) {
         erros.push(`Linha ${i + 1}: Datas inválidas (use DD/MM/YYYY ou YYYY-MM-DD)`);
