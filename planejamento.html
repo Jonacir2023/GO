@@ -397,6 +397,57 @@
   </div>
 </div>
 
+<div class="modal" id="modal-risco">
+  <div class="modal-content">
+    <div class="modal-header">Novo Risco</div>
+    <input type="hidden" id="risco-id-edicao">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="risco-codigo" placeholder="ex: R001">
+      </div>
+      <div class="form-group">
+        <label>Causa</label>
+        <input type="text" id="risco-causa" placeholder="O que pode causar o risco">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Consequência</label>
+      <input type="text" id="risco-consequencia" placeholder="Impacto se o risco ocorrer">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Probabilidade (0-10)</label>
+        <input type="number" id="risco-probabilidade" min="0" max="10" value="5">
+      </div>
+      <div class="form-group">
+        <label>Impacto (0-10)</label>
+        <input type="number" id="risco-impacto" min="0" max="10" value="5">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Responsável</label>
+        <input type="text" id="risco-responsavel" placeholder="Quem acompanhará">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="risco-status">
+          <option value="aberto">Aberto</option>
+          <option value="mitigado">Mitigado</option>
+          <option value="resolvido">Resolvido</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalRisco()">Cancelar</button>
+      <button class="btn btn-primary" id="risco-btn-delete" style="display: none; margin-right: auto; background: #c62828;" onclick="apagarRisco()">🗑️ Apagar</button>
+      <button class="btn btn-primary" onclick="salvarRisco()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=fc569d34"></script>
 <script>
@@ -444,6 +495,7 @@ function mudarAba(aba) {
   event.target.classList.add('active');
   if (aba === 'atividades') carregarAtividades();
   if (aba === 'eap') carregarEAP();
+  if (aba === 'riscos') carregarRiscos();
 }
 
 function abrirNovoCronograma() {
@@ -1367,6 +1419,189 @@ async function preencherSeletorCronogramasGantt() {
     }
   } catch (e) {
     console.error('Erro ao preencher seletor Gantt:', e);
+  }
+}
+
+// ── Riscos ──────────────────────────────────────────────────────────
+let _riscosTabItens = [];
+
+async function carregarRiscos() {
+  const tbody = document.getElementById('riscos-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Carregando…</td></tr>';
+
+    const riscos = await buscarTudo(() => cliente
+      .from('planejamento_riscos')
+      .select('*')
+      .eq('obra_id', obraId)
+      .order('criado_em', { ascending: false }));
+
+    _riscosTabItens = riscos || [];
+    filtrarRiscos();
+  } catch (e) {
+    console.error('Erro ao carregar riscos:', e);
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Erro ao carregar</td></tr>';
+  }
+}
+
+function filtrarRiscos() {
+  const busca = (document.getElementById('riscos-busca').value || '').trim().toLowerCase();
+  const filtro = document.getElementById('riscos-filtro').value;
+
+  let filtrados = _riscosTabItens.filter(r => {
+    const matchBusca = !busca ||
+      (r.codigo && r.codigo.toLowerCase().includes(busca)) ||
+      (r.causa && r.causa.toLowerCase().includes(busca)) ||
+      (r.responsavel && r.responsavel.toLowerCase().includes(busca));
+
+    const matchStatus = filtro === 'todos' || r.status === filtro;
+    return matchBusca && matchStatus;
+  });
+
+  const tbody = document.getElementById('riscos-tbody');
+  if (!filtrados.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-shield-alt"></i>Nenhum risco encontrado</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtrados.map(r => {
+    const prioridade = (r.probabilidade || 0) * (r.impacto || 0);
+    const statusClass = {
+      'aberto': 'status critica',
+      'mitigado': 'status em_andamento',
+      'resolvido': 'status concluido'
+    }[r.status] || 'status';
+
+    return `<tr onclick="editarRisco('${r.id}')" style="cursor: pointer;">
+      <td>${esc(r.codigo || '-')}</td>
+      <td>${esc((r.causa || '-').substring(0, 30))}</td>
+      <td>-</td>
+      <td>${esc((r.consequencia || '-').substring(0, 30))}</td>
+      <td>${r.probabilidade || 0}</td>
+      <td>${r.impacto || 0}</td>
+      <td>${prioridade.toFixed(0)}</td>
+      <td>${esc(r.responsavel || '-')}</td>
+      <td><span class="${statusClass}">${r.status}</span></td>
+      <td><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editarRisco('${r.id}')">✎</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function abrirNovoRisco() {
+  document.getElementById('modal-risco').classList.add('active');
+  document.getElementById('risco-id-edicao').value = '';
+  document.getElementById('risco-codigo').value = '';
+  document.getElementById('risco-causa').value = '';
+  document.getElementById('risco-consequencia').value = '';
+  document.getElementById('risco-probabilidade').value = '5';
+  document.getElementById('risco-impacto').value = '5';
+  document.getElementById('risco-responsavel').value = '';
+  document.getElementById('risco-status').value = 'aberto';
+  document.getElementById('risco-btn-delete').style.display = 'none';
+  document.querySelector('#modal-risco .modal-header').textContent = 'Novo Risco';
+}
+
+function fecharModalRisco() {
+  document.getElementById('modal-risco').classList.remove('active');
+}
+
+async function editarRisco(id) {
+  const risco = _riscosTabItens.find(r => r.id === id);
+  if (!risco) return;
+
+  document.getElementById('risco-id-edicao').value = id;
+  document.getElementById('risco-codigo').value = risco.codigo || '';
+  document.getElementById('risco-causa').value = risco.causa || '';
+  document.getElementById('risco-consequencia').value = risco.consequencia || '';
+  document.getElementById('risco-probabilidade').value = risco.probabilidade || '5';
+  document.getElementById('risco-impacto').value = risco.impacto || '5';
+  document.getElementById('risco-responsavel').value = risco.responsavel || '';
+  document.getElementById('risco-status').value = risco.status || 'aberto';
+  document.getElementById('risco-btn-delete').style.display = 'block';
+  document.querySelector('#modal-risco .modal-header').textContent = 'Editar Risco';
+  document.getElementById('modal-risco').classList.add('active');
+}
+
+async function salvarRisco() {
+  const idEdicao = document.getElementById('risco-id-edicao').value;
+  const codigo = document.getElementById('risco-codigo').value.trim();
+  const causa = document.getElementById('risco-causa').value.trim();
+  const consequencia = document.getElementById('risco-consequencia').value.trim();
+  const probabilidade = parseFloat(document.getElementById('risco-probabilidade').value) || 0;
+  const impacto = parseFloat(document.getElementById('risco-impacto').value) || 0;
+  const responsavel = document.getElementById('risco-responsavel').value.trim();
+  const status = document.getElementById('risco-status').value;
+
+  if (!codigo || !causa) {
+    alert('Preencha código e causa do risco');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const dados = {
+      codigo, causa, consequencia, probabilidade, impacto, responsavel, status,
+      atualizado_em: new Date().toISOString()
+    };
+
+    let resp;
+    if (idEdicao) {
+      resp = await cliente
+        .from('planejamento_riscos')
+        .update(dados)
+        .eq('id', idEdicao)
+        .eq('obra_id', obraId);
+    } else {
+      resp = await cliente
+        .from('planejamento_riscos')
+        .insert([{ ...dados, obra_id: obraId }]);
+    }
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalRisco();
+    carregarRiscos();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
+  }
+}
+
+async function apagarRisco() {
+  const idEdicao = document.getElementById('risco-id-edicao').value;
+  if (!idEdicao) return;
+
+  if (!confirm('Tem certeza que deseja apagar este risco?')) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const resp = await cliente
+      .from('planejamento_riscos')
+      .delete()
+      .eq('id', idEdicao)
+      .eq('obra_id', obraId);
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalRisco();
+    carregarRiscos();
+  } catch (e) {
+    alert('Erro ao apagar: ' + e.message);
   }
 }
 </script>
