@@ -129,7 +129,7 @@
             <option value="concluidas">Concluídas</option>
           </select>
         </div>
-        <button class="btn btn-secondary" onclick="abrirImportarCronograma()">📥 Importar</button>
+        <button class="btn btn-secondary" onclick="transferirCronograma()">↻ Transferir</button>
       </div>
       <div class="ativ-kpis" id="ativ-kpis"></div>
       <div class="ativ-tabela-wrap">
@@ -143,6 +143,7 @@
             <th>Predecessora</th>
             <th>Início prev.</th>
             <th>Fim prev.</th>
+            <th>% Avanço</th>
           </tr>
         </thead>
         <tbody id="atividades-tbody">
@@ -411,7 +412,7 @@
 <div class="modal" id="modal-importar-cronograma">
   <div class="modal-content" style="max-width: 800px;">
     <div class="modal-header">Importar Cronograma</div>
-    <div style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 6px;">
+    <div id="import-crono-form" style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 6px;">
       <div class="form-row">
         <div class="form-group">
           <label>Nome do Cronograma</label>
@@ -431,7 +432,7 @@
         <input type="date" id="import-crono-data">
       </div>
     </div>
-    <div style="margin-bottom: 20px;">
+    <div id="import-file-area" style="margin-bottom: 20px;">
       <div id="import-drag-area" style="border: 2px dashed #ccc; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='white'" ondrop="importarCronogramaArquivo(event)" ondragover="event.preventDefault(); event.stopPropagation();">
         <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #666; display: block; margin-bottom: 10px;"></i>
         <p style="margin: 0; color: #666; font-weight: 500;">Arraste o arquivo Excel ou CSV aqui</p>
@@ -975,6 +976,7 @@ function mostrarMaisAtividades() {
       <td>${esc(a.predecessora || '-')}</td>
       <td>${br(a.inicio_planejado)}</td>
       <td>${br(a.fim_planejado)}</td>
+      <td><span style="color: #999;">—</span></td>
     </tr>`;
   }).join(''));
   _ativsVisiveis += fatia.length;
@@ -2368,10 +2370,15 @@ async function desenharMatrizPmi() {
 
 // ── Importação de Cronograma ────────────────────────────────────────
 let _importCronogramaData = [];
+let _modoTransferencia = false;
 
 async function abrirImportarCronograma() {
   _importCronogramaData = [];
+  _modoTransferencia = false;
   document.getElementById('modal-importar-cronograma').classList.add('active');
+  document.getElementById('modal-importar-cronograma').querySelector('.modal-header').textContent = 'Importar Cronograma';
+  document.getElementById('import-crono-form').style.display = 'block';
+  document.getElementById('import-file-area').style.display = 'block';
   document.getElementById('import-preview').style.display = 'none';
   document.getElementById('import-errors').style.display = 'none';
   document.getElementById('import-btn-confirmar').style.display = 'none';
@@ -2534,6 +2541,15 @@ async function confirmarImportarCronograma() {
       return;
     }
 
+    // Se está em modo transferência, apenas fechar modal e recarregar atividades
+    if (_modoTransferencia) {
+      fecharModalImportarCronograma();
+      _modoTransferencia = false;
+      await carregarAtividades();
+      alert('✓ Atividades transferidas com sucesso!');
+      return;
+    }
+
     if (!window.B3Obras || !window.B3Obras.cliente) {
       alert('Sistema não inicializado. Recarregue a página.');
       return;
@@ -2639,6 +2655,77 @@ async function confirmarImportarCronograma() {
   } finally {
     document.getElementById('import-btn-confirmar').disabled = false;
     document.getElementById('import-btn-confirmar').textContent = '✓ Importar';
+  }
+}
+
+async function transferirCronograma() {
+  const cronoId = document.getElementById('ativ-cronograma').value;
+  if (!cronoId) {
+    alert('Selecione um cronograma para transferir');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    // Buscar atividades do cronograma selecionado
+    const { data: atividades, error } = await cliente
+      .from('planejamento_atividades')
+      .select('codigo,nome,prazo,predecessora,inicio_planejado,fim_planejado')
+      .eq('obra_id', obraId)
+      .eq('cronograma_id', cronoId)
+      .order('inicio_planejado')
+      .order('codigo');
+
+    if (error) throw error;
+    if (!atividades || !atividades.length) {
+      alert('Este cronograma não tem atividades para transferir');
+      return;
+    }
+
+    // Populando os dados para o modal
+    _importCronogramaData = atividades;
+    _modoTransferencia = true;
+
+    // Mostrando o preview
+    const tbody = document.getElementById('import-preview-tbody');
+    tbody.innerHTML = _importCronogramaData.map((d, idx) => `
+      <tr>
+        <td>${esc(d.codigo)}</td>
+        <td>${esc(d.nome)}</td>
+        <td>${esc(d.prazo || '')}</td>
+        <td>${esc(d.predecessora || '')}</td>
+        <td>${d.inicio_planejado}</td>
+        <td>${d.fim_planejado}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('import-preview').style.display = 'block';
+    document.getElementById('import-preview-info').textContent = `${_importCronogramaData.length} atividade(s) pronta(s) para transferir`;
+
+    // Mostrar modal
+    document.getElementById('modal-importar-cronograma').classList.add('active');
+    document.getElementById('modal-importar-cronograma').querySelector('.modal-header').textContent = 'Transferir Atividades';
+
+    // Esconder seções de criação de cronograma
+    document.getElementById('import-crono-form').style.display = 'none';
+    document.getElementById('import-file-area').style.display = 'none';
+
+    // Preparar botões
+    document.getElementById('import-btn-editar').style.display = 'inline-block';
+    document.getElementById('import-btn-confirmar').style.display = 'inline-block';
+    document.getElementById('import-btn-confirmar').textContent = '✓ Transferir';
+    document.getElementById('import-btn-salvar').style.display = 'none';
+
+  } catch (e) {
+    alert('Erro ao buscar atividades: ' + e.message);
+    console.error('Erro:', e);
   }
 }
 
