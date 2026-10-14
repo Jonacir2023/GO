@@ -2508,6 +2508,37 @@ async function confirmarImportarCronograma() {
     document.getElementById('import-btn-confirmar').disabled = true;
     document.getElementById('import-btn-confirmar').textContent = '⏳ Importando…';
 
+    // 0. Verificar se cronograma com mesmo nome já existe
+    const existentes = await cliente.from('planejamento_cronogramas')
+      .select('id')
+      .eq('obra_id', obraId)
+      .eq('nome', nomeCrono);
+
+    if (existentes.data && existentes.data.length > 0) {
+      const confirmar = confirm(
+        `Cronograma "${nomeCrono}" já existe.\n\nDeseja deletar o anterior e importar o novo?`
+      );
+
+      if (!confirmar) {
+        document.getElementById('import-btn-confirmar').disabled = false;
+        document.getElementById('import-btn-confirmar').textContent = '✓ Importar';
+        return;
+      }
+
+      // Deletar atividades do cronograma anterior
+      for (const crono of existentes.data) {
+        await cliente.from('planejamento_atividades')
+          .delete()
+          .eq('cronograma_id', crono.id);
+      }
+
+      // Deletar cronograma anterior
+      await cliente.from('planejamento_cronogramas')
+        .delete()
+        .eq('obra_id', obraId)
+        .eq('nome', nomeCrono);
+    }
+
     // 1. Criar o cronograma
     const cronoResp = await cliente.from('planejamento_cronogramas').insert({
       obra_id: obraId,
