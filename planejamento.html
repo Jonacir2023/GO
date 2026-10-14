@@ -463,6 +463,8 @@
     <div id="import-errors" style="display: none; margin-bottom: 20px; padding: 12px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 6px; color: #c62828; font-size: 13px;"></div>
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="fecharModalImportarCronograma()">Cancelar</button>
+      <button class="btn btn-secondary" id="import-btn-editar" style="display: none;" onclick="entrarModoEdicao()">✎ Editar Dados</button>
+      <button class="btn btn-secondary" id="import-btn-salvar" style="display: none;" onclick="sairModoEdicao()">✓ Salvar Edições</button>
       <button class="btn btn-primary" id="import-btn-confirmar" style="display: none;" onclick="confirmarImportarCronograma()">✓ Importar</button>
     </div>
   </div>
@@ -2485,6 +2487,7 @@ async function importarCronogramaArquivo(event) {
       `).join('');
       document.getElementById('import-preview-info').textContent =
         `${_importCronogramaData.length} atividade(s) pronta(s) para importar`;
+      document.getElementById('import-btn-editar').style.display = 'inline-block';
       document.getElementById('import-btn-confirmar').style.display = 'inline-block';
     }
   } catch (e) {
@@ -2636,6 +2639,95 @@ async function confirmarImportarCronograma() {
     document.getElementById('import-btn-confirmar').disabled = false;
     document.getElementById('import-btn-confirmar').textContent = '✓ Importar';
   }
+}
+
+function entrarModoEdicao() {
+  const tbody = document.getElementById('import-preview-tbody');
+  const rows = tbody.querySelectorAll('tr');
+
+  rows.forEach((row, index) => {
+    const tds = row.querySelectorAll('td');
+    const data = _importCronogramaData[index];
+
+    // Converter cada célula em input editável
+    tds[0].innerHTML = `<input type="text" class="edit-input" value="${esc(data.codigo)}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">`;
+    tds[1].innerHTML = `<input type="text" class="edit-input" value="${esc(data.nome)}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">`;
+    tds[2].innerHTML = `<input type="text" class="edit-input" value="${esc(data.prazo || '')}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">`;
+    tds[3].innerHTML = `<input type="text" class="edit-input" value="${esc(data.predecessora || '')}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">`;
+    tds[4].innerHTML = `<input type="text" class="edit-input" value="${data.inicio_planejado}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">`;
+    tds[5].innerHTML = `<input type="text" class="edit-input" value="${data.fim_planejado}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">`;
+  });
+
+  // Atualizar visibilidade dos botões
+  document.getElementById('import-btn-editar').style.display = 'none';
+  document.getElementById('import-btn-confirmar').style.display = 'none';
+  document.getElementById('import-btn-salvar').style.display = 'inline-block';
+}
+
+function sairModoEdicao() {
+  const tbody = document.getElementById('import-preview-tbody');
+  const rows = tbody.querySelectorAll('tr');
+  const erros = [];
+
+  rows.forEach((row, index) => {
+    const inputs = row.querySelectorAll('.edit-input');
+    const codigo = inputs[0].value.trim();
+    const nome = inputs[1].value.trim();
+    const prazo = inputs[2].value.trim();
+    const predecessora = inputs[3].value.trim();
+    const dataInicio = inputs[4].value.trim();
+    const dataFim = inputs[5].value.trim();
+
+    // Validar campos obrigatórios
+    if (!codigo || !nome) {
+      erros.push(`Linha ${index + 1}: Código e Nome são obrigatórios`);
+      return;
+    }
+
+    // Validar datas
+    const inicio = converterData(dataInicio);
+    const fim = converterData(dataFim);
+
+    if (!inicio || !fim) {
+      erros.push(`Linha ${index + 1}: Datas inválidas (use DD/MM/YYYY ou YYYY-MM-DD)`);
+      return;
+    }
+
+    // Atualizar dados
+    _importCronogramaData[index] = {
+      codigo,
+      nome,
+      prazo: prazo || null,
+      predecessora: predecessora || null,
+      inicio_planejado: inicio,
+      fim_planejado: fim
+    };
+  });
+
+  // Mostrar erros se houver
+  if (erros.length) {
+    document.getElementById('import-errors').style.display = 'block';
+    document.getElementById('import-errors').textContent = erros.join('\n');
+    return;
+  }
+
+  // Limpar erros e re-renderizar preview
+  document.getElementById('import-errors').style.display = 'none';
+  document.getElementById('import-preview-tbody').innerHTML = _importCronogramaData.map(d => `
+    <tr>
+      <td>${esc(d.codigo)}</td>
+      <td>${esc(d.nome)}</td>
+      <td>${esc(d.prazo || '-')}</td>
+      <td>${esc(d.predecessora || '-')}</td>
+      <td>${d.inicio_planejado}</td>
+      <td>${d.fim_planejado}</td>
+    </tr>
+  `).join('');
+
+  // Atualizar visibilidade dos botões
+  document.getElementById('import-btn-editar').style.display = 'inline-block';
+  document.getElementById('import-btn-confirmar').style.display = 'inline-block';
+  document.getElementById('import-btn-salvar').style.display = 'none';
 }
 </script>
 </body>
