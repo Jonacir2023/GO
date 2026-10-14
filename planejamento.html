@@ -86,7 +86,7 @@
   <div class="tabs">
     <button class="tab active" onclick="mudarAba('cronogramas')">Cronogramas</button>
     <button class="tab" onclick="mudarAba('atividades')">Atividades</button>
-    <button class="tab" onclick="mudarAba('riscos')">Controle de Riscos</button>
+    <button class="tab" onclick="mudarAba('riscos')">Riscos / Oportunidades</button>
     <button class="tab" onclick="mudarAba('restricoes')">Restrições</button>
     <button class="tab" onclick="mudarAba('eap')">EAP</button>
   </div>
@@ -195,11 +195,11 @@
             <tr>
               <th>Código</th>
               <th>Causa</th>
-              <th>Evento</th>
+              <th>Tipo</th>
               <th>Consequência</th>
               <th>Prob.</th>
               <th>Impacto</th>
-              <th>Prioridade</th>
+              <th>Valor (R$)</th>
               <th>Responsável</th>
               <th>Status</th>
               <th>Ações</th>
@@ -429,6 +429,19 @@
       <div class="form-group">
         <label>Responsável</label>
         <input type="text" id="risco-responsavel" placeholder="Quem acompanhará">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="risco-tipo">
+          <option value="risco">🔴 Risco</option>
+          <option value="oportunidade">🟢 Oportunidade</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Valor de Impacto (R$)</label>
+        <input type="number" id="risco-valor-impacto" placeholder="Negativo = risco, Positivo = ganho" step="0.01">
       </div>
       <div class="form-group">
         <label>Status</label>
@@ -1476,14 +1489,18 @@ function filtrarRiscos() {
       'resolvido': 'status concluido'
     }[r.status] || 'status';
 
+    const tipoIcon = r.tipo === 'oportunidade' ? '🟢' : '🔴';
+    const tipoLabel = r.tipo === 'oportunidade' ? 'Oportunidade' : 'Risco';
+    const valorFormatado = r.valor_impacto ? 'R$ ' + Math.abs(r.valor_impacto).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-';
+
     return `<tr onclick="editarRisco('${r.id}')" style="cursor: pointer;">
       <td>${esc(r.codigo || '-')}</td>
       <td>${esc((r.causa || '-').substring(0, 30))}</td>
-      <td>-</td>
+      <td>${tipoIcon} ${tipoLabel}</td>
       <td>${esc((r.consequencia || '-').substring(0, 30))}</td>
       <td>${r.probabilidade || 0}</td>
       <td>${r.impacto || 0}</td>
-      <td>${prioridade.toFixed(0)}</td>
+      <td>${valorFormatado}</td>
       <td>${esc(r.responsavel || '-')}</td>
       <td><span class="${statusClass}">${r.status}</span></td>
       <td><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editarRisco('${r.id}')">✎</button></td>
@@ -1500,9 +1517,11 @@ function abrirNovoRisco() {
   document.getElementById('risco-probabilidade').value = '5';
   document.getElementById('risco-impacto').value = '5';
   document.getElementById('risco-responsavel').value = '';
+  document.getElementById('risco-tipo').value = 'risco';
+  document.getElementById('risco-valor-impacto').value = '';
   document.getElementById('risco-status').value = 'aberto';
   document.getElementById('risco-btn-delete').style.display = 'none';
-  document.querySelector('#modal-risco .modal-header').textContent = 'Novo Risco';
+  document.querySelector('#modal-risco .modal-header').textContent = 'Novo Risco / Oportunidade';
 }
 
 function fecharModalRisco() {
@@ -1520,9 +1539,11 @@ async function editarRisco(id) {
   document.getElementById('risco-probabilidade').value = risco.probabilidade || '5';
   document.getElementById('risco-impacto').value = risco.impacto || '5';
   document.getElementById('risco-responsavel').value = risco.responsavel || '';
+  document.getElementById('risco-tipo').value = risco.tipo || 'risco';
+  document.getElementById('risco-valor-impacto').value = risco.valor_impacto || '';
   document.getElementById('risco-status').value = risco.status || 'aberto';
   document.getElementById('risco-btn-delete').style.display = 'block';
-  document.querySelector('#modal-risco .modal-header').textContent = 'Editar Risco';
+  document.querySelector('#modal-risco .modal-header').textContent = 'Editar Risco / Oportunidade';
   document.getElementById('modal-risco').classList.add('active');
 }
 
@@ -1534,6 +1555,8 @@ async function salvarRisco() {
   const probabilidade = parseFloat(document.getElementById('risco-probabilidade').value) || 0;
   const impacto = parseFloat(document.getElementById('risco-impacto').value) || 0;
   const responsavel = document.getElementById('risco-responsavel').value.trim();
+  const tipo = document.getElementById('risco-tipo').value;
+  const valor_impacto = parseFloat(document.getElementById('risco-valor-impacto').value) || 0;
   const status = document.getElementById('risco-status').value;
 
   if (!codigo || !causa) {
@@ -1547,7 +1570,7 @@ async function salvarRisco() {
     const obraId = B3Obras.atualId();
 
     const dados = {
-      codigo, causa, consequencia, probabilidade, impacto, responsavel, status,
+      codigo, causa, consequencia, probabilidade, impacto, responsavel, tipo, valor_impacto, status,
       atualizado_em: new Date().toISOString()
     };
 
