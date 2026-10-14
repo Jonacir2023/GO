@@ -149,7 +149,6 @@ with sync_playwright() as p:
 
     # ---- botões de ação do cabeçalho continuam acessíveis dentro da casca ----
     for mod, arq, acao in [("custos", "custos.html", "abrirCadastro()"),
-                           ("planejamento", "planejamento.html", "abrirNovoCronograma()"),
                            ("suprimentos", "suprimentos.html", "abrirNovaRequisicao()")]:
         page.evaluate("t => switchTab(t)", mod)
         page.wait_for_timeout(700)
