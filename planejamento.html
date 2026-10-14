@@ -88,6 +88,7 @@
     <button class="tab" onclick="mudarAba('atividades')">Atividades</button>
     <button class="tab" onclick="mudarAba('riscos')">Controle de Riscos</button>
     <button class="tab" onclick="mudarAba('restricoes')">Restrições</button>
+    <button class="tab" onclick="mudarAba('eap')">EAP</button>
   </div>
 
   <div class="content">
@@ -142,6 +143,31 @@
       </table>
       </div>
       <div style="text-align:center;margin-top:12px"><button class="btn btn-secondary" id="ativ-mais" style="display:none" onclick="mostrarMaisAtividades()">Mostrar mais</button></div>
+    </div>
+
+    <div id="eap-aba" class="aba-content" style="display: none;">
+      <div style="display: flex; gap: 10px; margin-bottom: 14px; justify-content: space-between;">
+        <div class="ativ-barra" style="flex: 1;">
+          <select id="eap-cronograma" onchange="carregarEAP()"></select>
+          <input type="search" id="eap-busca" placeholder="Buscar por código ou nome" oninput="filtrarEAP()">
+        </div>
+      </div>
+      <div class="ativ-tabela-wrap">
+        <table class="table" id="eap-table">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Código</th>
+              <th>Descrição</th>
+              <th style="width: 100px;">Data Início</th>
+              <th style="width: 100px;">Data Fim</th>
+              <th style="width: 80px;">Nível</th>
+            </tr>
+          </thead>
+          <tbody id="eap-tbody">
+            <tr><td colspan="5" class="empty-state"><i class="fas fa-sitemap"></i>Selecione um cronograma</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div id="riscos-aba" class="aba-content" style="display: none;">
@@ -378,6 +404,8 @@ function mudarAba(aba) {
   document.getElementById(aba + '-aba').style.display = 'block';
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
   event.target.classList.add('active');
+  if (aba === 'atividades') carregarAtividades();
+  if (aba === 'eap') carregarEAP();
 }
 
 function abrirNovoCronograma() {
@@ -551,11 +579,22 @@ async function preencherSeletorCronogramas() {
     if (!window.B3Obras || !window.B3Obras.cliente) return;
     const cliente = B3Obras.cliente();
     const { data } = await cliente.from('planejamento_cronogramas').select('id,nome,tipo')
-      .eq('obra_id', B3Obras.atualId()).order('criado_em', { ascending: false });
-    const sel = document.getElementById('ativ-cronograma');
-    const atual = sel.value;
-    sel.innerHTML = (data || []).map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('') || '<option value="">Nenhum cronograma</option>';
-    if (atual && (data || []).some(c => c.id === atual)) sel.value = atual;
+      .eq('obra_id', B3Obras.atualId()).eq('ativo', true).order('criado_em', { ascending: false });
+    const html = (data || []).map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('') || '<option value="">Nenhum cronograma</option>';
+
+    // Preencher seletor de atividades
+    const selAtiv = document.getElementById('ativ-cronograma');
+    const atualAtiv = selAtiv.value;
+    selAtiv.innerHTML = html;
+    if (atualAtiv && (data || []).some(c => c.id === atualAtiv)) selAtiv.value = atualAtiv;
+    else if (data && data.length > 0) selAtiv.value = data[0].id;
+
+    // Preencher seletor de EAP
+    const selEap = document.getElementById('eap-cronograma');
+    const atualEap = selEap.value;
+    selEap.innerHTML = html;
+    if (atualEap && (data || []).some(c => c.id === atualEap)) selEap.value = atualEap;
+    else if (data && data.length > 0) selEap.value = data[0].id;
   } catch (e) {
     console.error('Erro ao listar cronogramas:', e);
   }
@@ -864,6 +903,66 @@ async function salvarAtividade() {
   }
 }
 
+// ── EAP (Estrutura Analítica do Projeto) ────────────────────────────────
+let _eapTabItens = [], _eapTabFiltrados = [];
+
+async function carregarEAP() {
+  const tbody = document.getElementById('eap-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cronoId = document.getElementById('eap-cronograma').value;
+    if (!cronoId) { _eapTabItens = []; filtrarEAP(); return; }
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Carregando…</td></tr>';
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const eap = await buscarTudo(() => cliente.from('eap_itens')
+      .select('id,codigo,nome,descricao,data_inicio,data_fim,nivel,parent_id')
+      .eq('obra_id', obraId)
+      .order('codigo'));
+
+    _eapTabItens = eap || [];
+    filtrarEAP();
+  } catch (e) {
+    console.error('Erro ao carregar EAP:', e);
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
+  }
+}
+
+function filtrarEAP() {
+  const busca = (document.getElementById('eap-busca').value || '').trim().toLowerCase();
+  _eapTabFiltrados = _eapTabItens.filter(item => {
+    if (!busca) return true;
+    return (item.codigo || '').toLowerCase().includes(busca) ||
+           (item.nome || '').toLowerCase().includes(busca);
+  });
+
+  const tbody = document.getElementById('eap-tbody');
+  if (!_eapTabFiltrados.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item da EAP</td></tr>';
+    return;
+  }
+
+  const nivelClasses = {
+    0: 'eap-nivel0',
+    1: 'eap-nivel1',
+    2: 'eap-nivel2',
+    3: 'eap-nivel3',
+    4: 'eap-nivel4'
+  };
+
+  tbody.innerHTML = _eapTabFiltrados.map(item => `
+    <tr>
+      <td class="${nivelClasses[item.nivel] || 'eap-nivel4'}">${esc(item.codigo || '-')}</td>
+      <td title="${esc(item.descricao || '')}">${esc(item.nome || '-')}</td>
+      <td>${br(item.data_inicio)}</td>
+      <td>${br(item.data_fim)}</td>
+      <td>${item.nivel || '-'}</td>
+    </tr>
+  `).join('');
+}
+
 // ── Gantt/Timeline ──────────────────────────────────────────────────────
 async function desenharGantt() {
   try {
@@ -950,8 +1049,8 @@ window.addEventListener('DOMContentLoaded', () => {
     (async () => {
       await carregarCronogramas();
       await preencherSeletorCronogramas();
-      carregarAtividades();
-      carregarRestricoes();
+      await carregarAtividades();
+      await carregarRestricoes();
     })();
   }
 });
