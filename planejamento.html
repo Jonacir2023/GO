@@ -2387,13 +2387,14 @@ async function importarCronogramaArquivo(event) {
 
     for (let i = 1; i < linhas.length; i++) {
       const linha = linhas[i];
-      if (!linha || linha.length < 5) continue;
+      if (!linha || linha.length < 6) continue;
 
       const codigo = String(linha[0] || '').trim();
       const nome = String(linha[1] || '').trim();
-      const predecessora = String(linha[2] || '').trim();
-      const dataInicio = String(linha[3] || '').trim();
-      const dataFim = String(linha[4] || '').trim();
+      const prazo = String(linha[2] || '').trim();
+      const predecessora = String(linha[3] || '').trim();
+      const dataInicio = String(linha[4] || '').trim();
+      const dataFim = String(linha[5] || '').trim();
 
       if (!codigo || !nome) {
         erros.push(`Linha ${i + 1}: Código e Nome são obrigatórios`);
@@ -2412,6 +2413,7 @@ async function importarCronogramaArquivo(event) {
       _importCronogramaData.push({
         codigo,
         nome,
+        prazo: prazo || null,
         predecessora: predecessora || null,
         inicio_planejado: inicio,
         fim_planejado: fim
