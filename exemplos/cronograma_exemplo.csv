@@ -1,0 +1,10 @@
+Código,Nome,Predecessora,Início,Fim
+AT-001,Escavação,01/01/2026,15/02/2026
+AT-002,Fundação,AT-001,16/02/2026,30/03/2026
+AT-003,Estrutura,AT-002,01/04/2026,31/05/2026
+AT-004,Alvenaria,AT-003,01/06/2026,31/07/2026
+AT-005,Revestimento,AT-004,01/08/2026,30/09/2026
+AT-006,Instalações elétricas,AT-005,01/10/2026,31/10/2026
+AT-007,Instalações hidráulicas,AT-005,01/10/2026,31/10/2026
+AT-008,Acabamento,AT-006 AT-007,01/11/2026,30/11/2026
+AT-009,Testes e comissionamento,AT-008,01/12/2026,15/12/2026
