@@ -2621,7 +2621,9 @@ function converterData(dataStr) {
   // Tenta múltiplos formatos de string
   const formatos = [
     /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/, // DD/MM/YYYY ou DD/MM/YY
-    /^(\d{4})-(\d{2})-(\d{2})$/         // YYYY-MM-DD
+    /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/,   // DD-MM-YYYY ou DD-MM-YY
+    /^(\d{4})-(\d{2})-(\d{2})$/,         // YYYY-MM-DD
+    /^(\d{4})\/(\d{2})\/(\d{2})$/        // YYYY/MM/DD
   ];
 
   dataStr = String(dataStr).trim();
@@ -2631,32 +2633,37 @@ function converterData(dataStr) {
     if (m) {
       let [, a, b, c] = m;
 
-      // Validar mês (1-12)
-      const mes = Number(b);
-      if (mes < 1 || mes > 12) return null;
+      // Detectar formato pelos valores
+      let dia, mes, ano;
 
-      // Validar dia (1-31)
-      const dia = Number(a);
-      if (dia < 1 || dia > 31) return null;
+      // Se primeiro elemento > 1900, é formato YYYY-??-??
+      if (Number(a) > 1900) {
+        ano = Number(a);
+        mes = Number(b);
+        dia = Number(c);
+      } else {
+        // Formato DD/MM/YYYY ou DD-MM-YYYY
+        dia = Number(a);
+        mes = Number(b);
+        ano = Number(c);
 
-      if (c.length === 2) c = c < 50 ? '20' + c : '19' + c;
-
-      if (c.length === 4 && dia <= 31) {
-        // Formato DD/MM/YYYY
-        const d = new Date(Number(c), mes - 1, dia);
-        // Validar se a data criada é válida (verifica se JS corrigiu o mês/dia)
-        if (d.getFullYear() !== Number(c) || d.getMonth() !== mes - 1 || d.getDate() !== dia) {
-          return null;
+        // Ajustar ano se for 2 dígitos
+        if (ano < 100) {
+          ano = ano < 50 ? 2000 + ano : 1900 + ano;
         }
-        return c + '-' + b.padStart(2, '0') + '-' + a.padStart(2, '0');
-      } else if (c.length === 4 && Number(a) > 1900) {
-        // Formato YYYY-MM-DD
-        const d = new Date(Number(a), Number(b) - 1, Number(c));
-        if (d.getFullYear() !== Number(a) || d.getMonth() !== Number(b) - 1 || d.getDate() !== Number(c)) {
-          return null;
-        }
-        return a + '-' + b + '-' + c;
       }
+
+      // Validar ranges
+      if (mes < 1 || mes > 12 || dia < 1 || dia > 31) continue;
+      if (ano < 1900 || ano > 2100) continue;
+
+      // Validar se data é válida (não deixar JS corrigir mês/dia inválidos)
+      const d = new Date(ano, mes - 1, dia);
+      if (d.getFullYear() !== ano || d.getMonth() !== mes - 1 || d.getDate() !== dia) {
+        continue;
+      }
+
+      return `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
     }
   }
   return null;
