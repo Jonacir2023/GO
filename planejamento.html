@@ -232,15 +232,18 @@
       </div>
 
       <div id="riscos-cobertura-aba" style="display: none;">
-        <div class="ativ-barra" style="margin-bottom: 14px;">
-          <select id="cobertura-cronograma" onchange="carregarCobertura()"></select>
-          <input type="search" id="cobertura-busca" placeholder="Buscar por atividade" oninput="filtrarCobertura()">
+        <div class="ativ-barra" style="margin-bottom: 14px; justify-content: space-between;">
+          <div style="flex: 1; display: flex; gap: 10px;">
+            <select id="cobertura-cronograma" onchange="carregarCobertura()"></select>
+            <input type="search" id="cobertura-busca" placeholder="Buscar por atividade" oninput="filtrarCobertura()">
+          </div>
+          <button class="btn btn-primary" onclick="abrirNovaCobertura()">➕ Mapear</button>
         </div>
         <table class="table" id="cobertura-table">
           <thead>
             <tr>
               <th>Atividade</th>
-              <th>Riscos Associados</th>
+              <th>Risco</th>
               <th>Revisado Por</th>
               <th>Data Revisão</th>
               <th>Ações</th>
@@ -252,12 +255,12 @@
         </table>
       </div>
 
-      <div id="riscos-priorizacao-aba" style="display: none;">
+        <div id="riscos-priorizacao-aba" style="display: none;">
         <div class="priorizacao-info">
           <p><strong>Matriz de Priorização PMI (Probabilidade × Impacto)</strong></p>
           <p>Prioridade = Probabilidade × MAIOR(Impacto Prazo, Impacto Custo)</p>
         </div>
-        <canvas id="priorizacao-canvas" width="600" height="600"></canvas>
+        <canvas id="priorizacao-canvas" width="700" height="700" style="border: 1px solid #ddd; background: white;"></canvas>
       </div>
     </div>
 
@@ -461,6 +464,84 @@
   </div>
 </div>
 
+<div class="modal" id="modal-acao">
+  <div class="modal-content">
+    <div class="modal-header">Nova Ação de Mitigação</div>
+    <input type="hidden" id="acao-id-edicao">
+    <div class="form-group">
+      <label>Risco/Oportunidade</label>
+      <select id="acao-risco" required></select>
+    </div>
+    <div class="form-group">
+      <label>Ação</label>
+      <input type="text" id="acao-descricao" placeholder="Descrição da ação de mitigação" required>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Responsável</label>
+        <input type="text" id="acao-responsavel" placeholder="Quem executará">
+      </div>
+      <div class="form-group">
+        <label>Data Limite</label>
+        <input type="date" id="acao-data-limite">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Custo (R$)</label>
+        <input type="number" id="acao-custo" placeholder="0,00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="acao-status">
+          <option value="aberta">Aberta</option>
+          <option value="andamento">Em Andamento</option>
+          <option value="concluida">Concluída</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Evidência (link ou arquivo)</label>
+      <input type="text" id="acao-evidencia" placeholder="URL ou descrição da evidência">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalAcao()">Cancelar</button>
+      <button class="btn btn-primary" id="acao-btn-delete" style="display: none; margin-right: auto; background: #c62828;" onclick="apagarAcao()">🗑️ Apagar</button>
+      <button class="btn btn-primary" onclick="salvarAcao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-cobertura">
+  <div class="modal-content">
+    <div class="modal-header">Mapear Risco para Atividade</div>
+    <input type="hidden" id="cobertura-id-edicao">
+    <div class="form-group">
+      <label>Atividade</label>
+      <select id="cobertura-atividade" required></select>
+    </div>
+    <div class="form-group">
+      <label>Risco/Oportunidade</label>
+      <select id="cobertura-risco" required></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Revisado Por</label>
+        <input type="text" id="cobertura-revisado-por" placeholder="Nome de quem revisou">
+      </div>
+      <div class="form-group">
+        <label>Data Revisão</label>
+        <input type="date" id="cobertura-data-revisao">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalCobertura()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCobertura()">Mapear</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=fc569d34"></script>
 <script>
@@ -508,7 +589,18 @@ function mudarAba(aba) {
   event.target.classList.add('active');
   if (aba === 'atividades') carregarAtividades();
   if (aba === 'eap') carregarEAP();
-  if (aba === 'riscos') carregarRiscos();
+  if (aba === 'riscos') {
+    carregarRiscos();
+    preencherSeletorCronogramasCobertura();
+    mudarSubAbas('registro');
+  }
+}
+
+function mudarSubAbas(subaba) {
+  document.querySelectorAll('[id^="riscos-"][id$="-aba"]').forEach(el => el.style.display = 'none');
+  document.getElementById('riscos-' + subaba + '-aba').style.display = 'block';
+  document.querySelectorAll('#riscos-aba .btn-secondary').forEach(el => el.style.opacity = '0.6');
+  event.target.style.opacity = '1';
 }
 
 function abrirNovoCronograma() {
@@ -1408,6 +1500,7 @@ window.addEventListener('DOMContentLoaded', () => {
     (async () => {
       await carregarCronogramas();
       await preencherSeletorCronogramas();
+      await preencherSeletorCronogramasCobertura();
       await carregarAtividades();
       await carregarRestricoes();
     })();
@@ -1625,6 +1718,520 @@ async function apagarRisco() {
     carregarRiscos();
   } catch (e) {
     alert('Erro ao apagar: ' + e.message);
+  }
+}
+
+// ── Sub-abas do módulo de Riscos ────────────────────────────────────────
+function mudarSubAbas(subaba) {
+  document.querySelectorAll('[id^="riscos-"][id$="-aba"]').forEach(el => el.style.display = 'none');
+  document.getElementById('riscos-' + subaba + '-aba').style.display = 'block';
+
+  if (subaba === 'acoes') carregarAcoes();
+  if (subaba === 'cobertura') carregarCobertura();
+  if (subaba === 'priorizacao') desenharMatrizPmi();
+}
+
+// ── Ações de Mitigação ──────────────────────────────────────────────────
+let _acoesTabItens = [];
+
+async function carregarAcoes() {
+  const tbody = document.getElementById('acoes-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Carregando…</td></tr>';
+
+    const acoes = await buscarTudo(() => cliente
+      .from('planejamento_acoes_mitigacao')
+      .select('*')
+      .eq('obra_id', obraId)
+      .order('criado_em', { ascending: false }));
+
+    _acoesTabItens = acoes || [];
+    filtrarAcoes();
+  } catch (e) {
+    console.error('Erro ao carregar ações:', e);
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Erro ao carregar</td></tr>';
+  }
+}
+
+async function filtrarAcoes() {
+  const busca = (document.getElementById('acoes-busca')?.value || '').trim().toLowerCase() || '';
+  const tbody = document.getElementById('acoes-tbody');
+
+  let filtrados = _acoesTabItens.filter(a => {
+    if (!busca) return true;
+    return (a.acao && a.acao.toLowerCase().includes(busca)) ||
+           (a.responsavel && a.responsavel.toLowerCase().includes(busca));
+  });
+
+  if (!filtrados.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-check-circle"></i>Nenhuma ação cadastrada</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtrados.map(a => {
+    const statusClass = { 'aberta': 'status critica', 'andamento': 'status em_andamento', 'concluida': 'status concluido' }[a.status] || 'status';
+    const risco = _riscosTabItens.find(r => r.id === a.risco_id);
+    const codigoRisco = risco ? risco.codigo : '?';
+
+    return `<tr onclick="editarAcao('${a.id}')" style="cursor: pointer;">
+      <td>${esc(codigoRisco)}</td>
+      <td>${esc((a.acao || '-').substring(0, 40))}</td>
+      <td>${esc(a.responsavel || '-')}</td>
+      <td>${br(a.data_limite)}</td>
+      <td>R$ ${(a.custo || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+      <td><span class="${statusClass}">${a.status}</span></td>
+      <td>${esc((a.evidencia || '-').substring(0, 30))}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editarAcao('${a.id}')">✎</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function abrirNovaAcao() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data: riscos } = await cliente
+      .from('planejamento_riscos')
+      .select('id, codigo, tipo')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    const seletor = document.getElementById('acao-risco');
+    seletor.innerHTML = '<option value="">-- Selecione um Risco/Oportunidade --</option>' +
+      (riscos || []).map(r => `<option value="${r.id}">${r.codigo} (${r.tipo === 'oportunidade' ? '🟢 Oportunidade' : '🔴 Risco'})</option>`).join('');
+
+    document.getElementById('acao-id-edicao').value = '';
+    document.getElementById('acao-descricao').value = '';
+    document.getElementById('acao-responsavel').value = '';
+    document.getElementById('acao-data-limite').value = '';
+    document.getElementById('acao-custo').value = '';
+    document.getElementById('acao-status').value = 'aberta';
+    document.getElementById('acao-evidencia').value = '';
+    document.getElementById('acao-btn-delete').style.display = 'none';
+    document.querySelector('#modal-acao .modal-header').textContent = 'Nova Ação de Mitigação';
+    document.getElementById('modal-acao').classList.add('active');
+    document.getElementById('acao-risco').focus();
+  } catch (e) {
+    alert('Erro ao carregar riscos: ' + e.message);
+  }
+}
+
+function fecharModalAcao() {
+  document.getElementById('modal-acao').classList.remove('active');
+}
+
+async function editarAcao(id) {
+  const acao = _acoesTabItens.find(a => a.id === id);
+  if (!acao) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const { data: riscos } = await cliente
+      .from('planejamento_riscos')
+      .select('id, codigo, tipo')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    const seletor = document.getElementById('acao-risco');
+    seletor.innerHTML = '<option value="">-- Selecione um Risco/Oportunidade --</option>' +
+      (riscos || []).map(r => `<option value="${r.id}">${r.codigo} (${r.tipo === 'oportunidade' ? '🟢 Oportunidade' : '🔴 Risco'})</option>`).join('');
+
+    document.getElementById('acao-id-edicao').value = id;
+    document.getElementById('acao-risco').value = acao.risco_id;
+    document.getElementById('acao-descricao').value = acao.acao || '';
+    document.getElementById('acao-responsavel').value = acao.responsavel || '';
+    document.getElementById('acao-data-limite').value = acao.data_limite || '';
+    document.getElementById('acao-custo').value = acao.custo || '';
+    document.getElementById('acao-status').value = acao.status || 'aberta';
+    document.getElementById('acao-evidencia').value = acao.evidencia || '';
+    document.getElementById('acao-btn-delete').style.display = 'block';
+    document.querySelector('#modal-acao .modal-header').textContent = 'Editar Ação de Mitigação';
+    document.getElementById('modal-acao').classList.add('active');
+  } catch (e) {
+    alert('Erro ao carregar dados: ' + e.message);
+  }
+}
+
+async function salvarAcao() {
+  const idEdicao = document.getElementById('acao-id-edicao').value;
+  const riscoId = document.getElementById('acao-risco').value;
+  const descricao = document.getElementById('acao-descricao').value.trim();
+  const responsavel = document.getElementById('acao-responsavel').value.trim();
+  const dataLimite = document.getElementById('acao-data-limite').value;
+  const custo = parseFloat(document.getElementById('acao-custo').value) || 0;
+  const status = document.getElementById('acao-status').value;
+  const evidencia = document.getElementById('acao-evidencia').value.trim();
+
+  if (!riscoId || !descricao) {
+    alert('Selecione um risco e descreva a ação');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const dados = {
+      risco_id: riscoId,
+      acao: descricao,
+      responsavel: responsavel || null,
+      data_limite: dataLimite || null,
+      custo,
+      status,
+      evidencia: evidencia || null,
+      atualizado_em: new Date().toISOString()
+    };
+
+    let resp;
+    if (idEdicao) {
+      resp = await cliente
+        .from('planejamento_acoes_mitigacao')
+        .update(dados)
+        .eq('id', idEdicao)
+        .eq('obra_id', obraId);
+    } else {
+      resp = await cliente
+        .from('planejamento_acoes_mitigacao')
+        .insert([{ ...dados, obra_id: obraId }]);
+    }
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalAcao();
+    carregarAcoes();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
+  }
+}
+
+async function apagarAcao() {
+  const idEdicao = document.getElementById('acao-id-edicao').value;
+  if (!idEdicao) return;
+
+  if (!confirm('Tem certeza que deseja apagar esta ação?')) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const resp = await cliente
+      .from('planejamento_acoes_mitigacao')
+      .delete()
+      .eq('id', idEdicao)
+      .eq('obra_id', obraId);
+
+    if (resp.error) {
+      alert('Erro: ' + resp.error.message);
+      return;
+    }
+
+    fecharModalAcao();
+    carregarAcoes();
+  } catch (e) {
+    alert('Erro ao apagar: ' + e.message);
+  }
+}
+
+// ── Cobertura do Cronograma ─────────────────────────────────────────────
+async function carregarCobertura() {
+  const tbody = document.getElementById('cobertura-tbody');
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const cobertura = await buscarTudo(() => cliente
+      .from('planejamento_cobertura_riscos')
+      .select('*')
+      .eq('obra_id', obraId)
+      .order('criado_em', { ascending: false }));
+
+    if (!cobertura || !cobertura.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-check-square"></i>Nenhuma atividade mapeada</td></tr>';
+      return;
+    }
+
+    const ativs = await buscarTudo(() => cliente
+      .from('planejamento_atividades')
+      .select('id, codigo, nome')
+      .eq('obra_id', obraId));
+
+    tbody.innerHTML = (cobertura || []).map(c => {
+      const atividade = ativs.find(a => a.id === c.atividade_id);
+      const risco = _riscosTabItens.find(r => r.id === c.risco_id);
+      const nomeAtiv = atividade ? (atividade.codigo + ' - ' + atividade.nome) : '?';
+      const codigoRisco = risco ? risco.codigo : '?';
+
+      return `<tr>
+        <td>${esc(nomeAtiv.substring(0, 40))}</td>
+        <td>${esc(codigoRisco)}</td>
+        <td>${esc(c.revisado_por || '-')}</td>
+        <td>${br(c.data_revisao)}</td>
+        <td><button class="btn btn-secondary btn-sm" onclick="apagarCobertura('${c.id}')">🗑️</button></td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    console.error('Erro ao carregar cobertura:', e);
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar</td></tr>';
+  }
+}
+
+async function apagarCobertura(id) {
+  if (!confirm('Remover este mapeamento?')) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const resp = await cliente
+      .from('planejamento_cobertura_riscos')
+      .delete()
+      .eq('id', id)
+      .eq('obra_id', obraId);
+
+    if (resp.error) throw resp.error;
+    carregarCobertura();
+  } catch (e) {
+    alert('Erro: ' + e.message);
+  }
+}
+
+// ── Funções auxiliares para cobertura ───────────────────────────────────
+async function abrirNovaCobertura() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    const cronoId = document.getElementById('cobertura-cronograma').value;
+
+    if (!cronoId) {
+      alert('Selecione um cronograma primeiro');
+      return;
+    }
+
+    const { data: atividades } = await cliente
+      .from('planejamento_atividades')
+      .select('id, codigo, nome')
+      .eq('obra_id', obraId)
+      .eq('cronograma_id', cronoId)
+      .order('codigo');
+
+    const { data: riscos } = await cliente
+      .from('planejamento_riscos')
+      .select('id, codigo, tipo')
+      .eq('obra_id', obraId)
+      .order('codigo');
+
+    document.getElementById('cobertura-atividade').innerHTML = '<option value="">-- Selecione Atividade --</option>' +
+      (atividades || []).map(a => `<option value="${a.id}">${a.codigo} - ${a.nome}</option>`).join('');
+
+    document.getElementById('cobertura-risco').innerHTML = '<option value="">-- Selecione Risco/Oportunidade --</option>' +
+      (riscos || []).map(r => `<option value="${r.id}">${r.codigo} (${r.tipo === 'oportunidade' ? '🟢' : '🔴'})</option>`).join('');
+
+    document.getElementById('cobertura-id-edicao').value = '';
+    document.getElementById('cobertura-revisado-por').value = '';
+    document.getElementById('cobertura-data-revisao').value = '';
+    document.querySelector('#modal-cobertura .modal-header').textContent = 'Mapear Risco para Atividade';
+    document.getElementById('modal-cobertura').classList.add('active');
+  } catch (e) {
+    alert('Erro ao carregar dados: ' + e.message);
+  }
+}
+
+function fecharModalCobertura() {
+  document.getElementById('modal-cobertura').classList.remove('active');
+}
+
+async function salvarCobertura() {
+  const atividadeId = document.getElementById('cobertura-atividade').value;
+  const riscoId = document.getElementById('cobertura-risco').value;
+  const revisadoPor = document.getElementById('cobertura-revisado-por').value.trim();
+  const dataRevisao = document.getElementById('cobertura-data-revisao').value;
+
+  if (!atividadeId || !riscoId) {
+    alert('Selecione atividade e risco');
+    return;
+  }
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    const resp = await cliente
+      .from('planejamento_cobertura_riscos')
+      .insert([{
+        obra_id: obraId,
+        atividade_id: atividadeId,
+        risco_id: riscoId,
+        revisado_por: revisadoPor || null,
+        data_revisao: dataRevisao || null
+      }]);
+
+    if (resp.error) {
+      if (resp.error.message.includes('unique')) {
+        alert('Este risco já está mapeado para esta atividade');
+      } else {
+        alert('Erro: ' + resp.error.message);
+      }
+      return;
+    }
+
+    fecharModalCobertura();
+    carregarCobertura();
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
+  }
+}
+
+function filtrarCobertura() {
+  // Implementação simples - filtro na próxima iteração se necessário
+}
+
+// Preencher seletor de cronogramas na aba de cobertura
+async function preencherSeletorCronogramasCobertura() {
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) return;
+    const cliente = B3Obras.cliente();
+    const { data } = await cliente.from('planejamento_cronogramas').select('id,nome')
+      .eq('obra_id', B3Obras.atualId()).eq('ativo', true).order('criado_em', { ascending: false });
+    const html = (data || []).map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('') || '<option value="">Nenhum cronograma</option>';
+
+    const seletor = document.getElementById('cobertura-cronograma');
+    if (seletor && data && data.length > 0) {
+      seletor.innerHTML = html;
+      seletor.value = data[0].id;
+    }
+  } catch (e) {
+    console.error('Erro ao preencher cronogramas cobertura:', e);
+  }
+}
+
+// ── Matriz PMI (Probabilidade × Impacto) ────────────────────────────────
+async function desenharMatrizPmi() {
+  try {
+    const canvas = document.getElementById('priorizacao-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const w = canvas.width, h = canvas.height;
+    const margin = 80, cellSize = (w - 2 * margin) / 10;
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, w, h);
+
+    // Grid
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 10; i++) {
+      const x = margin + i * cellSize;
+      const y = h - margin - i * cellSize;
+      ctx.beginPath(); ctx.moveTo(x, margin); ctx.lineTo(x, h - margin); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(margin, y); ctx.lineTo(w - margin, y); ctx.stroke();
+    }
+
+    // Eixos
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(margin, h - margin); ctx.lineTo(w - margin, h - margin); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(margin, margin); ctx.lineTo(margin, h - margin); ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('PROBABILIDADE →', w / 2, h - 20);
+
+    ctx.save(); ctx.translate(20, h / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('IMPACTO →', 0, 0);
+    ctx.restore();
+
+    // Escala dos eixos
+    ctx.font = '11px Arial';
+    for (let i = 0; i <= 10; i++) {
+      const x = margin + i * cellSize;
+      const y = h - margin - i * cellSize;
+      ctx.fillText(i, x, h - margin + 20);
+      ctx.fillText(i, margin - 20, y + 5);
+    }
+
+    // Cores de prioridade (matriz 10x10)
+    const getColor = (prob, imp) => {
+      const prior = prob * imp;
+      if (prior >= 50) return '#ffcccc'; // Crítico
+      if (prior >= 30) return '#ffe6cc'; // Alto
+      if (prior >= 15) return '#ffffcc'; // Médio
+      return '#ccffcc'; // Baixo
+    };
+
+    for (let p = 0; p < 10; p++) {
+      for (let i = 0; i < 10; i++) {
+        const x = margin + p * cellSize;
+        const y = h - margin - (i + 1) * cellSize;
+        ctx.fillStyle = getColor(p + 1, i + 1);
+        ctx.fillRect(x, y, cellSize, cellSize);
+      }
+    }
+
+    // Plotar riscos
+    (_riscosTabItens || []).forEach(r => {
+      const prob = Number(r.probabilidade) || 0;
+      const impac = Number(r.impacto) || 0;
+      if (prob < 1 || impac < 1) return;
+
+      const x = margin + (prob - 0.5) * cellSize + cellSize / 2;
+      const y = h - margin - (impac - 0.5) * cellSize - cellSize / 2;
+
+      const tamanho = Math.max(6, Math.sqrt(Math.abs(r.valor_impacto || 1000000)) / 500);
+      const cor = r.tipo === 'oportunidade' ? '#00aa00' : '#aa0000';
+
+      ctx.fillStyle = cor;
+      ctx.beginPath();
+      ctx.arc(x, y, tamanho, 0, 2 * Math.PI);
+      ctx.fill();
+
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(r.codigo || '', x, y);
+    });
+
+    // Legenda
+    ctx.fillStyle = '#333';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('🔴 Risco  🟢 Oportunidade', margin, 30);
+    ctx.fillText('Crítico', w - 140, 30);
+    ctx.fillText('Alto', w - 90, 30);
+    ctx.fillText('Médio', w - 40, 30);
+
+    ctx.fillStyle = '#ffcccc'; ctx.fillRect(w - 150, 40, 10, 10);
+    ctx.fillStyle = '#ffe6cc'; ctx.fillRect(w - 100, 40, 10, 10);
+    ctx.fillStyle = '#ffffcc'; ctx.fillRect(w - 50, 40, 10, 10);
+  } catch (e) {
+    console.error('Erro ao desenhar matriz PMI:', e);
   }
 }
 </script>
