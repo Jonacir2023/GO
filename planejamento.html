@@ -2357,13 +2357,13 @@ async function importarCronogramaArquivo(event) {
       const texto = await arquivo.text();
       linhas = texto.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
     } else if (ext === 'xlsx' || ext === 'xls') {
-      // Usar fetch para carregar sheetjs da CDN
+      // Usar fetch para carregar sheetjs da CDN (jsdelivr tem melhor suporte MIME type)
       if (!window.XLSX) {
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js';
+        script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
         await new Promise((resolve, reject) => {
           script.onload = resolve;
-          script.onerror = reject;
+          script.onerror = () => reject(new Error('Falha ao carregar biblioteca XLSX. Tente novamente.'));
           document.head.appendChild(script);
         });
       }
