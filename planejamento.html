@@ -163,6 +163,7 @@
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-primary" onclick="abrirImportarEap()">📥 Importar EAP</button>
           <button class="btn btn-primary" onclick="abrirNovoEapItem()">➕ Novo Item EAP</button>
+          <button class="btn btn-danger" onclick="limparEAP()" title="Deletar todos os itens da EAP atual">🗑️ Limpar</button>
         </div>
       </div>
       <div class="ativ-tabela-wrap">
@@ -1594,6 +1595,53 @@ function filtrarEAP() {
     </tr>
   `;
   }).join('');
+}
+
+async function limparEAP() {
+  if (!confirm('Deletar TODOS os itens da EAP?\n\nEsta ação é irreversível.')) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    if (!obraId) throw new Error('Obra não selecionada');
+
+    const tbody = document.getElementById('eap-tbody');
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Deletando…</td></tr>';
+
+    // Buscar todos os eap_itens da obra
+    const { data: itens, error: erroLista } = await cliente.from('eap_itens')
+      .select('id')
+      .eq('obra_id', obraId);
+
+    if (erroLista) throw erroLista;
+    if (!itens || itens.length === 0) {
+      alert('Nenhum item para deletar');
+      await carregarEAP();
+      return;
+    }
+
+    // Deletar todos os itens
+    const ids = itens.map(i => i.id);
+    const { error: erroDelete } = await cliente.from('eap_itens')
+      .delete()
+      .in('id', ids);
+
+    if (erroDelete) throw erroDelete;
+
+    alert(`✓ ${ids.length} item(ns) deletado(s)`);
+    _eapTabItens = [];
+    _eapAtividadesMap = {};
+    filtrarEAP();
+  } catch (e) {
+    console.error('Erro ao limpar EAP:', e);
+    alert('✗ Erro: ' + (e && e.message ? e.message : String(e)));
+    await carregarEAP();
+  }
 }
 
 // ── Gantt/Timeline ──────────────────────────────────────────────────────
