@@ -918,7 +918,7 @@ async function carregarEAP() {
     const obraId = B3Obras.atualId();
 
     const eap = await buscarTudo(() => cliente.from('eap_itens')
-      .select('id,codigo,nome,descricao,data_inicio,data_fim,nivel,parent_id')
+      .select('id,codigo,nome,data_inicio,data_fim,pai_id')
       .eq('obra_id', obraId)
       .order('codigo'));
 
@@ -928,6 +928,14 @@ async function carregarEAP() {
     console.error('Erro ao carregar EAP:', e);
     tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
   }
+}
+
+function calcularNivelEap(eapId, todos, nivelMemo = {}) {
+  if (nivelMemo[eapId] !== undefined) return nivelMemo[eapId];
+  const item = todos.find(e => e.id === eapId);
+  if (!item || !item.pai_id) { nivelMemo[eapId] = 0; return 0; }
+  nivelMemo[eapId] = 1 + calcularNivelEap(item.pai_id, todos, nivelMemo);
+  return nivelMemo[eapId];
 }
 
 function filtrarEAP() {
@@ -951,16 +959,20 @@ function filtrarEAP() {
     3: 'eap-nivel3',
     4: 'eap-nivel4'
   };
+  const nivelMemo = {};
 
-  tbody.innerHTML = _eapTabFiltrados.map(item => `
+  tbody.innerHTML = _eapTabFiltrados.map(item => {
+    const nivel = calcularNivelEap(item.id, _eapTabItens, nivelMemo);
+    return `
     <tr>
-      <td class="${nivelClasses[item.nivel] || 'eap-nivel4'}">${esc(item.codigo || '-')}</td>
-      <td title="${esc(item.descricao || '')}">${esc(item.nome || '-')}</td>
+      <td class="${nivelClasses[nivel] || 'eap-nivel4'}">${esc(item.codigo || '-')}</td>
+      <td>${esc(item.nome || '-')}</td>
       <td>${br(item.data_inicio)}</td>
       <td>${br(item.data_fim)}</td>
-      <td>${item.nivel || '-'}</td>
+      <td>${nivel}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 // ── Gantt/Timeline ──────────────────────────────────────────────────────
