@@ -156,14 +156,11 @@
 
     <div id="eap-aba" class="aba-content" style="display: none;">
       <div style="display: flex; gap: 10px; margin-bottom: 14px; justify-content: space-between;">
-        <div class="ativ-barra" style="flex: 1;">
-          <select id="eap-cronograma" onchange="carregarEAP()"></select>
-          <input type="search" id="eap-busca" placeholder="Buscar por código ou nome" oninput="filtrarEAP()">
-        </div>
+        <input type="search" id="eap-busca" placeholder="Buscar por código ou nome" oninput="filtrarEAP()" style="flex: 1; max-width: 400px;">
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-primary" onclick="abrirImportarEap()">📥 Importar EAP</button>
+          <button class="btn btn-danger" onclick="limparEAP()" title="Deletar todos os itens da EAP anterior">🗑️ Excluir EAP Anterior</button>
           <button class="btn btn-primary" onclick="abrirNovoEapItem()">➕ Novo Item EAP</button>
-          <button class="btn btn-danger" onclick="limparEAP()" title="Deletar todos os itens da EAP atual">🗑️ Limpar</button>
         </div>
       </div>
       <div class="ativ-tabela-wrap">
@@ -1513,12 +1510,11 @@ async function carregarEAP() {
   const tbody = document.getElementById('eap-tbody');
   try {
     if (!window.B3Obras || !window.B3Obras.cliente) return;
-    const cronoId = document.getElementById('eap-cronograma').value;
-    if (!cronoId) { _eapTabItens = []; _eapAtividadesMap = {}; filtrarEAP(); return; }
     tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Carregando…</td></tr>';
 
     const cliente = B3Obras.cliente();
     const obraId = B3Obras.atualId();
+    if (!obraId) { _eapTabItens = []; _eapAtividadesMap = {}; filtrarEAP(); return; }
 
     const [eap, ativs] = await Promise.all([
       buscarTudo(() => cliente.from('eap_itens')
@@ -1527,8 +1523,7 @@ async function carregarEAP() {
         .order('codigo')),
       buscarTudo(() => cliente.from('planejamento_atividades')
         .select('id,eap_id,percentual_real')
-        .eq('obra_id', obraId)
-        .eq('cronograma_id', cronoId))
+        .eq('obra_id', obraId))
     ]);
 
     _eapTabItens = eap || [];
