@@ -161,7 +161,7 @@
               <th>Descrição</th>
               <th style="width: 100px;">Data Início</th>
               <th style="width: 100px;">Data Fim</th>
-              <th style="width: 80px;">Nível</th>
+              <th style="width: 120px;">% Executado</th>
             </tr>
           </thead>
           <tbody id="eap-tbody">
@@ -739,7 +739,7 @@ function diasEntre(a, b) { // inclusivo
   return Math.round((new Date(pb[0], pb[1] - 1, pb[2]) - new Date(pa[0], pa[1] - 1, pa[2])) / 86400000) + 1;
 }
 
-let _ativs = [], _ativsFiltradas = [], _ativsVisiveis = 0, _eapNomes = {};
+let _ativs = [], _ativsFiltradas = [], _ativsVisiveis = 0, _eapNomes = {}, _eapAtividadesMap = {};
 const ATIV_PAGINA = 200;
 
 function situacao(a, hoje) {
@@ -1343,18 +1343,29 @@ async function carregarEAP() {
   try {
     if (!window.B3Obras || !window.B3Obras.cliente) return;
     const cronoId = document.getElementById('eap-cronograma').value;
-    if (!cronoId) { _eapTabItens = []; filtrarEAP(); return; }
+    if (!cronoId) { _eapTabItens = []; _eapAtividadesMap = {}; filtrarEAP(); return; }
     tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Carregando…</td></tr>';
 
     const cliente = B3Obras.cliente();
     const obraId = B3Obras.atualId();
 
-    const eap = await buscarTudo(() => cliente.from('eap_itens')
-      .select('id,codigo,nome,data_inicio,data_fim,pai_id')
-      .eq('obra_id', obraId)
-      .order('codigo'));
+    const [eap, ativs] = await Promise.all([
+      buscarTudo(() => cliente.from('eap_itens')
+        .select('id,codigo,nome,data_inicio,data_fim,pai_id')
+        .eq('obra_id', obraId)
+        .order('codigo')),
+      buscarTudo(() => cliente.from('planejamento_atividades')
+        .select('id,eap_id,percentual_real')
+        .eq('obra_id', obraId)
+        .eq('cronograma_id', cronoId))
+    ]);
 
     _eapTabItens = eap || [];
+    _eapAtividadesMap = {};
+    (ativs || []).forEach(a => {
+      if (!_eapAtividadesMap[a.eap_id]) _eapAtividadesMap[a.eap_id] = [];
+      _eapAtividadesMap[a.eap_id].push(a);
+    });
     filtrarEAP();
   } catch (e) {
     console.error('Erro ao carregar EAP:', e);
@@ -1368,6 +1379,13 @@ function calcularNivelEap(eapId, todos, nivelMemo = {}) {
   if (!item || !item.pai_id) { nivelMemo[eapId] = 0; return 0; }
   nivelMemo[eapId] = 1 + calcularNivelEap(item.pai_id, todos, nivelMemo);
   return nivelMemo[eapId];
+}
+
+function calcularPercentualEap(eapId) {
+  const atividades = _eapAtividadesMap[eapId] || [];
+  if (atividades.length === 0) return 0;
+  const soma = atividades.reduce((acc, a) => acc + (Number(a.percentual_real) || 0), 0);
+  return Math.round(soma / atividades.length);
 }
 
 function filtrarEAP() {
@@ -1395,13 +1413,14 @@ function filtrarEAP() {
 
   tbody.innerHTML = _eapTabFiltrados.map(item => {
     const nivel = calcularNivelEap(item.id, _eapTabItens, nivelMemo);
+    const percentual = calcularPercentualEap(item.id);
     return `
     <tr onclick="editarEapItem('${item.id}')" style="cursor: pointer;">
       <td class="${nivelClasses[nivel] || 'eap-nivel4'}">${esc(item.codigo || '-')}</td>
       <td>${esc(item.nome || '-')}</td>
       <td>${br(item.data_inicio)}</td>
       <td>${br(item.data_fim)}</td>
-      <td>${nivel}</td>
+      <td>${percentual}%</td>
     </tr>
   `;
   }).join('');
