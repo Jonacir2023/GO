@@ -118,7 +118,9 @@
     <div id="atividades-aba" class="aba-content" style="display: none;">
       <div style="display: flex; gap: 10px; margin-bottom: 14px; justify-content: space-between;">
         <div class="ativ-barra" style="flex: 1;">
-          <select id="ativ-cronograma" onchange="carregarAtividades()"></select>
+          <select id="ativ-cronograma" onchange="carregarAtividades()">
+            <option value="">Selecione um cronograma...</option>
+          </select>
           <input type="search" id="ativ-busca" placeholder="Buscar atividade, código ou WTG (ex.: GS_27)" oninput="filtrarAtividades()">
           <select id="ativ-filtro" onchange="filtrarAtividades()">
             <option value="todas">Todas</option>
@@ -128,6 +130,7 @@
             <option value="concluidas">Concluídas</option>
           </select>
         </div>
+        <button class="btn btn-secondary" onclick="abrirImportarCronograma()">📥 Importar</button>
         <button class="btn btn-primary" onclick="abrirNovaAtividade()">➕ Nova</button>
       </div>
       <div class="ativ-kpis" id="ativ-kpis"></div>
