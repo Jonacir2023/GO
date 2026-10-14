@@ -686,6 +686,11 @@ async function salvarCronograma() {
   }
 
   try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado. Recarregue a página.');
+      return;
+    }
+
     const cliente = B3Obras.cliente();
     const obraId = B3Obras.atualId();
 
@@ -2435,7 +2440,8 @@ async function importarCronogramaArquivo(event) {
     }
   } catch (e) {
     document.getElementById('import-errors').style.display = 'block';
-    document.getElementById('import-errors').textContent = '⚠️ Erro ao processar arquivo: ' + e.message;
+    const msg = (e && e.message) ? e.message : (e ? String(e) : 'Erro desconhecido');
+    document.getElementById('import-errors').textContent = '⚠️ Erro ao processar arquivo: ' + msg;
     console.error('Erro:', e);
   }
 }
@@ -2472,6 +2478,11 @@ async function confirmarImportarCronograma() {
   try {
     if (!_importCronogramaData.length) {
       alert('Nenhuma atividade para importar');
+      return;
+    }
+
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado. Recarregue a página.');
       return;
     }
 
