@@ -966,9 +966,9 @@ async function carregarAtividades() {
     ]);
     _eapNomes = {};
     eap.forEach(e => { _eapNomes[e.id] = e.nome; });
-    // Ordem: data de início, depois código numérico (1, 2, 10, 24), depois alfanumérico.
+    // Ordem: código numérico (1, 2, 10, 24), depois alfanumérico, depois data de início.
     const num = c => (/^\d+$/.test(c || '') ? Number(c) : Infinity);
-    ativs.sort((x, y) => (x.inicio_planejado || '9').localeCompare(y.inicio_planejado || '9') || num(x.codigo) - num(y.codigo) || String(x.codigo).localeCompare(String(y.codigo)));
+    ativs.sort((x, y) => num(x.codigo) - num(y.codigo) || String(x.codigo).localeCompare(String(y.codigo)) || (x.inicio_planejado || '9').localeCompare(y.inicio_planejado || '9'));
     _ativs = ativs;
     filtrarAtividades();
   } catch (e) {
