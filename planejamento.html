@@ -2556,26 +2556,62 @@ async function importarCronogramaArquivo(event) {
 }
 
 function converterData(dataStr) {
-  if (!dataStr) return null;
-  // Tenta múltiplos formatos
+  if (!dataStr && dataStr !== 0) return null;
+
+  // Se já é um Date object (do SheetJS), converter para YYYY-MM-DD
+  if (dataStr instanceof Date) {
+    const ano = dataStr.getFullYear();
+    const mes = String(dataStr.getMonth() + 1).padStart(2, '0');
+    const dia = String(dataStr.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  // Se é número (serial Excel), converter para Date
+  if (typeof dataStr === 'number') {
+    const data = new Date((dataStr - 25569) * 86400 * 1000); // Excel serial to JS Date
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  // Tenta múltiplos formatos de string
   const formatos = [
     /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/, // DD/MM/YYYY ou DD/MM/YY
     /^(\d{4})-(\d{2})-(\d{2})$/         // YYYY-MM-DD
   ];
 
+  dataStr = String(dataStr).trim();
+
   for (const fmt of formatos) {
     const m = dataStr.match(fmt);
     if (m) {
       let [, a, b, c] = m;
+
+      // Validar mês (1-12)
+      const mes = Number(b);
+      if (mes < 1 || mes > 12) return null;
+
+      // Validar dia (1-31)
+      const dia = Number(a);
+      if (dia < 1 || dia > 31) return null;
+
       if (c.length === 2) c = c < 50 ? '20' + c : '19' + c;
 
-      if (c.length === 4 && Number(a) <= 31) {
+      if (c.length === 4 && dia <= 31) {
         // Formato DD/MM/YYYY
-        const d = new Date(Number(c), Number(b) - 1, Number(a));
-        if (d.getDate() !== Number(a)) return null;
+        const d = new Date(Number(c), mes - 1, dia);
+        // Validar se a data criada é válida (verifica se JS corrigiu o mês/dia)
+        if (d.getFullYear() !== Number(c) || d.getMonth() !== mes - 1 || d.getDate() !== dia) {
+          return null;
+        }
         return c + '-' + b.padStart(2, '0') + '-' + a.padStart(2, '0');
       } else if (c.length === 4 && Number(a) > 1900) {
         // Formato YYYY-MM-DD
+        const d = new Date(Number(a), Number(b) - 1, Number(c));
+        if (d.getFullYear() !== Number(a) || d.getMonth() !== Number(b) - 1 || d.getDate() !== Number(c)) {
+          return null;
+        }
         return a + '-' + b + '-' + c;
       }
     }
