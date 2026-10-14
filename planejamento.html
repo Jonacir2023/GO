@@ -942,13 +942,6 @@ async function preencherSeletorCronogramas() {
     selAtiv.innerHTML = html;
     if (atualAtiv && (data || []).some(c => c.id === atualAtiv)) selAtiv.value = atualAtiv;
     else if (data && data.length > 0) selAtiv.value = data[0].id;
-
-    // Preencher seletor de EAP
-    const selEap = document.getElementById('eap-cronograma');
-    const atualEap = selEap.value;
-    selEap.innerHTML = html;
-    if (atualEap && (data || []).some(c => c.id === atualEap)) selEap.value = atualEap;
-    else if (data && data.length > 0) selEap.value = data[0].id;
   } catch (e) {
     console.error('Erro ao listar cronogramas:', e);
   }
@@ -1342,12 +1335,6 @@ async function apagarAtividade() {
 
 // ── Edição de Itens EAP ──────────────────────────────────────────────────
 async function abrirNovoEapItem() {
-  const cronoId = document.getElementById('eap-cronograma').value;
-  if (!cronoId) {
-    alert('Selecione um cronograma primeiro');
-    return;
-  }
-
   try {
     if (!window.B3Obras || !window.B3Obras.cliente) return;
     const cliente = B3Obras.cliente();
