@@ -160,7 +160,10 @@
           <select id="eap-cronograma" onchange="carregarEAP()"></select>
           <input type="search" id="eap-busca" placeholder="Buscar por código ou nome" oninput="filtrarEAP()">
         </div>
-        <button class="btn btn-primary" onclick="abrirNovoEapItem()">➕ Novo Item EAP</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" onclick="abrirImportarEap()">📥 Importar EAP</button>
+          <button class="btn btn-primary" onclick="abrirNovoEapItem()">➕ Novo Item EAP</button>
+        </div>
       </div>
       <div class="ativ-tabela-wrap">
         <table class="table" id="eap-table">
@@ -468,6 +471,52 @@
       <button class="btn btn-secondary" id="import-btn-editar" style="display: none;" onclick="entrarModoEdicao()">✎ Editar Dados</button>
       <button class="btn btn-secondary" id="import-btn-salvar" style="display: none;" onclick="sairModoEdicao()">✓ Salvar Edições</button>
       <button class="btn btn-primary" id="import-btn-confirmar" style="display: none;" onclick="confirmarImportarCronograma()">✓ Importar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-importar-eap">
+  <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-header">Importar EAP</div>
+    <div id="import-eap-form" style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 6px;">
+      <div class="form-group">
+        <label>Nome da EAP</label>
+        <input type="text" id="import-eap-nome" placeholder="ex: EAP Principal, Estrutura de Trabalho">
+      </div>
+    </div>
+    <div id="import-eap-file-area" style="margin-bottom: 20px;">
+      <div id="import-eap-drag-area" style="border: 2px dashed #ccc; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='white'" ondrop="importarEapArquivo(event)" ondragover="event.preventDefault(); event.stopPropagation();">
+        <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #666; display: block; margin-bottom: 10px;"></i>
+        <p style="margin: 0; color: #666; font-weight: 500;">Arraste o arquivo Excel ou CSV aqui</p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">ou clique para selecionar</p>
+        <input type="file" id="import-eap-file-input" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importarEapArquivo(event)">
+      </div>
+      <script>
+        document.getElementById('import-eap-drag-area').addEventListener('click', () => document.getElementById('import-eap-file-input').click());
+      </script>
+    </div>
+    <div id="import-eap-preview" style="display: none; margin-bottom: 20px;">
+      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Preview dos itens a importar</h3>
+      <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px;">
+        <table class="table" style="margin: 0;">
+          <thead>
+            <tr style="position: sticky; top: 0;">
+              <th style="width: 100px;">Código</th>
+              <th>Nome</th>
+              <th style="width: 100px;">Data Início</th>
+              <th style="width: 100px;">Data Fim</th>
+              <th style="width: 100px;">% Executado</th>
+            </tr>
+          </thead>
+          <tbody id="import-eap-preview-tbody"></tbody>
+        </table>
+      </div>
+      <p id="import-eap-preview-info" style="margin-top: 10px; font-size: 12px; color: #666;"></p>
+    </div>
+    <div id="import-eap-errors" style="display: none; margin-bottom: 20px; padding: 12px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 6px; color: #c62828; font-size: 13px;"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="fecharModalImportarEap()">Cancelar</button>
+      <button class="btn btn-primary" id="import-eap-btn-confirmar" style="display: none;" onclick="confirmarImportarEap()">✓ Importar</button>
     </div>
   </div>
 </div>
@@ -2816,6 +2865,227 @@ function sairModoEdicao() {
   document.getElementById('import-btn-editar').style.display = 'inline-block';
   document.getElementById('import-btn-confirmar').style.display = 'inline-block';
   document.getElementById('import-btn-salvar').style.display = 'none';
+}
+
+// ── EAP Import ──────────────────────────────────────────────────────────
+let _importEapData = [];
+
+async function abrirImportarEap() {
+  _importEapData = [];
+  document.getElementById('modal-importar-eap').classList.add('active');
+  document.getElementById('import-eap-form').style.display = 'block';
+  document.getElementById('import-eap-file-area').style.display = 'block';
+  document.getElementById('import-eap-preview').style.display = 'none';
+  document.getElementById('import-eap-errors').style.display = 'none';
+  document.getElementById('import-eap-btn-confirmar').style.display = 'none';
+  document.getElementById('import-eap-file-input').value = '';
+  document.getElementById('import-eap-nome').value = '';
+}
+
+function fecharModalImportarEap() {
+  document.getElementById('modal-importar-eap').classList.remove('active');
+  _importEapData = [];
+  document.getElementById('import-eap-preview').style.display = 'none';
+  document.getElementById('import-eap-errors').style.display = 'none';
+}
+
+async function importarEapArquivo(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const arquivos = event.dataTransfer?.files || event.target?.files || [];
+  if (!arquivos.length) return;
+
+  const arquivo = arquivos[0];
+  const ext = arquivo.name.split('.').pop().toLowerCase();
+
+  try {
+    document.getElementById('import-eap-errors').style.display = 'none';
+    let linhas = [];
+
+    if (ext === 'csv') {
+      const texto = await arquivo.text();
+      linhas = texto.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
+    } else if (ext === 'xlsx' || ext === 'xls') {
+      if (!window.XLSX) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Falha ao carregar biblioteca XLSX. Tente novamente.'));
+          document.head.appendChild(script);
+        });
+      }
+      const arrayBuffer = await arquivo.arrayBuffer();
+      const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      linhas = jsonData.filter(l => l && l.length > 0);
+    } else {
+      throw new Error('Formato de arquivo não suportado. Use .xlsx, .xls ou .csv');
+    }
+
+    if (linhas.length < 2) {
+      throw new Error('O arquivo deve ter cabeçalho e pelo menos 1 linha de dados');
+    }
+
+    // Processar linhas
+    _importEapData = [];
+    const erros = [];
+
+    for (let i = 1; i < linhas.length; i++) {
+      const linha = linhas[i];
+      if (!linha || linha.length < 5) continue;
+
+      const codigo = String(linha[0] || '').trim();
+      const nome = String(linha[1] || '').trim();
+      const dataInicio = String(linha[2] || '').trim();
+      const dataFim = String(linha[3] || '').trim();
+      const percentual = String(linha[4] || '0').trim();
+
+      if (!codigo || !nome) {
+        erros.push(`Linha ${i + 1}: Código e Nome são obrigatórios`);
+        continue;
+      }
+
+      // Converter datas DD/MM/YYYY → YYYY-MM-DD
+      let inicio = converterData(dataInicio);
+      let fim = converterData(dataFim);
+
+      if (!inicio || !fim) {
+        erros.push(`Linha ${i + 1}: Datas inválidas (use DD/MM/YYYY)`);
+        continue;
+      }
+
+      // Converter percentual para número (0-100)
+      let pct = parseFloat(percentual) || 0;
+      if (pct < 0 || pct > 100) {
+        erros.push(`Linha ${i + 1}: Percentual deve estar entre 0 e 100`);
+        continue;
+      }
+
+      _importEapData.push({
+        codigo,
+        nome,
+        data_inicio: inicio,
+        data_fim: fim,
+        percentual_executado: pct
+      });
+    }
+
+    if (erros.length) {
+      document.getElementById('import-eap-errors').style.display = 'block';
+      document.getElementById('import-eap-errors').textContent = erros.join('\n');
+    }
+
+    // Mostrar preview
+    if (_importEapData.length) {
+      document.getElementById('import-eap-preview').style.display = 'block';
+      document.getElementById('import-eap-preview-tbody').innerHTML = _importEapData.map(d => `
+        <tr>
+          <td>${esc(d.codigo)}</td>
+          <td>${esc(d.nome)}</td>
+          <td>${d.data_inicio}</td>
+          <td>${d.data_fim}</td>
+          <td style="text-align: right;">${d.percentual_executado}%</td>
+        </tr>
+      `).join('');
+      document.getElementById('import-eap-preview-info').textContent =
+        `${_importEapData.length} item(ns) pronta(s) para importar`;
+      document.getElementById('import-eap-btn-confirmar').style.display = 'inline-block';
+    }
+  } catch (e) {
+    document.getElementById('import-eap-errors').style.display = 'block';
+    const msg = (e && e.message) ? e.message : (e ? String(e) : 'Erro desconhecido');
+    document.getElementById('import-eap-errors').textContent = '⚠️ Erro ao processar arquivo: ' + msg;
+    console.error('Erro:', e);
+  }
+}
+
+async function confirmarImportarEap() {
+  try {
+    if (!_importEapData.length) {
+      alert('Nenhum item para importar');
+      return;
+    }
+
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado. Recarregue a página.');
+      return;
+    }
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+
+    if (!cliente || !obraId) throw new Error('Contexto inválido');
+
+    const nomeEap = document.getElementById('import-eap-nome').value.trim();
+
+    if (!nomeEap) {
+      alert('Nome da EAP é obrigatório');
+      return;
+    }
+
+    document.getElementById('import-eap-btn-confirmar').disabled = true;
+    document.getElementById('import-eap-btn-confirmar').textContent = '⏳ Importando…';
+
+    // 0. Verificar se EAP com mesmo nome já existe
+    const existentes = await cliente.from('eap_itens')
+      .select('id')
+      .eq('obra_id', obraId)
+      .eq('nome', nomeEap);
+
+    if (existentes.data && existentes.data.length > 0) {
+      const confirmar = confirm(
+        `EAP "${nomeEap}" já existe.\n\nDeseja deletar a anterior e importar a nova?`
+      );
+
+      if (!confirmar) {
+        document.getElementById('import-eap-btn-confirmar').disabled = false;
+        document.getElementById('import-eap-btn-confirmar').textContent = '✓ Importar';
+        return;
+      }
+
+      // Deletar EAP anterior (e suas referências nas atividades)
+      for (const eap of existentes.data) {
+        // Remover referências nas atividades
+        await cliente.from('planejamento_atividades')
+          .update({ eap_id: null })
+          .eq('eap_id', eap.id);
+
+        // Deletar EAP item
+        await cliente.from('eap_itens')
+          .delete()
+          .eq('id', eap.id);
+      }
+    }
+
+    // 1. Inserir itens EAP
+    const rows = _importEapData.map(d => ({
+      obra_id: obraId,
+      codigo: d.codigo,
+      nome: d.nome,
+      data_inicio: d.data_inicio,
+      data_fim: d.data_fim,
+      percentual_executado: d.percentual_executado,
+      criado_em: new Date().toISOString(),
+      atualizado_em: new Date().toISOString()
+    }));
+
+    const eapResp = await cliente.from('eap_itens').insert(rows);
+
+    if (eapResp.error) throw eapResp.error;
+
+    alert(`✓ EAP "${nomeEap}" importada com ${rows.length} item(ns)!`);
+    fecharModalImportarEap();
+    carregarEAP();
+  } catch (e) {
+    alert('Erro ao importar: ' + e.message);
+    console.error('Erro:', e);
+  } finally {
+    document.getElementById('import-eap-btn-confirmar').disabled = false;
+    document.getElementById('import-eap-btn-confirmar').textContent = '✓ Importar';
+  }
 }
 </script>
 </body>
