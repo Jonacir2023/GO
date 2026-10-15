@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="9e2e99df"</script>
+<script>/*build*/window.BUILD_ID="7b3472e1"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -921,9 +921,14 @@ window.B3_CASCA = true;
   <iframe id="resumo-tempo-iframe" src="resumo-tempo.html?v=3472d782" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
-<!-- MEDIÇÃO PAGE (medições com cliente e terceiros) -->
+<!-- MEDIÇÃO PAGE (medições com cliente) -->
 <div class="page" id="page-medicao">
   <iframe id="medicao-iframe" src="medicoes.html?v=317a7c55" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+</div>
+
+<!-- MEDIAÇÃO DE EMPREITEIROS PAGE -->
+<div class="page" id="page-medicao_empreiteiros">
+  <iframe id="medicao_empreiteiros-iframe" src="medicoes_empreiteiros.html?v=b74fc1d8" style="width:100%;height:calc(100vh - 140px);border:none;background:var(--bg-card);display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- DOCUMENTOS PAGE (contrato, cronograma, orçamento + alertas) -->
@@ -1204,7 +1209,7 @@ function switchTab(tab, el) {
 // ═══════════════════════════════════════════════════════════════
 // CASCA — hero, barra inferior e painéis (padrão visual claro)
 // ═══════════════════════════════════════════════════════════════
-const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Medição", "desc": "Quantidades e avanço físico", "i": "ruler", "c": "slate", "t": "MEDIÇÕES", "s": "Quantidades e avanço físico"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
+const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Mediçao Cliente", "desc": "Medições de clientes", "i": "ruler", "c": "slate", "t": "MEDIÇÕES CLIENTE", "s": "Medições de Clientes"}, "medicao_empreiteiros": {"nome": "Mediação de Empreiteiros", "desc": "Medições de empreiteiros e terceiros", "i": "ruler", "c": "slate", "t": "MEDIAÇÕES", "s": "Mediações de Empreiteiros"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
 const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "financeiro", "suprimentos"];
 
 function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }
