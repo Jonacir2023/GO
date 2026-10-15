@@ -2804,9 +2804,7 @@ async function transferirCronograma() {
       .from('planejamento_atividades')
       .select('codigo,nome,prazo,predecessora,inicio_planejado,fim_planejado')
       .eq('obra_id', obraId)
-      .eq('cronograma_id', cronoId)
-      .order('inicio_planejado')
-      .order('codigo');
+      .eq('cronograma_id', cronoId);
 
     if (error) throw error;
     if (!atividades || !atividades.length) {
