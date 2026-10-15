@@ -100,7 +100,7 @@ with sync_playwright() as p:
     check(page.evaluate("_ativs.length") == 1205, "as 1.205 atividades chegaram (não parou em 1000)")
     check(page.locator("#atividades-tbody tr").count() == 200, "mostra as primeiras 200 linhas")
     cods = page.evaluate("Array.from(document.querySelectorAll('#atividades-tbody tr td:first-child')).slice(0,6).map(t => t.textContent)")
-    check(cods[:3] == ["3", "1", "2"] and cods[3:6] == ["4", "5", "6"], f"ordem por início e ID numérico: {cods}")
+    check(cods[:3] == ["1", "2", "3"] and cods[3:6] == ["4", "5", "6"], f"ordem por código numérico: {cods}")
     page.wait_for_function("document.getElementById('ativ-mais').style.display !== 'none'")
     btn_display = page.evaluate("window.getComputedStyle(document.getElementById('ativ-mais')).display")
     btn_text = page.evaluate("document.getElementById('ativ-mais').textContent")

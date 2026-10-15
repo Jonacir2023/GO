@@ -156,12 +156,10 @@
 
     <div id="eap-aba" class="aba-content" style="display: none;">
       <div style="display: flex; gap: 10px; margin-bottom: 14px; justify-content: space-between;">
-        <div class="ativ-barra" style="flex: 1;">
-          <select id="eap-cronograma" onchange="carregarEAP()"></select>
-          <input type="search" id="eap-busca" placeholder="Buscar por código ou nome" oninput="filtrarEAP()">
-        </div>
+        <input type="search" id="eap-busca" placeholder="Buscar por código ou nome" oninput="filtrarEAP()" style="flex: 1; max-width: 400px;">
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-primary" onclick="abrirImportarEap()">📥 Importar EAP</button>
+          <button class="btn btn-danger" onclick="limparEAP()" title="Deletar todos os itens da EAP anterior">🗑️ Excluir EAP Anterior</button>
           <button class="btn btn-primary" onclick="abrirNovoEapItem()">➕ Novo Item EAP</button>
         </div>
       </div>
@@ -171,13 +169,14 @@
             <tr>
               <th style="width: 100px;">Código</th>
               <th>Descrição</th>
+              <th style="width: 80px;">Prazo (d)</th>
               <th style="width: 100px;">Data Início</th>
               <th style="width: 100px;">Data Fim</th>
               <th style="width: 120px;">% Executado</th>
             </tr>
           </thead>
           <tbody id="eap-tbody">
-            <tr><td colspan="5" class="empty-state"><i class="fas fa-sitemap"></i>Selecione um cronograma</td></tr>
+            <tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item da EAP</td></tr>
           </tbody>
         </table>
       </div>
@@ -503,6 +502,7 @@
             <tr style="position: sticky; top: 0;">
               <th style="width: 100px;">Código</th>
               <th>Nome</th>
+              <th style="width: 80px;">Prazo (d)</th>
               <th style="width: 100px;">Data Início</th>
               <th style="width: 100px;">Data Fim</th>
               <th style="width: 100px;">% Executado</th>
@@ -944,13 +944,6 @@ async function preencherSeletorCronogramas() {
     selAtiv.innerHTML = html;
     if (atualAtiv && (data || []).some(c => c.id === atualAtiv)) selAtiv.value = atualAtiv;
     else if (data && data.length > 0) selAtiv.value = data[0].id;
-
-    // Preencher seletor de EAP
-    const selEap = document.getElementById('eap-cronograma');
-    const atualEap = selEap.value;
-    selEap.innerHTML = html;
-    if (atualEap && (data || []).some(c => c.id === atualEap)) selEap.value = atualEap;
-    else if (data && data.length > 0) selEap.value = data[0].id;
   } catch (e) {
     console.error('Erro ao listar cronogramas:', e);
   }
@@ -968,14 +961,14 @@ async function carregarAtividades() {
     const [ativs, eap] = await Promise.all([
       buscarTudo(() => cliente.from('planejamento_atividades')
         .select('id,codigo,nome,eap_id,inicio_planejado,fim_planejado,inicio_real,fim_real,percentual_real,critica,predecessora')
-        .eq('obra_id', obraId).eq('cronograma_id', cronoId).order('inicio_planejado').order('codigo')),
+        .eq('obra_id', obraId).eq('cronograma_id', cronoId)),
       buscarTudo(() => cliente.from('eap_itens').select('id,nome').eq('obra_id', obraId))
     ]);
     _eapNomes = {};
     eap.forEach(e => { _eapNomes[e.id] = e.nome; });
-    // Ordem: início previsto e, no empate, o ID do cronograma como número (1, 2, 10 — não 1, 10, 2).
+    // Ordem: código numérico (1, 2, 10, 24), depois alfanumérico, depois data de início.
     const num = c => (/^\d+$/.test(c || '') ? Number(c) : Infinity);
-    ativs.sort((x, y) => (x.inicio_planejado || '9').localeCompare(y.inicio_planejado || '9') || num(x.codigo) - num(y.codigo) || String(x.codigo).localeCompare(String(y.codigo)));
+    ativs.sort((x, y) => num(x.codigo) - num(y.codigo) || String(x.codigo).localeCompare(String(y.codigo)) || (x.inicio_planejado || '9').localeCompare(y.inicio_planejado || '9'));
     _ativs = ativs;
     filtrarAtividades();
   } catch (e) {
@@ -1344,12 +1337,6 @@ async function apagarAtividade() {
 
 // ── Edição de Itens EAP ──────────────────────────────────────────────────
 async function abrirNovoEapItem() {
-  const cronoId = document.getElementById('eap-cronograma').value;
-  if (!cronoId) {
-    alert('Selecione um cronograma primeiro');
-    return;
-  }
-
   try {
     if (!window.B3Obras || !window.B3Obras.cliente) return;
     const cliente = B3Obras.cliente();
@@ -1512,22 +1499,20 @@ async function carregarEAP() {
   const tbody = document.getElementById('eap-tbody');
   try {
     if (!window.B3Obras || !window.B3Obras.cliente) return;
-    const cronoId = document.getElementById('eap-cronograma').value;
-    if (!cronoId) { _eapTabItens = []; _eapAtividadesMap = {}; filtrarEAP(); return; }
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Carregando…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Carregando…</td></tr>';
 
     const cliente = B3Obras.cliente();
     const obraId = B3Obras.atualId();
+    if (!obraId) { _eapTabItens = []; _eapAtividadesMap = {}; filtrarEAP(); return; }
 
     const [eap, ativs] = await Promise.all([
       buscarTudo(() => cliente.from('eap_itens')
-        .select('id,codigo,nome,data_inicio,data_fim,pai_id')
+        .select('id,codigo,nome,prazo,data_inicio,data_fim,pai_id')
         .eq('obra_id', obraId)
         .order('codigo')),
       buscarTudo(() => cliente.from('planejamento_atividades')
         .select('id,eap_id,percentual_real')
-        .eq('obra_id', obraId)
-        .eq('cronograma_id', cronoId))
+        .eq('obra_id', obraId))
     ]);
 
     _eapTabItens = eap || [];
@@ -1539,7 +1524,7 @@ async function carregarEAP() {
     filtrarEAP();
   } catch (e) {
     console.error('Erro ao carregar EAP:', e);
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Erro ao carregar: ' + esc(e.message) + '</td></tr>';
   }
 }
 
@@ -1568,7 +1553,7 @@ function filtrarEAP() {
 
   const tbody = document.getElementById('eap-tbody');
   if (!_eapTabFiltrados.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item da EAP</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-sitemap"></i>Nenhum item da EAP</td></tr>';
     return;
   }
 
@@ -1588,12 +1573,60 @@ function filtrarEAP() {
     <tr onclick="editarEapItem('${item.id}')" style="cursor: pointer;">
       <td class="${nivelClasses[nivel] || 'eap-nivel4'}">${esc(item.codigo || '-')}</td>
       <td>${esc(item.nome || '-')}</td>
+      <td>${esc(item.prazo || '-')}</td>
       <td>${br(item.data_inicio)}</td>
       <td>${br(item.data_fim)}</td>
       <td>${percentual}%</td>
     </tr>
   `;
   }).join('');
+}
+
+async function limparEAP() {
+  if (!confirm('Deletar TODOS os itens da EAP?\n\nEsta ação é irreversível.')) return;
+
+  try {
+    if (!window.B3Obras || !window.B3Obras.cliente) {
+      alert('Sistema não inicializado');
+      return;
+    }
+
+    const cliente = B3Obras.cliente();
+    const obraId = B3Obras.atualId();
+    if (!obraId) throw new Error('Obra não selecionada');
+
+    const tbody = document.getElementById('eap-tbody');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Deletando…</td></tr>';
+
+    // Buscar todos os eap_itens da obra
+    const { data: itens, error: erroLista } = await cliente.from('eap_itens')
+      .select('id')
+      .eq('obra_id', obraId);
+
+    if (erroLista) throw erroLista;
+    if (!itens || itens.length === 0) {
+      alert('Nenhum item para deletar');
+      await carregarEAP();
+      return;
+    }
+
+    // Deletar todos os itens
+    const ids = itens.map(i => i.id);
+    const { error: erroDelete } = await cliente.from('eap_itens')
+      .delete()
+      .in('id', ids);
+
+    if (erroDelete) throw erroDelete;
+
+    alert(`✓ ${ids.length} item(ns) deletado(s)`);
+    _eapTabItens = [];
+    _eapAtividadesMap = {};
+    filtrarEAP();
+  } catch (e) {
+    console.error('Erro ao limpar EAP:', e);
+    alert('✗ Erro: ' + (e && e.message ? e.message : String(e)));
+    await carregarEAP();
+  }
 }
 
 // ── Gantt/Timeline ──────────────────────────────────────────────────────
@@ -2556,28 +2589,71 @@ async function importarCronogramaArquivo(event) {
 }
 
 function converterData(dataStr) {
-  if (!dataStr) return null;
-  // Tenta múltiplos formatos
+  if (!dataStr && dataStr !== 0) return null;
+
+  // Se já é um Date object (do SheetJS), converter para YYYY-MM-DD
+  if (dataStr instanceof Date) {
+    const ano = dataStr.getFullYear();
+    const mes = String(dataStr.getMonth() + 1).padStart(2, '0');
+    const dia = String(dataStr.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  // Se é número (serial Excel), converter para Date
+  if (typeof dataStr === 'number') {
+    const data = new Date((dataStr - 25569) * 86400 * 1000); // Excel serial to JS Date
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  // Tenta múltiplos formatos de string
   const formatos = [
     /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/, // DD/MM/YYYY ou DD/MM/YY
-    /^(\d{4})-(\d{2})-(\d{2})$/         // YYYY-MM-DD
+    /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/,   // DD-MM-YYYY ou DD-MM-YY
+    /^(\d{4})-(\d{2})-(\d{2})$/,         // YYYY-MM-DD
+    /^(\d{4})\/(\d{2})\/(\d{2})$/        // YYYY/MM/DD
   ];
+
+  dataStr = String(dataStr).trim();
 
   for (const fmt of formatos) {
     const m = dataStr.match(fmt);
     if (m) {
       let [, a, b, c] = m;
-      if (c.length === 2) c = c < 50 ? '20' + c : '19' + c;
 
-      if (c.length === 4 && Number(a) <= 31) {
-        // Formato DD/MM/YYYY
-        const d = new Date(Number(c), Number(b) - 1, Number(a));
-        if (d.getDate() !== Number(a)) return null;
-        return c + '-' + b.padStart(2, '0') + '-' + a.padStart(2, '0');
-      } else if (c.length === 4 && Number(a) > 1900) {
-        // Formato YYYY-MM-DD
-        return a + '-' + b + '-' + c;
+      // Detectar formato pelos valores
+      let dia, mes, ano;
+
+      // Se primeiro elemento > 1900, é formato YYYY-??-??
+      if (Number(a) > 1900) {
+        ano = Number(a);
+        mes = Number(b);
+        dia = Number(c);
+      } else {
+        // Formato DD/MM/YYYY ou DD-MM-YYYY
+        dia = Number(a);
+        mes = Number(b);
+        ano = Number(c);
+
+        // Ajustar ano se for 2 dígitos
+        if (ano < 100) {
+          ano = ano < 50 ? 2000 + ano : 1900 + ano;
+        }
       }
+
+      // Validar ranges
+      if (mes < 1 || mes > 12 || dia < 1 || dia > 31) continue;
+      if (ano < 1900 || ano > 2100) continue;
+
+      // Validar se data é válida (não deixar JS corrigir mês/dia inválidos)
+      const d = new Date(ano, mes - 1, dia);
+      if (d.getFullYear() !== ano || d.getMonth() !== mes - 1 || d.getDate() !== dia) {
+        continue;
+      }
+
+      return `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
     }
   }
   return null;
@@ -2728,9 +2804,7 @@ async function transferirCronograma() {
       .from('planejamento_atividades')
       .select('codigo,nome,prazo,predecessora,inicio_planejado,fim_planejado')
       .eq('obra_id', obraId)
-      .eq('cronograma_id', cronoId)
-      .order('inicio_planejado')
-      .order('codigo');
+      .eq('cronograma_id', cronoId);
 
     if (error) throw error;
     if (!atividades || !atividades.length) {
@@ -2935,25 +3009,24 @@ async function importarEapArquivo(event) {
 
     for (let i = 1; i < linhas.length; i++) {
       const linha = linhas[i];
-      if (!linha || linha.length < 5) continue;
+      if (!linha || linha.length < 6) continue;
 
       const codigo = String(linha[0] || '').trim();
       const nome = String(linha[1] || '').trim();
-      const dataInicio = String(linha[2] || '').trim();
-      const dataFim = String(linha[3] || '').trim();
-      const percentual = String(linha[4] || '0').trim();
+      const prazo = String(linha[2] || '').trim();
+      const percentual = String(linha[5] || '0').trim();
 
       if (!codigo || !nome) {
         erros.push(`Linha ${i + 1}: Código e Nome são obrigatórios`);
         continue;
       }
 
-      // Converter datas DD/MM/YYYY → YYYY-MM-DD
-      let inicio = converterData(dataInicio);
-      let fim = converterData(dataFim);
+      // Converter datas DD/MM/YYYY → YYYY-MM-DD (passa direto, sem String() para preservar Date objects)
+      let inicio = converterData(linha[3]);
+      let fim = converterData(linha[4]);
 
       if (!inicio || !fim) {
-        erros.push(`Linha ${i + 1}: Datas inválidas (use DD/MM/YYYY)`);
+        erros.push(`Linha ${i + 1}: Datas inválidas (use DD/MM/YYYY ou YYYY-MM-DD)`);
         continue;
       }
 
@@ -2967,6 +3040,7 @@ async function importarEapArquivo(event) {
       _importEapData.push({
         codigo,
         nome,
+        prazo: prazo || null,
         data_inicio: inicio,
         data_fim: fim,
         percentual_executado: pct
@@ -2985,6 +3059,7 @@ async function importarEapArquivo(event) {
         <tr>
           <td>${esc(d.codigo)}</td>
           <td>${esc(d.nome)}</td>
+          <td>${esc(d.prazo || '-')}</td>
           <td>${d.data_inicio}</td>
           <td>${d.data_fim}</td>
           <td style="text-align: right;">${d.percentual_executado}%</td>
@@ -3065,6 +3140,7 @@ async function confirmarImportarEap() {
       obra_id: obraId,
       codigo: d.codigo,
       nome: d.nome,
+      prazo: d.prazo || null,
       data_inicio: d.data_inicio,
       data_fim: d.data_fim,
       percentual_executado: d.percentual_executado,
