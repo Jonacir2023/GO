@@ -1280,7 +1280,7 @@
 
 <nav class="tabs" style="top:80px;grid-template-columns:repeat(3,1fr)">
   <button class="tab active" data-view="cadastro">📋<br>Cadastro</button>
-  <button class="tab" data-view="medicao">📐<br>Medição</button>
+  <button class="tab" data-view="medicao">📐<br>Mediçao Cliente</button>
   <button class="tab" data-view="historico">📊<br>Histórico</button>
 </nav>
 
@@ -1299,7 +1299,7 @@
 <!-- ============ MEDIÇÃO ============ -->
 <main id="view-medicao" class="view">
   <div class="section">
-    <div class="section-title"><div class="section-title-text">📐 Nova Medição</div></div>
+    <div class="section-title"><div class="section-title-text">📐 Nova Mediçao Cliente</div></div>
     <label style="margin-top:0">Cliente / Empreiteiro</label>
     <select id="medContratoSelect" onchange="selecionarContratoMedicao(this.value)">
       <option value="">— Selecione —</option>
@@ -1310,7 +1310,7 @@
     <div class="section">
       <div class="grid-2" style="gap:8px">
         <div><label style="margin-top:0">Mês Corrente</label><input type="month" id="medMes"></div>
-        <div><label style="margin-top:0">Nº da Medição</label><input type="text" id="medNumero" disabled></div>
+        <div><label style="margin-top:0">Nº da Mediçao Cliente</label><input type="text" id="medNumero" disabled></div>
       </div>
       <div class="grid-2" style="gap:8px">
         <div><label>Data Início</label><input type="date" id="medDataIni"></div>
@@ -1389,7 +1389,7 @@
 <!-- ============ MODAL: AÇÕES DA MEDIÇÃO (PDF / WhatsApp / Texto) ============ -->
 <div class="modal-overlay" id="modalMedicaoAcoes">
   <div class="modal">
-    <div class="modal-title" id="modalMedicaoAcoesTitulo">Medição</div>
+    <div class="modal-title" id="modalMedicaoAcoesTitulo">Mediçao Cliente</div>
     <div class="btn-stack">
       <button class="btn btn-primary" onclick="gerarPdfMedicaoAtiva()">📄 Gerar PDF</button>
       <button class="btn btn-whatsapp" onclick="enviarMedicaoWhatsAppAtiva()">💬 Enviar por WhatsApp</button>
@@ -1845,7 +1845,7 @@ function salvarMedicao() {
   };
   c.medicoes.push(medicao);
   salvarContratos();
-  toast('✓ Medição salva');
+  toast('✓ Mediçao Cliente salva');
   document.getElementById('medContratoSelect').value = '';
   document.getElementById('medFormWrap').style.display = 'none';
   medContratoId = null;
@@ -1871,7 +1871,7 @@ function renderHistorico() {
   cont.innerHTML = ordenadas.map(m => `
     <div class="item-row clickable" onclick="abrirAcoesMedicao('${c.id}','${m.id}')">
       <div class="item-info">
-        <div class="item-name">Medição Nº ${String(m.numero).padStart(3, '0')}</div>
+        <div class="item-name">Mediçao Cliente Nº ${String(m.numero).padStart(3, '0')}</div>
         <div class="item-meta">${formatDateBR(m.dataInicio)} a ${formatDateBR(m.dataFim)} · R$ ${fmtR$(totalMedicao(c, m))}</div>
       </div>
       <div class="item-actions">
@@ -1900,7 +1900,7 @@ function abrirAcoesMedicao(contratoId, medicaoId) {
   _medicaoAtiva = { contratoId, medicaoId };
   const c = contratos.find(x => x.id === contratoId);
   const m = c.medicoes.find(x => x.id === medicaoId);
-  document.getElementById('modalMedicaoAcoesTitulo').textContent = `Medição Nº ${String(m.numero).padStart(3, '0')} — ${c.nome}`;
+  document.getElementById('modalMedicaoAcoesTitulo').textContent = `Mediçao Cliente Nº ${String(m.numero).padStart(3, '0')} — ${c.nome}`;
   abrirModal('modalMedicaoAcoes');
 }
 
@@ -1922,7 +1922,7 @@ function textoMedicao(contrato, medicao) {
     txt += `• Qtd atual: ${fmtQtd(qtdAtual)} ${it.unidade} (R$ ${fmtR$(valAtual)})\n`;
     txt += `• Saldo a medir: ${fmtQtd(saldoQtd)} ${it.unidade}\n`;
   });
-  txt += `\n${divisor}\n\n*💰 Total desta Medição: R$ ${fmtR$(total)}*\n`;
+  txt += `\n${divisor}\n\n*💰 Total desta Mediçao Cliente: R$ ${fmtR$(total)}*\n`;
   return txt;
 }
 
@@ -1986,7 +1986,7 @@ function montarHtmlMedicao(contrato, medicao) {
         </td>
         <td class="header-right">
           <div class="num">Nº ${String(medicao.numero).padStart(3, '0')}</div>
-          <div class="rdo-label">Medição</div>
+          <div class="rdo-label">Mediçao Cliente</div>
         </td>
       </tr></table>
 
@@ -2014,7 +2014,7 @@ function montarHtmlMedicao(contrato, medicao) {
       </table>
 
       <div class="info-grid"><div class="info-row">
-        <div class="info-col" style="width:100%"><div class="info-label">Total desta Medição</div><div class="info-val" style="font-weight:800;font-size:13pt">R$ ${fmtR$(totalMed)}</div></div>
+        <div class="info-col" style="width:100%"><div class="info-label">Total desta Mediçao Cliente</div><div class="info-val" style="font-weight:800;font-size:13pt">R$ ${fmtR$(totalMed)}</div></div>
       </div></div>
 
       <div class="footer">
@@ -2233,7 +2233,7 @@ function enviarPdfMedicaoPreparado() {
   const btn = document.getElementById('btnCompartilharPdfMed');
   navigator.share({
     files: [file],
-    title: 'Medição',
+    title: 'Mediçao Cliente',
     text: _medArquivoAtivo
   }).then(() => {
     toast('✓ Compartilhado');
