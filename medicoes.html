@@ -1555,7 +1555,7 @@ function salvarContratos() {
 async function contratosEnviarTodosParaSupabase() {
   if (!contratos.length) return;
   try {
-    const { error } = await B3Obras.cliente().from('medicao_contratos').upsert(contratos.map(c => ({
+    const { error } = await B3Obras.cliente().from('medicoes_clientes').upsert(contratos.map(c => ({
       id: String(c.id), nome: c.nome, tipo: c.tipo, empresa: c.empresa || null,
       especialidade: c.especialidade || null, numero_contrato: c.numeroContrato || null,
       itens: c.itens || [], medicoes: c.medicoes || [],
@@ -1572,7 +1572,7 @@ async function contratosEnviarTodosParaSupabase() {
 // por quem o cadastrou, então não há de fato disputa entre aparelhos).
 async function carregarContratosDoServidor() {
   try {
-    const { data, error } = await B3Obras.cliente().from('medicao_contratos').select('*');
+    const { data, error } = await B3Obras.cliente().from('medicoes_clientes').select('*');
     if (error) throw error;
     const idsLocais = new Set(contratos.map(c => String(c.id)));
     let mudou = false;
@@ -1682,7 +1682,7 @@ function excluirContrato(id) {
   renderContratos();
   atualizarSelectsContrato();
   toast('Excluído');
-  B3Obras.cliente().from('medicao_contratos').delete().eq('id', String(id))
+  B3Obras.cliente().from('medicoes_clientes').delete().eq('id', String(id))
     .then(({ error }) => { if (error) console.warn('Medições: não foi possível remover no Supabase:', error.message); });
 }
 
