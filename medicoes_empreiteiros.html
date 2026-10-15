@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<script>/*embutido*/if(window.top!==window.self)document.documentElement.classList.add('embutido')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#3a3f49">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mediações de Empreiteiros">
+<title>Mediações de Empreiteiros</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mediações de Empreiteiros">
+<meta name="theme-color" content="#3a3f49">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap');
+  
+  :root {
+    /* Paleta Concreto Rústico */
+    --bg:          #4a5162;        /* concreto claro desgastado */
+    --bg-card:     #5a6272;        /* concreto polido */
+    --bg-dark:     #3a3f49;        /* concreto escuro */
+    --bg-mid:      #454c59;        /* concreto médio */
+    --ink:         #ffffff;        /* quase preto industrial */
+    --ink-soft:    #9aa4b2;        /* cinza concreto */
+    --ink-faint:   #7b8290;        /* cinza claro */
+    --accent:      #dda583;        /* laranja óxido de ferro */
+    --accent-soft: #89ab9d;        /* amarelo capacete */
+    --accent-dim:  rgba(212,84,26,0.12);
+    --line:        #666f80;        /* junta de concreto */
+    --line-soft:   #666f80;        /* risco superficial */
+    --green:       #7cb083;        /* verde segurança */
+    --red:         #d98a7c;        /* vermelho alerta */
+    --blue:        #8ea3c9;        /* azul projeto */
+    --serif:       'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --sans:        'Barlow', -apple-system, sans-serif;
+    /* Textura concreto via SVG inline */
+    --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeBlend in='SourceGraphic' mode='multiply' result='blend'/%3E%3CfeComposite in='blend' in2='SourceGraphic' operator='in'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+  
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    overscroll-behavior: none;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  body {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 80px 0;
+    background-color: var(--bg);
+    background-image:
+      var(--texture),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 39px,
+        rgba(0,0,0,0.03) 40px
+      );
+  }
+
+  /* HEADER — concreto escuro rústico */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .header {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 1000;
+    background: var(--bg-dark);
+    background-image:
+      var(--texture),
+      linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-dark) 100%);
+    color: #fff;
+    padding: 16px 14px 12px;
+    box-shadow: 0 3px 16px rgba(0,0,0,0.35);
+    border-bottom: 3px solid var(--accent);
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    padding-bottom: 6px;
+  }
+  .header-id { flex: 1; min-width: 0; }
+  .header-id h1 { font-size: 24px; font-weight: 800; margin: 2px 0; }
+  .header-empresa {
+    font-size: 11px;
+    color: var(--accent-soft);
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--serif);
+  }
+  .header h1 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    line-height: 1.1;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .header-obra {
+    font-size: 10px;
+    color: #fff;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .header-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 5px;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    color: var(--ink);
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 11px;
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .header-logo img { width: 100%; height: 100%; object-fit: contain; }
+  .header-date {
+    font-size: 10px;
+    color: var(--accent-soft);
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-family: var(--serif);
+    padding: 4px 0 6px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 1px;
+  }
+
+  /* TABS */
+  .tabs {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 999;
+    background: var(--bg-mid);
+    background-image: var(--texture);
+    border-top: 1px solid rgba(0,0,0,0.2);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .tab {
+    padding: 12px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--serif);
+    color:var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: center;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .tab.active {
+    color: var(--accent-soft);
+    border-bottom-color: var(--accent);
+    background: rgba(212,84,26,0.08);
+  }
+  
+  /* RESUMO */
+  .resumo-periodo-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .resumo-ptab {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid var(--line);
+    border-bottom: 3px solid var(--line);
+    border-radius: 4px;
+    background: rgba(255,255,255,.06);
+    font-size: 11px;
+    font-weight: 800;
+    font-family: var(--serif);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color:var(--ink);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .resumo-ptab.active {
+    border-color: var(--accent);
+    border-bottom-color: rgba(0,0,0,0.2);
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 3px 8px rgba(212,84,26,0.3);
+  }
+  .resumo-nav-semana {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .resumo-nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--line);
+    background: rgba(255,255,255,.06);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .resumo-nav-label {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .resumo-stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .resumo-stat {
+    background: var(--bg-mid);
+    background-image: var(--texture);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    padding: 10px 8px;
+    text-align: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .resumo-stat-num {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent-soft);
+    font-family: var(--serif);
+    line-height: 1;
+  }
+  .resumo-stat-label {
+    font-size: 9px;
+    color:var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 3px;
+    font-family: var(--serif);
+    font-weight: 700;
+  }
+  .resumo-ativ-item {
+    background: var(--bg-card);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .resumo-ativ-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .resumo-ativ-nome {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    flex: 1;
+  }
+  .resumo-ativ-total {
+    font-size: 16px;
+    font-weight: 700;
+    color:var(--ink);
+    font-family: var(--serif);
+    white-space: nowrap;
+  }
+  .resumo-ativ-unid {
+    font-size: 11px;
+    color:var(--ink);
+    margin-top: 1px;
+  }
+  .resumo-bar-wrap {
+    height: 6px;
+    background: var(--line-soft);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .resumo-bar {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+    transition: width 0.4s ease;
+  }
+  .resumo-ativ-detalhe {
+    font-size: 11px;
+    color:var(--ink);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+  .resumo-dia-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--bg);
+    border: 1px solid var(--line-soft);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 10px;
+    color:var(--ink);
+  }
+  .resumo-vazio {
+    text-align: center;
+    padding: 30px 20px;
+    color:var(--ink);
+    font-size: 13px;
+    font-style: italic;
+  }
+  .resumo-efetivo-bloco {
+    background: var(--bg-card);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .resumo-efetivo-titulo {
+    font-size: 12px;
+    font-weight: 700;
+    color:var(--ink);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 6px;
+  }
+  .resumo-efetivo-media {
+    font-size: 20px;
+    font-weight: 700;
+    color:var(--ink);
+    font-family: var(--serif);
+  }
+
+  .view { display: none; padding: 0; }
+  .view.active { display: block; padding-top: 145px; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .section {
+    background: var(--bg-card);
+    background-image: var(--texture);
+    border-radius: 6px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--line);
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.08),
+      inset 0 1px 0 rgba(255,255,255,.05);
+    position: relative;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color:var(--ink);
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .section-title-text { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  
+  label {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color:var(--ink);
+    margin-bottom: 5px;
+    margin-top: 12px;
+    font-family: var(--serif);
+  }
+  label:first-child { margin-top: 0; }
+
+  input[type="text"], input[type="date"], input[type="time"], input[type="number"], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--line);
+    background: rgba(255,255,255,.06);
+    border-radius: 4px;
+    font-size: 15px;
+    font-family: var(--sans);
+    color: var(--ink);
+    transition: all 0.15s;
+    -webkit-appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(255,255,255,.10);
+    box-shadow: 0 0 0 3px rgba(212,84,26,0.12);
+  }
+  textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+  
+  .time-row, .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  /* TEMPO - chips */
+  .tempo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .tempo-chip {
+    flex: 1;
+    justify-content: center;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--line);
+    border-radius: 4px;
+    background: rgba(255,255,255,.06);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--serif);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    color:var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+  }
+  .tempo-chip.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    border-bottom-color: rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(212,84,26,0.3);
+  }
+  
+  /* CAT BLOCKS / LIST */
+  .cat-block {
+    margin-bottom: 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg-card);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .cat-header {
+    background: var(--bg-mid);
+    background-image: var(--texture);
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+    gap: 6px;
+  }
+  .cat-header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .cat-icon { font-size: 16px; }
+  .cat-name {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 14px;
+    color:var(--ink);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cat-count {
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 2px;
+    min-width: 26px;
+    text-align: center;
+    font-family: var(--serif);
+    letter-spacing: .5px;
+  }
+  .cat-toggle {
+    color:var(--ink);
+    font-size: 12px;
+    transition: transform 0.2s;
+    padding-left: 4px;
+  }
+  .cat-block.collapsed .cat-toggle { transform: rotate(-90deg); }
+  .cat-block.collapsed .cat-body { display: none; }
+  
+  .cat-body { padding: 4px 0; }
+  
+  .item-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    gap: 10px;
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-row.checked { background: rgba(45, 106, 79, 0.04); }
+  .item-row.clickable { cursor: pointer; }
+
+  /* Atividades: item + detalhe (qtd/local) inline quando marcado */
+  .ativ-item-wrap { border-bottom: 1px solid var(--line-soft); }
+  .ativ-item-wrap:last-child { border-bottom: none; }
+  .ativ-item-wrap .item-row { border-bottom: none; }
+  .ativ-detalhe-dia {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 4px 12px 12px;
+    background: rgba(45, 106, 79, 0.04);
+  }
+  .ativ-detalhe-dia label {
+    font-size: 11px;
+    color:var(--ink);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--line);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    background: var(--bg-card);
+  }
+  .item-row.checked .checkbox {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .item-row.checked .checkbox::after {
+    content: '✓';
+    color:var(--ink);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  
+  .item-info { flex: 1; min-width: 0; }
+  .item-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 1px;
+  }
+  .item-meta {
+    font-size: 12px;
+    color:var(--ink);
+  }
+  .item-meta .mat, .item-meta .num {
+    font-family: 'SF Mono', Menlo, monospace;
+    color:var(--ink);
+    font-weight: 600;
+  }
+  .item-extra {
+    font-size: 11px;
+    color:var(--ink);
+    font-style: italic;
+    margin-top: 2px;
+  }
+  
+  .item-actions { display: flex; gap: 4px; }
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color:var(--ink);
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-btn:active { background: var(--line-soft); }
+  
+  .badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .badge-op { background: rgba(45,106,79,0.15); color: var(--green); }
+  .badge-pa { background: rgba(193,57,43,0.15); color: var(--red); }
+  .badge-leve { background: rgba(245,179,52,0.2); color: var(--yellow); }
+  .badge-med { background: rgba(200,84,31,0.18); color: var(--accent); }
+  .badge-grave { background: rgba(193,57,43,0.18); color: var(--red); }
+  
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    width: 100%;
+  }
+  .btn-primary { background: var(--accent); color: white; box-shadow: 0 2px 6px rgba(200,84,31,0.25); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-secondary { background: var(--bg-dark); color:var(--ink); }
+  .btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  .btn-whatsapp { background: #25D366; color: white; }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-stack > * + * { margin-top: 8px; }
+  
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: var(--bg);
+    width: 100%;
+    max-width: 480px;
+    border-radius: 16px 16px 0 0;
+    padding: 18px;
+    max-height: 88vh;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-title {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+  
+  /* SELETOR DE OPERADOR (modal) */
+  .op-list {
+    max-height: 50vh;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-card);
+    margin-top: 6px;
+  }
+  .op-search {
+    margin-bottom: 8px;
+  }
+  .op-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    background: var(--line-soft);
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .op-tab {
+    flex: 1;
+    padding: 7px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color:var(--ink);
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .op-tab.active {
+    background: var(--bg-card);
+    color: var(--accent);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .op-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+  .op-item:last-child { border-bottom: none; }
+  .op-item:active { background: var(--line-soft); }
+  .op-item.selected { background: rgba(45, 106, 79, 0.08); }
+  .op-item-name { font-weight: 600; font-size: 14px; }
+  .op-item-meta { font-size: 11px; color:var(--ink); margin-top: 1px; }
+  .op-item-meta .mat { color:var(--ink); font-family: 'SF Mono', Menlo, monospace; font-weight: 600; }
+  .op-cat-label {
+    padding: 6px 12px;
+    background: var(--line-soft);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color:var(--ink);
+    font-weight: 700;
+  }
+  
+  /* OUTPUT */
+  .output-box {
+    background: var(--bg-mid);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    color: var(--ink);
+    max-height: 50vh;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    word-break: break-word;
+  }
+  
+  .stats-row {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .stats-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .stats-row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    padding: 8px 4px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    color:var(--ink);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color:var(--ink);
+    margin-top: 3px;
+    font-weight: 600;
+  }
+  
+  .quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .quick-btn {
+    padding: 7px;
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color:var(--ink);
+    cursor: pointer;
+  }
+  .quick-btn:active { background: var(--line-soft); }
+  
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-dark);
+    color: white;
+    padding: 11px 18px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 300;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  
+  .empty {
+    text-align: center;
+    padding: 24px 14px;
+    color:var(--ink);
+    font-style: italic;
+    font-size: 13px;
+  }
+  
+  hr.divider { border: none; border-top: 1px dashed var(--line); margin: 12px 0; }
+  
+  .add-btn-full {
+    background: transparent;
+    color: var(--accent);
+    border: 1px dashed var(--line);
+    padding: 11px;
+    width: 100%;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .add-btn-full:active { background: rgba(200, 84, 31, 0.05); }
+  
+  /* CONFIG SUBTABS */
+  .subtabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    background: var(--line-soft);
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .subtab {
+    flex: 1;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color:var(--ink);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .subtab.active {
+    background: var(--bg-card);
+    color: var(--accent);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .config-pane { display: none; }
+  .config-pane.active { display: block; }
+  
+  /* CALENDÁRIO */
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+  .cal-title {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    text-transform: capitalize;
+  }
+  .cal-nav-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-day-head {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color:var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 0;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    background: var(--bg-card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    position: relative;
+    transition: all 0.15s;
+  }
+  .cal-day:active { transform: scale(0.95); }
+  .cal-day.empty { background: transparent; border: none; cursor: default; }
+  .cal-day.has-data {
+    background: linear-gradient(180deg, var(--bg-mid) 0%, var(--tint-yellow) 100%);
+    border-color: var(--accent-soft);
+  }
+  .cal-day.today {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .cal-day.today.has-data { background: var(--accent); }
+  .cal-day.weekend { color: var(--accent); }
+  .cal-day.today.weekend { color:var(--ink); }
+  .cal-day-dot {
+    width: 4px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 4px;
+  }
+  .cal-day.today .cal-day-dot { background: white; }
+  
+  .info-card {
+    background: linear-gradient(135deg, var(--tint-yellow) 0%, var(--tint-yellow) 100%);
+    border: 1px solid var(--accent-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+  .info-card.editing {
+    background: linear-gradient(135deg, var(--tint-orange) 0%, var(--tint-red) 100%);
+    border-color: var(--accent);
+  }
+  
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b95a3' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+  }
+  
+  /* LOGO UPLOAD */
+  .logo-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-top: 6px;
+  }
+  .logo-preview-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid var(--line);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .logo-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+  .logo-preview-text {
+    flex: 1;
+    font-size: 11px;
+    color:var(--ink);
+    font-style: italic;
+  }
+  
+  .info-line {
+    font-size: 12px;
+    color:var(--ink);
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dia-semana {
+    color:var(--ink);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+/* ===== PDF do RDO ===== */
+@page {
+    size: A4;
+    margin: 10mm;   /* 1 cm nas laterais, no cabeçalho e no rodapé */
+    background-color: #ffffff;
+}
+#pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
+.pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+/* Palco da visualização: o documento tem largura fixa de A4 (210mm) e é
+   reduzido por transform para caber na largura da tela. Sem isso, em telas
+   estreitas o documento encolhia até a largura do aparelho enquanto as fontes
+   continuavam em 12pt, dando a impressão de zoom altíssimo. */
+.pdf-stage { overflow: hidden; padding: 16px 0; }
+.pdf-doc {
+    width: 210mm;    /* folha A4 */
+    padding: 10mm;   /* 1 cm de margem — espelha o @page na visualização */
+    box-sizing: border-box;   /* os 210mm incluem a margem: área útil de 190mm */
+    transform-origin: top left;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    color: #1c1a18;
+    font-size: 9pt;
+    line-height: 1.4;
+}
+.pdf-doc *, .pdf-doc *::before, .pdf-doc *::after { box-sizing: border-box; }
+/* Impede o ajuste automático de tamanho de texto do Safari no iOS, que inflava
+   blocos largos de texto corrido (a caixa de Jornada/DSS) e deixava intactas as
+   células estreitas das tabelas — o mesmo 12pt saía maior num lugar que noutro. */
+.pdf-doc, .pdf-doc * { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+.pdf-doc .header-table {
+    width: 100%;
+    border-bottom: 3px solid #1a2b4d;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+.pdf-doc .header-logo-cell { width: 90px; vertical-align: bottom; padding-right: 14px; }
+.pdf-doc .header-logo-cell img { height: 38px; max-width: 90px; width: auto; object-fit: contain; display: block; }
+.pdf-doc .header-left { vertical-align: bottom; }
+.pdf-doc .header-right { width: 30%; text-align: right; vertical-align: bottom; }
+.pdf-doc .rdo-head h1 { margin: 0 0 2px 0; font-size: 20pt; color: #1a1a1a; font-weight: 800; text-transform: uppercase; }
+.pdf-doc .rdo-head .sub { color: #666; font-size: 10pt; font-weight: 600; }
+.pdf-doc .header-right .num { font-size: 22pt; font-weight: 800; color: #2C3E50; line-height: 1; }
+.pdf-doc .header-right .rdo-label { font-size: 9pt; color: #666; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+
+.pdf-doc .info-grid { display: table; width: 100%; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; margin-bottom: 20px; }
+.pdf-doc .info-row { display: table-row; }
+.pdf-doc .info-col { display: table-cell; width: 25%; padding: 12px 15px; border-right: 1px solid #e9ecef; }
+.pdf-doc .info-col:last-child { border-right: none; }
+.pdf-doc .info-label { color: #868e96; text-transform: uppercase; font-weight: 800; font-size: 7.5pt; letter-spacing: 0.5px; margin-bottom: 4px; }
+.pdf-doc .info-val { font-weight: 700; font-size: 10pt; color: #343a40; }
+
+.pdf-doc .section-title { background: #2C3E50; color: #ffffff; padding: 8px 15px; font-weight: 800; font-size: 10.5pt; letter-spacing: 0.5px; margin-bottom: 12px; border-radius: 2px; page-break-after: avoid; }
+
+.pdf-doc .stats-grid { display: table; width: 100%; margin-bottom: 22px; border-collapse: collapse; }
+.pdf-doc .stat-row { display: table-row; }
+.pdf-doc .stat-box { display: table-cell; width: 50%; padding: 10px 12px; border: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
+.pdf-doc .stat-box:nth-child(2n) { text-align: center; font-weight: 800; }
+.pdf-doc .stat-head .stat-box { background: #f8f9fa; text-align: center; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
+.pdf-doc .stat-num { font-size: 12pt; font-weight: 800; color: #495057; line-height: 1; }
+.pdf-doc .stat-label { font-size: 12pt; font-weight: 600; color: #495057; letter-spacing: 0px; }
+
+.pdf-doc table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; table-layout: fixed; }
+.pdf-doc table.data-table th, .pdf-doc table.data-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; vertical-align: middle; }
+.pdf-doc table.data-table th { background: #f8f9fa; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
+.pdf-doc table.data-table td { font-size: 12pt; color: #212529; }
+.pdf-doc table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
+
+.pdf-doc .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: bold; text-transform: uppercase; }
+.pdf-doc .badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.pdf-doc .badge-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.pdf-doc .badge-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.pdf-doc .badge-info { background: #d9e8f5; color: #1e3f6e; border: 1px solid #bcd4ea; }
+
+/* Kanban do Check-in. Usa display:table-cell como o .split-grid acima, que e o
+   que sobrevive a paginacao do A4 — flex quebra na impressao. */
+.pdf-doc .kanban-grid { display: table; width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 5px 0; margin-bottom: 22px; }
+.pdf-doc .kanban-col { display: table-cell; width: 33.33%; vertical-align: top; }
+.pdf-doc .kanban-col-head { padding: 6px 8px; font-weight: 800; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .5px; border-radius: 3px 3px 0 0; }
+.pdf-doc .kanban-afazer .kanban-col-head { background: #dde8f5; color: #1e3f6e; }
+.pdf-doc .kanban-fazendo .kanban-col-head { background: #fff3cd; color: #856404; }
+.pdf-doc .kanban-concluido .kanban-col-head { background: #d4edda; color: #155724; }
+.pdf-doc .kanban-card { border: 1px solid #dee2e6; border-top: none; padding: 7px 8px; page-break-inside: avoid; }
+.pdf-doc .kanban-card-tit { font-weight: 700; font-size: 8.5pt; color: #212529; margin-bottom: 3px; }
+.pdf-doc .kanban-card-desc { font-size: 7.5pt; color: #495057; margin-bottom: 4px; }
+.pdf-doc .kanban-card-meta { font-size: 7.5pt; color: #6c757d; margin-top: 3px; }
+.pdf-doc .kanban-vazio { border: 1px dashed #dee2e6; border-top: none; padding: 12px 8px; font-size: 8pt; color: #adb5bd; text-align: center; }
+
+.pdf-doc .split-grid { display: table; width: 100%; margin-bottom: 22px; table-layout: fixed; }
+.pdf-doc .split-col { display: table-cell; width: 50%; }
+.pdf-doc .split-col:first-child { padding-right: 10px; }
+.pdf-doc .split-col:last-child { padding-left: 10px; }
+
+/* Começa em página nova na impressão. Em tela não tem efeito. */
+.pdf-doc .quebra-pagina { page-break-before: always; break-before: page; }
+.pdf-doc table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
+.pdf-doc table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
+.pdf-doc .pdf-foto { margin: 0; page-break-inside: avoid; break-inside: avoid; }
+/* Nenhuma linha de foto nem de tabela pode ser partida entre páginas */
+.pdf-doc table.fotos-table tr, .pdf-doc table.data-table tr { page-break-inside: avoid; break-inside: avoid; }
+/* height:auto preserva a proporção original da foto — sem corte e sem distorção.
+   Antes havia altura fixa com object-fit:cover, que recortava as bordas. */
+.pdf-doc .pdf-foto img { width: 100%; height: auto; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
+.pdf-doc .pdf-foto figcaption { font-size: 12pt; color: #495057; margin-top: 4px; line-height: 1.3; }
+
+.pdf-doc .jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; margin-bottom: 22px; }
+/* 12pt declarado em cada elemento da caixa, sem depender de herança */
+.pdf-doc .jornada-box, .pdf-doc .jornada-box * { font-size: 12pt; line-height: 1.4; }
+.pdf-doc .jornada-box strong { color: #343a40; display: block; margin-bottom: 6px; font-weight: 800; }
+.pdf-doc .jornada-box div { margin-bottom: 3px; color: #495057; }
+
+.pdf-doc .signature-grid { display: table; width: 100%; margin-top: 50px; text-align: center; page-break-inside: avoid; }
+.pdf-doc .sig-row { display: table-row; }
+.pdf-doc .sig-box { display: table-cell; width: 50%; padding: 0 30px; }
+.pdf-doc .sig-line { border-top: 1px solid #212529; margin-bottom: 8px; margin-top: 50px; }
+
+.pdf-doc .footer { margin-top: 30px; text-align: center; font-size: 8pt; color: #adb5bd; border-top: 1px solid #e9ecef; padding-top: 10px; }
+
+#padAssOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+#padAssOverlay .pad-box { background: #fff; border-radius: 12px; padding: 14px; width: 100%; max-width: 520px; }
+#padAssOverlay canvas { width: 100%; height: 200px; border: 1.5px dashed #999; border-radius: 8px; touch-action: none; display: block; background: #fff; }
+#padAssOverlay .pad-btns { display: flex; gap: 8px; margin-top: 10px; }
+#padAssOverlay .pad-btns button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+@media print {
+  body.pdf-printing > *:not(#pdfOverlay) { display: none !important; }
+  html, body, #pdfOverlay { background: #fff !important; }
+  #pdfOverlay { position: static !important; overflow: visible !important; }
+  .pdf-toolbar { display: none !important; }
+  .ass-vazia { visibility: hidden !important; }
+  /* O app é um PWA estreito: body tem max-width de 480px. Na impressão isso
+     espremia o relatório a 127mm em vez dos 190mm úteis da folha, quebrando o
+     título em duas linhas e sobrepondo texto nas tabelas. Aqui a folha volta a
+     ter a largura da página. */
+  html, body { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
+  .pdf-stage { height: auto !important; overflow: visible !important; padding: 0 !important; width: auto !important; max-width: none !important; }
+  /* 190mm = 210mm da folha menos os 10mm de margem do @page de cada lado.
+     Mesma largura de conteúdo da visualização, para a impressão sair idêntica.
+     O max-width evita estouro caso o navegador imponha margem maior que 10mm. */
+  .pdf-doc { width: 190mm !important; max-width: 100% !important; margin: 0 auto !important; padding: 0 !important; box-shadow: none !important; transform: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DESKTOP — acima de 900px o app deixa de ser uma coluna de 480px
+   (tamanho de celular) e passa a ocupar a tela. Abaixo disso nada
+   muda: no celular continua exatamente como sempre foi.
+   ══════════════════════════════════════════════════════════════ */
+/* 860 e nao 900: o iframe pode ficar alguns pixels mais estreito que a
+   janela (barra de rolagem, bordas). Com o mesmo numero dos dois lados,
+   o app de dentro corria o risco de continuar em formato de celular
+   enquanto o de fora ja estava em desktop. */
+@media (min-width: 860px) {
+  body { max-width: 1100px; }
+  .topbar, .header, .tabs { max-width: 1100px !important; }
+  /* Conteúdo em duas colunas: com 1100px de largura, um campo de
+     texto sozinho na linha fica ruim de ler e de preencher */
+  .view.active {
+    display: grid;
+    /* auto-fit: com várias seções vira duas colunas; com uma só, ela
+       ocupa a linha inteira em vez de deixar metade da tela vazia */
+    grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+    gap: 0 14px;
+    align-items: start;
+  }
+  /* O conteúdo acompanha a largura da barra de abas e do cabeçalho:
+     as três bordas se alinham na mesma coluna, e é isso que dá a
+     sensação de peça inteira em vez de blocos soltos no meio da tela. */
+  .view.active > * { max-width: none; }
+  /* Cartões lado a lado na mesma linha têm sempre a mesma altura */
+  .view.active > .section { align-self: stretch; }
+  /* O campo de digitação é que ganha limite, não o cartão: texto muito
+     largo cansa a leitura e a mão viaja demais até o fim da linha.
+     Em duas colunas o campo já é menor que isso, então nada muda lá. */
+  .view.active input:not([type="checkbox"]):not([type="radio"]),
+  .view.active textarea,
+  .view.active select { max-width: 660px; }
+  /* Modais continuam estreitos de propósito */
+  .modal { max-width: 560px; }
+  /* A visualização do PDF ocupa a tela toda, fora da grade */
+  #pdfOverlay { max-width: none; }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=fc569d34"></script>
+<link rel="stylesheet" href="tema.css?v=8f27e8ff" media="screen">
+</head>
+
+<body>
+
+<div class="topbar">
+<header class="header" style="height:70px">
+  <div class="header-top">
+    <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:var(--ink);align-self:flex-start;margin-top:4px" onclick="voltarParaHome()">⬅️</button>
+    <div class="header-id">
+      <div class="header-empresa" id="hdrEmpresa">EMPRESA</div>
+      <h1>Empreiteiros</h1>
+      <div class="header-obra" id="hdrObra">—</div>
+    </div>
+    <div class="header-logo" id="hdrLogo">LOGO</div>
+  </div>
+  <div class="header-date" id="hdrDate">—</div>
+</header>
+</div>
+
+<nav class="tabs" style="top:80px;grid-template-columns:repeat(3,1fr)">
+  <button class="tab active" data-view="cadastro">📋<br>Empreiteiros</button>
+  <button class="tab" data-view="medicao">📐<br>Mediação</button>
+  <button class="tab" data-view="historico">📊<br>Histórico</button>
+</nav>
+
+<!-- ============ CADASTRO ============ -->
+<main id="view-cadastro" class="view active">
+  <div class="section">
+    <div class="section-title"><div class="section-title-text">👷 Empreiteiros/Terceiros</div></div>
+    <p style="font-size:12px;color:var(--ink);margin-bottom:10px;font-style:italic">
+      Cadastre cada Empreiteiro/Terceiro com sua especialidade, contato e dados bancários. Cada um tem sua própria planilha de mediação.
+    </p>
+    <div id="listaContratos"></div>
+    <button class="add-btn-full" onclick="abrirModalContrato(null)"><span style="color:var(--accent-soft)">+</span> Adicionar Empreiteiro</button>
+  </div>
+</main>
+
+<!-- ============ MEDIÇÃO ============ -->
+<main id="view-medicao" class="view">
+  <div class="section">
+    <div class="section-title"><div class="section-title-text">📐 Nova Mediação de Empreiteiro</div></div>
+    <label style="margin-top:0">Empreiteiro / Terceiro</label>
+    <select id="medContratoSelect" onchange="selecionarContratoMedicao(this.value)">
+      <option value="">— Selecione —</option>
+    </select>
+  </div>
+
+  <div id="medFormWrap" style="display:none">
+    <div class="section">
+      <div class="grid-2" style="gap:8px">
+        <div><label style="margin-top:0">Mês Corrente</label><input type="month" id="medMes"></div>
+        <div><label style="margin-top:0">Nº da Mediação</label><input type="text" id="medNumero" disabled></div>
+      </div>
+      <div class="grid-2" style="gap:8px">
+        <div><label>Data Início</label><input type="date" id="medDataIni"></div>
+        <div><label>Data Fim</label><input type="date" id="medDataFim"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><div class="section-title-text">📋 Itens — Quantidade Medida Neste Período</div></div>
+      <div id="medItensForm"></div>
+    </div>
+
+    <div class="section">
+      <button class="btn btn-primary btn-full" onclick="salvarMedicao()">💾 SALVAR MEDIÇÃO</button>
+    </div>
+  </div>
+</main>
+
+<!-- ============ HISTÓRICO ============ -->
+<main id="view-historico" class="view">
+  <div class="section">
+    <div class="section-title"><div class="section-title-text">📊 Histórico de Mediações</div></div>
+    <label style="margin-top:0">Empreiteiro / Terceiro</label>
+    <select id="histContratoSelect" onchange="renderHistorico()">
+      <option value="">— Selecione —</option>
+    </select>
+    <div id="listaHistorico" style="margin-top:10px"></div>
+  </div>
+</main>
+
+<!-- ============ MODAL: CADASTRO DE EMPREITEIRO ============ -->
+<div class="modal-overlay" id="modalContrato">
+  <div class="modal">
+    <div class="modal-title" id="modalContratoTitulo">Novo Empreiteiro/Terceiro</div>
+    <label style="margin-top:0">Nome</label>
+    <input type="text" id="ctNome" placeholder="Nome do responsável ou razão social">
+    <label>Empresa</label>
+    <input type="text" id="ctEmpresa" placeholder="Razão social / Nome da empresa">
+    <label>Especialidade</label>
+    <input type="text" id="ctEspecialidade" placeholder="Ex.: Terraplanagem, Drenagem, Concreto...">
+    <label>Nº do Contrato</label>
+    <input type="text" id="ctNumeroContrato" placeholder="Ex.: CT-2026-001">
+    <label>CNPJ</label>
+    <input type="text" id="ctCnpj" placeholder="00.000.000/0000-00">
+    <label>Contato / Responsável</label>
+    <input type="text" id="ctContato" placeholder="Nome da pessoa de contato">
+    <label>Telefone</label>
+    <input type="text" id="ctTelefone" placeholder="(00) 99999-9999">
+    <label>Email</label>
+    <input type="email" id="ctEmail" placeholder="nome@empresa.com">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-secondary" onclick="fecharModal('modalContrato')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarContrato()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: ITEM DE ESCOPO ============ -->
+<div class="modal-overlay" id="modalItem">
+  <div class="modal">
+    <div class="modal-title" id="modalItemTitulo">Novo Item de Escopo</div>
+    <label style="margin-top:0">Item</label>
+    <input type="text" id="itItem" placeholder="Ex.: 1.1">
+    <label>Descrição do Trabalho</label>
+    <textarea id="itDescricao" placeholder="Descreva o serviço..." style="min-height:60px"></textarea>
+    <div class="grid-2" style="gap:8px">
+      <div><label>Unidade</label><input type="text" id="itUnidade" placeholder="m³, m², kg..."></div>
+      <div><label>Quantidade</label><input type="number" id="itQuantidade" step="0.01" placeholder="0"></div>
+    </div>
+    <label>Valor Unitário (R$)</label>
+    <input type="number" id="itValorUnitario" step="0.01" placeholder="0,00">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-secondary" onclick="fecharModal('modalItem')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarItem()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: AÇÕES DA MEDIAÇÃO (PDF / WhatsApp / Texto) ============ -->
+<div class="modal-overlay" id="modalMedicaoAcoes">
+  <div class="modal">
+    <div class="modal-title" id="modalMedicaoAcoesTitulo">Mediação de Empreiteiro</div>
+    <div class="btn-stack">
+      <button class="btn btn-primary" onclick="gerarPdfMedicaoAtiva()">📄 Gerar PDF</button>
+      <button class="btn btn-whatsapp" onclick="enviarMedicaoWhatsAppAtiva()">💬 Enviar por WhatsApp</button>
+      <button class="btn btn-ghost" onclick="copiarMedicaoTextoAtiva()">📋 Copiar Texto</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modalMedicaoAcoes')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Salvo</div>
+
+<script>
+/* ============================================================
+   ESPAÇO PRÓPRIO DO BUILDLy — BUILDLY_ESPACO_PROPRIO
+
+   Todos os apps do usuário são publicados sob a mesma origem
+   (https://jonacir2023.github.io). O localStorage é isolado por ORIGEM, não
+   por pasta: sem este bloco, o BUILDLy e qualquer outro app publicado na
+   mesma conta gravam no mesmo pote, com as mesmas chaves, e um passa a
+   enxergar a obra do outro.
+
+   Aqui o BUILDLy passa a ter um espaço fechado, prefixado. O app continua
+   usando localStorage como sempre — a tradução é invisível. Nada de fora do
+   prefixo é lido, escrito ou apagado, nem mesmo por um clear().
+
+   Precisa rodar ANTES de qualquer outro script tocar no armazenamento.
+   ============================================================ */
+(function () {
+  var P = 'buildly3::';
+  var real;
+  try { real = window.localStorage; } catch (e) { return; }
+  if (!real || real.__buildly3) return;
+
+  function nossas() {
+    var out = [];
+    for (var i = 0; i < real.length; i++) {
+      var k = real.key(i);
+      if (k && k.indexOf(P) === 0) out.push(k);
+    }
+    return out;
+  }
+
+  var espaco = {
+    __buildly3: true,
+    get length() { return nossas().length; },
+    key: function (i) {
+      var k = nossas()[i];
+      return k === undefined ? null : k.slice(P.length);
+    },
+    getItem: function (k) { return real.getItem(P + k); },
+    setItem: function (k, v) { real.setItem(P + k, v); },
+    removeItem: function (k) { real.removeItem(P + k); },
+    // clear() apaga só o que é do BUILDLy — nunca o armazenamento dos outros
+    // apps da mesma origem.
+    clear: function () { nossas().forEach(function (k) { real.removeItem(k); }); }
+  };
+
+  try {
+    Object.defineProperty(window, 'localStorage', {
+      value: espaco, configurable: true, writable: false
+    });
+  } catch (e) {
+    // Navegador que não deixa redefinir: melhor seguir com o comportamento
+    // antigo do que quebrar o app inteiro.
+  }
+})();
+</script>
+<script>
+// ============================================================
+// UTILS (mesmos padrões do rdo.html)
+// ============================================================
+function todayISO() {
+  const d = new Date();
+  const tz = d.getTimezoneOffset() * 60000;
+  return new Date(d - tz).toISOString().slice(0,10);
+}
+function formatDateBR(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+function escHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function uid(p) { return p + Date.now() + Math.floor(Math.random()*1000); }
+function abrirModal(id) { document.getElementById(id).classList.add('show'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function voltarParaHome() {
+  try {
+    if (parent && parent.switchTab && parent !== window) {
+      parent.switchTab('home');
+    } else {
+      window.location.href = 'buildly-completo.html';
+    }
+  } catch (e) {
+    window.location.href = 'buildly-completo.html';
+  }
+}
+function atualizarHeader() {
+  const o = obraCompartilhada();
+  document.getElementById('hdrEmpresa').textContent = o.empresa || 'EMPRESA';
+  document.getElementById('hdrObra').textContent = o.nome || 'Configure em 🏢 Obras';
+  const logoEl = document.getElementById('hdrLogo');
+  if (o.logo) {
+    logoEl.innerHTML = `<img src="${o.logo}" alt="logo">`;
+  } else {
+    logoEl.innerHTML = (o.empresa || 'MED').substring(0,3).toUpperCase();
+  }
+}
+function copiarTexto(txt) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(() => toast('Texto copiado!')).catch(() => fallbackCopy(txt));
+  } else fallbackCopy(txt);
+}
+function fallbackCopy(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('Texto copiado!'); } catch (e) { toast('Copie manualmente'); }
+  document.body.removeChild(ta);
+}
+async function abrirWhatsApp(txt) {
+  if (navigator.share) {
+    try { await navigator.share({ text: txt }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  copiarTexto(txt);
+  toast('📋 Texto copiado — cole na conversa do WhatsApp');
+  window.open('https://wa.me/', '_blank');
+}
+function fmtR$(v) {
+  return (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtQtd(v) {
+  return (v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+}
+
+// ============================================================
+// ESTADO
+// ============================================================
+let contratos = [];
+try { contratos = JSON.parse(localStorage.getItem('med_empreiteiros') || '[]'); } catch (e) { contratos = []; }
+function salvarContratos() {
+  localStorage.setItem('med_empreiteiros', JSON.stringify(contratos));
+  contratosEnviarTodosParaSupabase();
+}
+
+// Cada empreiteiro é uma linha só, com itens e mediações embutidos
+// como JSON — casa com o modelo local, onde tudo já é salvo junto. Reenvia
+// a lista inteira a cada salvarContratos() (a lista é pequena por obra).
+async function contratosEnviarTodosParaSupabase() {
+  if (!contratos.length) return;
+  try {
+    const { error } = await B3Obras.cliente().from('medicoes_empreiteiros').upsert(contratos.map(c => ({
+      id: String(c.id), nome: c.nome, empresa: c.empresa || null,
+      especialidade: c.especialidade || null, numero_contrato: c.numeroContrato || null,
+      cnpj: c.cnpj || null, contato: c.contato || null, telefone: c.telefone || null,
+      email: c.email || null, itens: c.itens || [], medicoes: c.medicoes || [],
+      atualizado_em: new Date().toISOString()
+    })));
+    if (error) throw error;
+  } catch (e) {
+    console.warn('Mediações: não consegui salvar no Supabase agora — fica pendente:', e.message);
+  }
+}
+
+// Busca empreiteiros do Supabase: só acrescenta o que ainda não existe aqui
+// (não decide qual lado está mais atualizado — cada empreiteiro é editado só
+// por quem o cadastrou, então não há de fato disputa entre aparelhos).
+async function carregarContratosDoServidor() {
+  try {
+    const { data, error } = await B3Obras.cliente().from('medicoes_empreiteiros').select('*');
+    if (error) throw error;
+    const idsLocais = new Set(contratos.map(c => String(c.id)));
+    let mudou = false;
+    (data || []).forEach(c => {
+      if (idsLocais.has(String(c.id))) return;
+      contratos.push({
+        id: c.id, nome: c.nome, empresa: c.empresa || '',
+        especialidade: c.especialidade || '', numeroContrato: c.numero_contrato || '',
+        cnpj: c.cnpj || '', contato: c.contato || '', telefone: c.telefone || '',
+        email: c.email || '', itens: c.itens || [], medicoes: c.medicoes || [], _expandido: false
+      });
+      mudou = true;
+    });
+    if (mudou) {
+      localStorage.setItem('med_empreiteiros', JSON.stringify(contratos));
+      renderContratos();
+      atualizarSelectsContrato();
+    }
+  } catch (e) {
+    console.warn('Mediações: não foi possível buscar do Supabase:', e.message);
+  }
+}
+
+// ============================================================
+// CADASTRO — CLIENTES / EMPREITEIROS
+// ============================================================
+let contratoEditId = null;
+
+function tipoBadge(tipo) {
+  return '<span class="badge badge-med">Empreiteiro</span>';
+}
+
+function itemTotal(item) {
+  return (parseFloat(item.quantidade) || 0) * (parseFloat(item.valorUnitario) || 0);
+}
+
+function renderContratos() {
+  const cont = document.getElementById('listaContratos');
+  if (!contratos.length) { cont.innerHTML = '<div class="empty">Nenhum cliente ou empreiteiro cadastrado</div>'; return; }
+  cont.innerHTML = contratos.map(c => `
+    <div class="cat-block ${c._expandido ? '' : 'collapsed'}">
+      <div class="cat-header" onclick="toggleContrato('${c.id}')">
+        <div class="cat-header-left">
+          <span class="cat-icon">${c.tipo === 'cliente' ? '🏢' : '👷'}</span>
+          <span class="cat-name">${escapeHtml(c.nome)}</span>
+        </div>
+        <span class="cat-count">${c.itens.length}</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="cat-body">
+        <div style="padding:10px 12px 4px">
+          ${tipoBadge(c.tipo)}${c.empresa ? ' <span style="font-size:12px;color:var(--ink)">' + escapeHtml(c.empresa) + '</span>' : ''}
+          ${c.especialidade ? `<div style="font-size:12px;color:var(--ink);margin-top:4px">${escapeHtml(c.especialidade)}</div>` : ''}
+          ${c.numeroContrato ? `<div style="font-size:11px;color:var(--ink);margin-top:2px">Contrato: ${escapeHtml(c.numeroContrato)}</div>` : ''}
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button class="icon-btn" onclick="event.stopPropagation();abrirModalContrato('${c.id}')" title="Editar">✏️</button>
+            <button class="icon-btn" onclick="event.stopPropagation();excluirContrato('${c.id}')" title="Excluir" style="color:var(--red)">🗑️</button>
+          </div>
+        </div>
+        <div id="itens-${c.id}"></div>
+        <div style="padding:6px 12px 10px">
+          <button class="add-btn-full" onclick="event.stopPropagation();abrirModalItem('${c.id}', null)"><span style="color:var(--accent-soft)">+</span> Adicionar Item de Escopo</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  contratos.forEach(c => renderItens(c.id));
+}
+
+function abrirModalContrato(id) {
+  contratoEditId = id;
+  const c = id ? contratos.find(x => x.id === id) : null;
+  document.getElementById('modalContratoTitulo').textContent = c ? 'Editar Empreiteiro/Terceiro' : 'Novo Empreiteiro/Terceiro';
+  document.getElementById('ctNome').value = c ? c.nome : '';
+  document.getElementById('ctEmpresa').value = c ? c.empresa : '';
+  document.getElementById('ctEspecialidade').value = c ? c.especialidade : '';
+  document.getElementById('ctNumeroContrato').value = c ? c.numeroContrato : '';
+  document.getElementById('ctCnpj').value = c ? c.cnpj : '';
+  document.getElementById('ctContato').value = c ? c.contato : '';
+  document.getElementById('ctTelefone').value = c ? c.telefone : '';
+  document.getElementById('ctEmail').value = c ? c.email : '';
+  abrirModal('modalContrato');
+}
+
+function salvarContrato() {
+  const nome = document.getElementById('ctNome').value.trim();
+  if (!nome) { toast('❌ Informe o nome'); return; }
+  const dados = {
+    nome,
+    empresa: document.getElementById('ctEmpresa').value.trim(),
+    especialidade: document.getElementById('ctEspecialidade').value.trim(),
+    numeroContrato: document.getElementById('ctNumeroContrato').value.trim(),
+    cnpj: document.getElementById('ctCnpj').value.trim(),
+    contato: document.getElementById('ctContato').value.trim(),
+    telefone: document.getElementById('ctTelefone').value.trim(),
+    email: document.getElementById('ctEmail').value.trim()
+  };
+  if (contratoEditId) {
+    Object.assign(contratos.find(x => x.id === contratoEditId), dados);
+  } else {
+    contratos.push({ id: uid('ct_'), ...dados, itens: [], medicoes: [], _expandido: true });
+  }
+  salvarContratos();
+  fecharModal('modalContrato');
+  renderContratos();
+  atualizarSelectsContrato();
+  toast('✓ Salvo');
+}
+
+function excluirContrato(id) {
+  if (!confirm('Excluir este empreiteiro/terceiro e todas as mediações dele? Não tem como desfazer.')) return;
+  contratos = contratos.filter(c => c.id !== id);
+  localStorage.setItem('med_empreiteiros', JSON.stringify(contratos));
+  renderContratos();
+  atualizarSelectsContrato();
+  toast('Excluído');
+  B3Obras.cliente().from('medicoes_empreiteiros').delete().eq('id', String(id))
+    .then(({ error }) => { if (error) console.warn('Mediações: não foi possível remover no Supabase:', error.message); });
+}
+
+function toggleContrato(id) {
+  const c = contratos.find(x => x.id === id);
+  c._expandido = !c._expandido;
+  renderContratos();
+}
+
+// ---------- ITENS DE ESCOPO ----------
+let itemEditCtx = { contratoId: null, itemId: null };
+
+function renderItens(contratoId) {
+  const c = contratos.find(x => x.id === contratoId);
+  const cont = document.getElementById('itens-' + contratoId);
+  if (!cont) return;
+  if (!c.itens.length) { cont.innerHTML = '<div class="empty" style="padding:12px">Nenhum item de escopo cadastrado</div>'; return; }
+  cont.innerHTML = c.itens.map(it => `
+    <div class="item-row">
+      <div class="item-info">
+        <div class="item-name">${escapeHtml(it.item)} — ${escapeHtml(it.descricao)}</div>
+        <div class="item-meta">${escapeHtml(it.unidade)} · Qtd: ${fmtQtd(it.quantidade)} · R$ ${fmtR$(it.valorUnitario)}/un · Total: R$ ${fmtR$(itemTotal(it))}</div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="abrirModalItem('${contratoId}','${it.id}')">✏️</button>
+        <button class="icon-btn" onclick="excluirItem('${contratoId}','${it.id}')" style="color:var(--red)">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function abrirModalItem(contratoId, itemId) {
+  itemEditCtx = { contratoId, itemId };
+  const c = contratos.find(x => x.id === contratoId);
+  const it = itemId ? c.itens.find(x => x.id === itemId) : null;
+  document.getElementById('modalItemTitulo').textContent = it ? 'Editar Item de Escopo' : 'Novo Item de Escopo';
+  document.getElementById('itItem').value = it ? it.item : '';
+  document.getElementById('itDescricao').value = it ? it.descricao : '';
+  document.getElementById('itUnidade').value = it ? it.unidade : '';
+  document.getElementById('itQuantidade').value = it ? it.quantidade : '';
+  document.getElementById('itValorUnitario').value = it ? it.valorUnitario : '';
+  abrirModal('modalItem');
+}
+
+function salvarItem() {
+  const { contratoId, itemId } = itemEditCtx;
+  const c = contratos.find(x => x.id === contratoId);
+  const dados = {
+    item: document.getElementById('itItem').value.trim(),
+    descricao: document.getElementById('itDescricao').value.trim(),
+    unidade: document.getElementById('itUnidade').value.trim(),
+    quantidade: parseFloat(document.getElementById('itQuantidade').value) || 0,
+    valorUnitario: parseFloat(document.getElementById('itValorUnitario').value) || 0
+  };
+  if (!dados.descricao) { toast('❌ Informe a descrição'); return; }
+  if (itemId) {
+    Object.assign(c.itens.find(x => x.id === itemId), dados);
+  } else {
+    c.itens.push({ id: uid('it_'), ...dados });
+  }
+  salvarContratos();
+  fecharModal('modalItem');
+  renderItens(contratoId);
+  renderContratos();
+  toast('✓ Salvo');
+}
+
+function excluirItem(contratoId, itemId) {
+  if (!confirm('Excluir este item de escopo? Isso não apaga as medições já feitas com ele.')) return;
+  const c = contratos.find(x => x.id === contratoId);
+  c.itens = c.itens.filter(x => x.id !== itemId);
+  salvarContratos();
+  renderItens(contratoId);
+  renderContratos();
+  toast('Excluído');
+}
+
+function atualizarSelectsContrato() {
+  const opts = contratos.map(c => `<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join('');
+  document.getElementById('medContratoSelect').innerHTML = '<option value="">— Selecione —</option>' + opts;
+  document.getElementById('histContratoSelect').innerHTML = '<option value="">— Selecione —</option>' + opts;
+}
+
+// ============================================================
+// MEDIÇÃO — NOVA MEDIÇÃO (acumulativa, com histórico)
+// ============================================================
+let medContratoId = null;
+
+function qtdAnteriorAteMedicao(contrato, itemId, medicaoNumero) {
+  let total = 0;
+  contrato.medicoes.forEach(m => {
+    if (medicaoNumero === undefined || m.numero < medicaoNumero) total += (m.linhas[itemId] || 0);
+  });
+  return total;
+}
+
+function selecionarContratoMedicao(id) {
+  medContratoId = id;
+  const wrap = document.getElementById('medFormWrap');
+  if (!id) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const c = contratos.find(x => x.id === id);
+  document.getElementById('medMes').value = todayISO().slice(0, 7);
+  document.getElementById('medDataIni').value = '';
+  document.getElementById('medDataFim').value = '';
+  document.getElementById('medNumero').value = 'Nº ' + String(c.medicoes.length + 1).padStart(3, '0');
+  renderFormMedicaoItens(c);
+}
+
+function renderFormMedicaoItens(contrato) {
+  const cont = document.getElementById('medItensForm');
+  if (!contrato.itens.length) { cont.innerHTML = '<div class="empty">Cadastre itens de escopo para este contrato primeiro (aba Cadastro)</div>'; return; }
+  cont.innerHTML = contrato.itens.map(it => {
+    const qtdAnt = qtdAnteriorAteMedicao(contrato, it.id);
+    const saldoInicial = it.quantidade - qtdAnt;
+    return `
+      <div style="background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:8px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">${escapeHtml(it.item)} — ${escapeHtml(it.descricao)}</div>
+        <div style="font-size:11px;color:var(--ink);margin-bottom:6px">Contratado: ${fmtQtd(it.quantidade)} ${escapeHtml(it.unidade)} · R$ ${fmtR$(it.valorUnitario)}/un</div>
+        <div class="grid-2" style="gap:6px">
+          <div><label style="margin-top:0">Qtd. Anterior</label><input type="text" value="${fmtQtd(qtdAnt)}" disabled></div>
+          <div><label style="margin-top:0">Qtd. Atual</label><input type="number" step="0.01" id="medQtd_${it.id}" placeholder="0" oninput="atualizarSaldoLinha('${it.id}', ${qtdAnt}, ${it.quantidade}, ${it.valorUnitario})"></div>
+        </div>
+        <div id="saldoInfo_${it.id}" style="font-size:11px;color:var(--ink);margin-top:6px">Saldo a medir: ${fmtQtd(saldoInicial)} ${escapeHtml(it.unidade)} · R$ atual: 0,00 · R$ saldo: R$ ${fmtR$(saldoInicial * it.valorUnitario)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function atualizarSaldoLinha(itemId, qtdAnt, qtdContratada, valorUnit) {
+  const qtdAtual = parseFloat(document.getElementById('medQtd_' + itemId).value) || 0;
+  const saldoQtd = qtdContratada - qtdAnt - qtdAtual;
+  document.getElementById('saldoInfo_' + itemId).textContent =
+    `Saldo a medir: ${fmtQtd(saldoQtd)} · R$ atual: ${fmtR$(qtdAtual * valorUnit)} · R$ saldo: R$ ${fmtR$(saldoQtd * valorUnit)}`;
+}
+
+function salvarMedicao() {
+  if (!medContratoId) { toast('❌ Selecione o contrato'); return; }
+  const c = contratos.find(x => x.id === medContratoId);
+  const mes = document.getElementById('medMes').value;
+  const dataIni = document.getElementById('medDataIni').value;
+  const dataFim = document.getElementById('medDataFim').value;
+  if (!mes || !dataIni || !dataFim) { toast('❌ Preencha mês, data início e data fim'); return; }
+  const linhas = {};
+  let algumaQtd = false;
+  c.itens.forEach(it => {
+    const v = parseFloat((document.getElementById('medQtd_' + it.id) || {}).value) || 0;
+    linhas[it.id] = v;
+    if (v > 0) algumaQtd = true;
+  });
+  if (!algumaQtd && !confirm('Nenhuma quantidade foi preenchida. Salvar mesmo assim?')) return;
+  const medicao = {
+    id: uid('med_'),
+    numero: c.medicoes.length + 1,
+    mesReferencia: mes,
+    dataInicio: dataIni,
+    dataFim: dataFim,
+    criadoEm: Date.now(),
+    linhas
+  };
+  c.medicoes.push(medicao);
+  salvarContratos();
+  toast('✓ Mediação de Empreiteiro salva');
+  document.getElementById('medContratoSelect').value = '';
+  document.getElementById('medFormWrap').style.display = 'none';
+  medContratoId = null;
+  renderHistorico();
+}
+
+// ============================================================
+// HISTÓRICO
+// ============================================================
+function totalMedicao(contrato, medicao) {
+  let total = 0;
+  contrato.itens.forEach(it => { total += (medicao.linhas[it.id] || 0) * it.valorUnitario; });
+  return total;
+}
+
+function renderHistorico() {
+  const id = document.getElementById('histContratoSelect').value;
+  const cont = document.getElementById('listaHistorico');
+  if (!id) { cont.innerHTML = ''; return; }
+  const c = contratos.find(x => x.id === id);
+  if (!c.medicoes.length) { cont.innerHTML = '<div class="empty">Nenhuma medição registrada ainda</div>'; return; }
+  const ordenadas = [...c.medicoes].sort((a, b) => b.numero - a.numero);
+  cont.innerHTML = ordenadas.map(m => `
+    <div class="item-row clickable" onclick="abrirAcoesMedicao('${c.id}','${m.id}')">
+      <div class="item-info">
+        <div class="item-name">Mediação Nº ${String(m.numero).padStart(3, '0')}</div>
+        <div class="item-meta">${formatDateBR(m.dataInicio)} a ${formatDateBR(m.dataFim)} · R$ ${fmtR$(totalMedicao(c, m))}</div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="event.stopPropagation();excluirMedicao('${c.id}','${m.id}')" style="color:var(--red)">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function excluirMedicao(contratoId, medicaoId) {
+  if (!confirm('Excluir esta mediação? Isso muda o "anterior" das mediações seguintes. Não tem como desfazer.')) return;
+  const c = contratos.find(x => x.id === contratoId);
+  c.medicoes = c.medicoes.filter(m => m.id !== medicaoId);
+  c.medicoes.forEach((m, i) => { m.numero = i + 1; });
+  salvarContratos();
+  renderHistorico();
+  toast('Excluída');
+}
+
+// ============================================================
+// AÇÕES DA MEDIÇÃO (PDF / WhatsApp / Copiar Texto)
+// ============================================================
+let _medicaoAtiva = { contratoId: null, medicaoId: null };
+
+function abrirAcoesMedicao(contratoId, medicaoId) {
+  _medicaoAtiva = { contratoId, medicaoId };
+  const c = contratos.find(x => x.id === contratoId);
+  const m = c.medicoes.find(x => x.id === medicaoId);
+  document.getElementById('modalMedicaoAcoesTitulo').textContent = `Mediação Nº ${String(m.numero).padStart(3, '0')} — ${c.nome}`;
+  abrirModal('modalMedicaoAcoes');
+}
+
+function textoMedicao(contrato, medicao) {
+  const divisor = '⸻—————————————————';
+  let total = 0;
+  let txt = `*📐 MEDIAÇÃO Nº ${String(medicao.numero).padStart(3, '0')}*\n`;
+  txt += `*${contrato.nome}* — Empreiteiro/Terceiro\n`;
+  txt += `📅 ${formatDateBR(medicao.dataInicio)} a ${formatDateBR(medicao.dataFim)}\n`;
+  if (contrato.numeroContrato) txt += `📄 Contrato: ${contrato.numeroContrato}\n`;
+  txt += `\n${divisor}\n\n*Itens Medidos*\n`;
+  contrato.itens.forEach(it => {
+    const qtdAnt = qtdAnteriorAteMedicao(contrato, it.id, medicao.numero);
+    const qtdAtual = medicao.linhas[it.id] || 0;
+    const saldoQtd = it.quantidade - qtdAnt - qtdAtual;
+    const valAtual = qtdAtual * it.valorUnitario;
+    total += valAtual;
+    txt += `\n*${it.item} — ${it.descricao}*\n`;
+    txt += `• Qtd atual: ${fmtQtd(qtdAtual)} ${it.unidade} (R$ ${fmtR$(valAtual)})\n`;
+    txt += `• Saldo a medir: ${fmtQtd(saldoQtd)} ${it.unidade}\n`;
+  });
+  txt += `\n${divisor}\n\n*💰 Total desta Mediação: R$ ${fmtR$(total)}*\n`;
+  return txt;
+}
+
+function copiarMedicaoTextoAtiva() {
+  const { contratoId, medicaoId } = _medicaoAtiva;
+  const c = contratos.find(x => x.id === contratoId);
+  const m = c.medicoes.find(x => x.id === medicaoId);
+  copiarTexto(textoMedicao(c, m));
+}
+
+function enviarMedicaoWhatsAppAtiva() {
+  const { contratoId, medicaoId } = _medicaoAtiva;
+  const c = contratos.find(x => x.id === contratoId);
+  const m = c.medicoes.find(x => x.id === medicaoId);
+  abrirWhatsApp(textoMedicao(c, m));
+}
+
+// ============================================================
+// PDF DA MEDIÇÃO (modelo oficial, cores do relatório do RDO)
+// ============================================================
+function nomeArquivoMedicao(contrato, medicao) {
+  const t = (contrato.nome || 'Mediacao').replace(/[\\/:*?"<>|]/g, '').slice(0, 30);
+  return `Mediacao ${String(medicao.numero).padStart(3, '0')} ${t}`;
+}
+
+function montarHtmlMedicao(contrato, medicao) {
+  const o = obraCompartilhada();
+  const logoImg = o.logo ? `<img src="${o.logo}" alt="logo">` : '';
+  let totalMed = 0;
+
+  const linhas = contrato.itens.map(it => {
+    const qtdAnt = qtdAnteriorAteMedicao(contrato, it.id, medicao.numero);
+    const qtdAtual = medicao.linhas[it.id] || 0;
+    const saldoQtd = it.quantidade - qtdAnt - qtdAtual;
+    const valAnt = qtdAnt * it.valorUnitario;
+    const valAtual = qtdAtual * it.valorUnitario;
+    const saldoVal = saldoQtd * it.valorUnitario;
+    totalMed += valAtual;
+    return `<tr>
+      <td style="font-size:7pt">${escHtml(it.item)}</td>
+      <td style="font-size:7pt">${escHtml(it.descricao)}</td>
+      <td style="font-size:7pt">${escHtml(it.unidade)}</td>
+      <td style="font-size:7pt;text-align:right">${fmtQtd(qtdAnt)}</td>
+      <td style="font-size:7pt;text-align:right">${fmtQtd(qtdAtual)}</td>
+      <td style="font-size:7pt;text-align:right">${fmtQtd(saldoQtd)}</td>
+      <td style="font-size:7pt;text-align:right">${fmtR$(valAnt)}</td>
+      <td style="font-size:7pt;text-align:right">${fmtR$(valAtual)}</td>
+      <td style="font-size:7pt;text-align:right">${fmtR$(saldoVal)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" style="text-align:center;color:#adb5bd">Nenhum item de escopo cadastrado</td></tr>';
+
+  return `
+    <div class="pdf-page">
+      <table class="header-table"><tr>
+        <td class="header-logo-cell">${logoImg}</td>
+        <td class="header-left">
+          <div class="rdo-head">
+            <h1>MEDIAÇÃO</h1>
+            <div class="sub">${escHtml(contrato.nome)} — Empreiteiro/Terceiro</div>
+          </div>
+        </td>
+        <td class="header-right">
+          <div class="num">Nº ${String(medicao.numero).padStart(3, '0')}</div>
+          <div class="rdo-label">Mediação de Empreiteiro</div>
+        </td>
+      </tr></table>
+
+      <div class="info-grid"><div class="info-row">
+        <div class="info-col"><div class="info-label">Período</div><div class="info-val">${formatDateBR(medicao.dataInicio)} a ${formatDateBR(medicao.dataFim)}</div></div>
+        <div class="info-col"><div class="info-label">Contrato Nº</div><div class="info-val">${escHtml(contrato.numeroContrato || '—')}</div></div>
+        <div class="info-col"><div class="info-label">Empresa</div><div class="info-val">${escHtml(contrato.empresa || '—')}</div></div>
+        <div class="info-col"><div class="info-label">Obra</div><div class="info-val">${escHtml(o.nome || '—')}</div></div>
+      </div></div>
+
+      <div class="section-title">ITENS MEDIDOS</div>
+      <table class="data-table">
+        <tr>
+          <th style="font-size:7pt;width:6%">Item</th>
+          <th style="font-size:7pt">Descrição</th>
+          <th style="font-size:7pt;width:6%">Un.</th>
+          <th style="font-size:7pt;width:10%">Qtd. Ant.</th>
+          <th style="font-size:7pt;width:10%">Qtd. Atual</th>
+          <th style="font-size:7pt;width:10%">Saldo Qtd.</th>
+          <th style="font-size:7pt;width:11%">R$ Ant.</th>
+          <th style="font-size:7pt;width:11%">R$ Atual</th>
+          <th style="font-size:7pt;width:11%">R$ Saldo</th>
+        </tr>
+        ${linhas}
+      </table>
+
+      <div class="info-grid"><div class="info-row">
+        <div class="info-col" style="width:100%"><div class="info-label">Total desta Mediação</div><div class="info-val" style="font-weight:800;font-size:13pt">R$ ${fmtR$(totalMed)}</div></div>
+      </div></div>
+
+      <div class="footer">
+        MEDIAÇÃO Nº ${String(medicao.numero).padStart(3, '0')} · ${escHtml(contrato.nome)} · Gerado pelo Buildly Premium
+      </div>
+    </div>
+  `;
+}
+
+function gerarPdfMedicaoAtiva() {
+  const { contratoId, medicaoId } = _medicaoAtiva;
+  gerarPdfMedicao(contratoId, medicaoId);
+}
+
+function gerarPdfMedicao(contratoId, medicaoId) {
+  const c = contratos.find(x => x.id === contratoId);
+  const m = c.medicoes.find(x => x.id === medicaoId);
+  fecharModal('modalMedicaoAcoes');
+  const h = montarHtmlMedicao(c, m);
+  _medArquivoAtivo = nomeArquivoMedicao(c, m);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'pdfOverlay';
+  const emModoApp = (navigator.standalone === true);
+  const btnImprimir = emModoApp
+    ? `<button style="background:#f5b334;color:#1a1a1a" onclick="abrirMedicaoNoSafari()">🖨️ Salvar PDF (abre no Safari)</button>`
+    : `<button style="background:#f5b334;color:#1a1a1a" onclick="imprimirMedicao()">🖨️ Imprimir / Salvar PDF</button>`;
+  const btnCompartilhar = (navigator.share)
+    ? `<button id="btnCompartilharPdfMed" style="background:#25D366;color:#fff" onclick="compartilharPdfMedicao()">📤 Compartilhar</button>`
+    : '';
+  overlay.innerHTML = `
+    <div class="pdf-toolbar">
+      ${btnImprimir}
+      ${btnCompartilhar}
+      <button style="background:#555;color:#fff" onclick="fecharPdfMedicao()">✕ Fechar</button>
+    </div>
+    <div class="pdf-stage"><div class="pdf-doc" style="font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)">${h}</div></div>`;
+  document.body.appendChild(overlay);
+  document.body.classList.add('pdf-printing');
+  ajustarEscalaPdf();
+  window.addEventListener('resize', ajustarEscalaPdf);
+  window.addEventListener('orientationchange', ajustarEscalaPdf);
+}
+
+let _medArquivoAtivo = 'Mediacao';
+const ZOOM_VISUALIZACAO_PDF = 0.8;
+
+function ajustarEscalaPdf() {
+  const overlay = document.getElementById('pdfOverlay');
+  if (!overlay) return;
+  const stage = overlay.querySelector('.pdf-stage');
+  const doc = overlay.querySelector('.pdf-doc');
+  if (!stage || !doc) return;
+
+  doc.style.transform = 'none';
+  doc.style.marginLeft = '0px';
+  const larguraDoc = doc.offsetWidth;
+  const alturaDoc = doc.offsetHeight;
+  const disponivel = stage.clientWidth;
+  if (!larguraDoc || !disponivel) return;
+
+  const escala = Math.min(1, disponivel / larguraDoc) * ZOOM_VISUALIZACAO_PDF;
+  doc.style.transform = `scale(${escala})`;
+  stage.style.height = Math.ceil(alturaDoc * escala) + 'px';
+  doc.style.marginLeft = Math.max(0, (disponivel - larguraDoc * escala) / 2) + 'px';
+}
+
+function fecharPdfMedicao() {
+  const el = document.getElementById('pdfOverlay');
+  if (el) el.remove();
+  document.body.classList.remove('pdf-printing');
+  window.removeEventListener('resize', ajustarEscalaPdf);
+  window.removeEventListener('orientationchange', ajustarEscalaPdf);
+}
+
+function imprimirMedicao() {
+  const tituloOriginal = document.title;
+  document.title = _medArquivoAtivo;
+  let restaurado = false;
+  const restaurar = () => {
+    if (restaurado) return;
+    restaurado = true;
+    document.title = tituloOriginal;
+    window.removeEventListener('afterprint', restaurar);
+  };
+  window.addEventListener('afterprint', restaurar);
+  setTimeout(restaurar, 120000);
+  window.print();
+}
+
+function abrirMedicaoNoSafari() {
+  window.open(location.origin + location.pathname, '_blank');
+}
+
+function carregarScriptUmaVez(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Falha ao carregar ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+let _pdfMedParaCompartilhar = null;
+
+async function compartilharPdfMedicao() {
+  const overlay = document.getElementById('pdfOverlay');
+  if (!overlay) return;
+  const paginas = overlay.querySelectorAll('.pdf-page');
+  if (!paginas.length) { toast('❌ Nada para compartilhar'); return; }
+
+  const btn = document.getElementById('btnCompartilharPdfMed');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando...'; }
+
+  const docEl = overlay.querySelector('.pdf-doc');
+  const stageEl = overlay.querySelector('.pdf-stage');
+  const transformAnterior = docEl ? docEl.style.transform : '';
+  const alturaStageAnterior = stageEl ? stageEl.style.height : '';
+  if (docEl) docEl.style.transform = 'none';
+  if (stageEl) stageEl.style.height = 'auto';
+
+  try {
+    await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    let primeira = true;
+
+    const pageWmm = 210, pageHmm = 297, margemMm = 10;
+    const areaWmm = pageWmm - margemMm * 2;
+    const areaHmm = pageHmm - margemMm * 2;
+
+    for (const pagina of paginas) {
+      const canvas = await html2canvas(pagina, {
+        scale: 1.5, useCORS: true, backgroundColor: '#ffffff',
+        windowWidth: pagina.scrollWidth, width: pagina.scrollWidth,
+        scrollX: 0, scrollY: 0
+      });
+      const pxPerMm = canvas.width / areaWmm;
+      const maxFatiaPx = Math.max(1, Math.floor(areaHmm * pxPerMm));
+
+      const escalaCanvas = canvas.width / (pagina.scrollWidth || canvas.width);
+      const topoRef = pagina.getBoundingClientRect().top;
+      const zonas = [...pagina.querySelectorAll('tr')]
+        .map(el => {
+          const r = el.getBoundingClientRect();
+          return { topo: (r.top - topoRef) * escalaCanvas, base: (r.bottom - topoRef) * escalaCanvas };
+        })
+        .filter(z => z.base > z.topo);
+
+      let y = 0;
+      while (y < canvas.height) {
+        let fim2 = Math.min(y + maxFatiaPx, canvas.height);
+
+        if (fim2 < canvas.height) {
+          const atravessada = zonas
+            .filter(z => fim2 > z.topo + 1 && fim2 < z.base - 1)
+            .sort((a, b) => a.topo - b.topo)[0];
+          if (atravessada && atravessada.topo > y + maxFatiaPx * 0.15) {
+            fim2 = Math.floor(atravessada.topo);
+          }
+        }
+
+        const alturaFatiaPx = Math.max(1, fim2 - y);
+        const fatia = document.createElement('canvas');
+        fatia.width = canvas.width;
+        fatia.height = alturaFatiaPx;
+        const ctx = fatia.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, fatia.width, fatia.height);
+        ctx.drawImage(canvas, 0, y, canvas.width, alturaFatiaPx, 0, 0, canvas.width, alturaFatiaPx);
+
+        if (!primeira) doc.addPage('a4', 'portrait');
+        primeira = false;
+        const alturaFatiaMm = alturaFatiaPx / pxPerMm;
+        doc.addImage(fatia.toDataURL('image/jpeg', 0.92), 'JPEG', margemMm, margemMm, areaWmm, alturaFatiaMm);
+
+        y += alturaFatiaPx;
+      }
+    }
+
+    const nomeArquivo = `${_medArquivoAtivo}.pdf`;
+    const blob = doc.output('blob');
+    const file = new File([blob], nomeArquivo, { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      _pdfMedParaCompartilhar = { file };
+      if (btn) { btn.disabled = false; btn.textContent = '👉 Toque para enviar'; btn.onclick = enviarPdfMedicaoPreparado; }
+      toast('✓ PDF pronto');
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = nomeArquivo; a.click();
+      URL.revokeObjectURL(url);
+      toast('PDF baixado — compartilhe pelo app de Arquivos');
+      if (btn) { btn.disabled = false; btn.textContent = '📤 Compartilhar'; }
+    }
+  } catch (err) {
+    if (err && err.name !== 'AbortError') {
+      console.error('Erro ao gerar PDF:', err);
+      alert('❌ Erro ao gerar PDF (' + (err.name || '?') + '): ' + (err.message || 'falha desconhecida'));
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Compartilhar'; }
+  } finally {
+    if (docEl) docEl.style.transform = transformAnterior;
+    if (stageEl) stageEl.style.height = alturaStageAnterior;
+  }
+}
+
+function enviarPdfMedicaoPreparado() {
+  if (!_pdfMedParaCompartilhar) return;
+  const { file } = _pdfMedParaCompartilhar;
+  const btn = document.getElementById('btnCompartilharPdfMed');
+  navigator.share({
+    files: [file],
+    title: 'Mediçao Cliente',
+    text: _medArquivoAtivo
+  }).then(() => {
+    toast('✓ Compartilhado');
+    _pdfMedParaCompartilhar = null;
+    if (btn) { btn.textContent = '📤 Compartilhar'; btn.onclick = compartilharPdfMedicao; }
+  }).catch(err => {
+    if (err && err.name !== 'AbortError') {
+      console.error('Erro ao compartilhar PDF:', err);
+      alert('❌ Erro ao compartilhar (' + (err.name || '?') + '): ' + (err.message || 'falha desconhecida'));
+    }
+  });
+}
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    if (btn.dataset.view === 'historico') renderHistorico();
+  });
+});
+
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  atualizarHeader();
+  if (window.B3Obras) B3Obras.configCarregar().then(atualizarHeader).catch(function(){});
+  document.getElementById('hdrDate').textContent = formatDateBR(todayISO());
+  renderContratos();
+  atualizarSelectsContrato();
+  carregarContratosDoServidor();
+});
+</script>
+</body>
+</html>
