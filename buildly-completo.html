@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="7f14eea1"</script>
+<script>/*build*/window.BUILD_ID="41a31d07"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -679,7 +679,7 @@ window.B3_CASCA = true;
         <p>Requisições e pedidos</p>
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
-      <div class="home-card" onclick="abrirNotebook()">
+      <div class="home-card" data-mod="notebook" onclick="abrirNotebook()">
         <div class="ico g-brown"><svg viewBox="0 0 24 24"><use href="#i-robo"/></svg></div>
         <h3>Notebook <span class="nb-tag">AI HUB</span></h3>
         <p>Pergunte às fontes da obra e salve relatórios</p>
@@ -1268,7 +1268,7 @@ function switchTab(tab, el) {
 // ═══════════════════════════════════════════════════════════════
 // CASCA — hero, barra inferior e painéis (padrão visual claro)
 // ═══════════════════════════════════════════════════════════════
-const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Mediçao Cliente", "desc": "Medições de clientes", "i": "ruler", "c": "slate", "t": "MEDIÇÕES CLIENTE", "s": "Medições de Clientes"}, "medicao_empreiteiros": {"nome": "Mediação de Empreiteiros", "desc": "Medições de empreiteiros e terceiros", "i": "ruler", "c": "slate", "t": "MEDIAÇÕES", "s": "Mediações de Empreiteiros"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}};
+const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Mediçao Cliente", "desc": "Medições de clientes", "i": "ruler", "c": "slate", "t": "MEDIÇÕES CLIENTE", "s": "Medições de Clientes"}, "medicao_empreiteiros": {"nome": "Mediação de Empreiteiros", "desc": "Medições de empreiteiros e terceiros", "i": "ruler", "c": "slate", "t": "MEDIAÇÕES", "s": "Mediações de Empreiteiros"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}, "notebook": {"nome": "Notebook", "desc": "Pergunte às fontes da obra e salve relatórios", "i": "robo", "c": "brown", "t": "NOTEBOOK", "s": "Notebook (AI HUB)"}};
 const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "financeiro", "suprimentos"];
 
 function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }
@@ -1372,9 +1372,8 @@ function abrirRelatorios() {
 // ── mais ──
 function abrirMais() {
   marcarNav('mais');
-  abrirSheet('<h2>Mais módulos</h2><div class="sheet-sub">Outras áreas da plataforma.</div>' + listaModulos(MODULOS_EXTRAS) +
-    '<div class="sheet-lista" style="margin-top:8px"><button class="sheet-item" onclick="fecharSheet();abrirNotebook()"><span class="ico g-brown">' + _svg('robo') +
-    '</span><span><b>Notebook (AI HUB)</b><small>Pergunte às fontes da obra e salve relatórios</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>');
+  const notebookHtml = podeVer('notebook') ? '<div class="sheet-lista" style="margin-top:8px"><button class="sheet-item" onclick="fecharSheet();abrirNotebook()"><span class="ico g-brown">' + _svg('robo') + '</span><span><b>Notebook (AI HUB)</b><small>Pergunte às fontes da obra e salve relatórios</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>' : '';
+  abrirSheet('<h2>Mais módulos</h2><div class="sheet-sub">Outras áreas da plataforma.</div>' + listaModulos(MODULOS_EXTRAS) + notebookHtml);
 }
 
 // ── sino: pendências do Check-in ──
