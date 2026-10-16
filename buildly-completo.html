@@ -51,10 +51,53 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
    tem seu próprio cabeçalho (ou nenhum) e nenhuma delas reserva espaço
    fixo pro cabeçalho da casca. Um botão flutuante evita ter que mexer no
    layout de cada uma: fica por cima de tudo, sempre no mesmo lugar. */
-.fab-ia-wrap{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:0;z-index:150;pointer-events:none}
-.fab-ia-btn{position:absolute;right:16px;bottom:16px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer;pointer-events:auto;display:flex;align-items:center;justify-content:center}
-.fab-ia-btn:active{background:var(--accent-hover)}
-@media (min-width: 900px) { .fab-ia-wrap { max-width: 1100px; } }
+/* NOTEBOOK (AI HUB) — modal de 3 colunas: fontes / chat / relatórios */
+.nb-tag{display:inline-block;font-size:10px;letter-spacing:.08em;padding:2px 6px;border-radius:4px;background:var(--accent);color:#fff;vertical-align:middle;margin-left:4px}
+.nb-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);display:none}
+.nb-overlay.open{display:block}
+.nb-shell{height:100%;max-width:1200px;margin:0 auto;background:var(--bg-card);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.nb-col{min-width:0;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line)}
+.nb-col:first-child{border-top:none}
+.nb-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.nb-cab h3{margin:0;font-family:var(--serif);font-size:16px;color:var(--ink)}
+.nb-acoes-cab{display:flex;align-items:center;gap:10px}
+.nb-link{background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;padding:0}
+.nb-fechar{background:none;border:1px solid var(--line);color:var(--ink);border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;flex:0 0 32px}
+.nb-contagem{font-size:12px;color:var(--ink)}
+.nb-fontes{display:flex;flex-direction:column;gap:6px}
+.nb-fonte{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;min-width:0}
+.nb-fonte span{overflow-wrap:anywhere}
+.nb-mensagens{display:flex;flex-direction:column;gap:10px;min-height:260px;max-height:55vh;overflow-y:auto;padding:4px 2px}
+.nb-balao{font-size:14px;line-height:1.5;padding:10px 12px;border-radius:10px;max-width:92%;overflow-wrap:anywhere;color:var(--ink);border:1px solid var(--line)}
+.nb-user{align-self:flex-end;background:var(--bg-mid)}
+.nb-assistant{align-self:flex-start;background:var(--bg-card)}
+.nb-cit{background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:11px;padding:0 4px;cursor:pointer;vertical-align:super;margin:0 1px}
+.nb-src{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:4px;font-size:12px}
+.nb-src-item{padding:4px 6px;border-radius:6px;overflow-wrap:anywhere}
+.nb-src-on{background:var(--bg-mid)}
+.nb-aviso{font-size:12px;min-height:16px;color:var(--accent2)}
+.nb-aviso.erro,.nb-erro{color:#c0392b}
+.nb-entrada{display:flex;gap:8px;align-items:flex-end}
+.nb-entrada textarea{flex:1;min-width:0;resize:vertical}
+.nb-salvar{display:flex;flex-direction:column;gap:8px}
+.nb-salvar input{width:100%;min-width:0;box-sizing:border-box}
+.nb-relatorios{display:flex;flex-direction:column;gap:6px}
+.nb-rel{text-align:left;background:var(--bg-mid);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
+.nb-rel small{font-size:11px;opacity:.8}
+.nb-vazio{font-size:12px;color:var(--ink);font-style:italic;margin:0}
+@media (min-width: 900px){
+  .nb-overlay{padding:24px}
+  .nb-shell{flex-direction:row;height:100%;overflow:hidden;border-radius:12px}
+  .nb-col{border-top:none;border-left:1px solid var(--line);overflow-y:auto}
+  .nb-col:first-child{border-left:none}
+  .nb-fontes-col{flex:0 0 240px}
+  .nb-chat-col{flex:1 1 auto;min-height:0}
+  .nb-rel-col{flex:0 0 280px}
+  .nb-mensagens{flex:1;min-height:0;max-height:none}
+}
+@media (max-width: 899px){
+  .nb-chat-col{order:-1}
+}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0;gap:12px}
 .hdr-logo{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:1px;color:#ffffff}
 .hdr-logo-main{font-size:26px;letter-spacing:-0.5px}
@@ -244,7 +287,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 @media print {
   body{max-width:100%;padding:0;margin:0;background:#fff;font-size:12px}
   .hdr{position:relative;box-shadow:none;border-bottom:2px solid #dda583;padding:10px 16px 6px;background:#3a3f49;color:#ffffff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .hdr-settings,.tabs,.sec:not(#print-sec),.page:not(#print-kanban),.notif,.modal-overlay,.config-modal,.fab-ia-wrap{display:none!important}
+  .hdr-settings,.tabs,.sec:not(#print-sec),.page:not(#print-kanban),.notif,.modal-overlay,.config-modal{display:none!important}
   #print-kanban{display:block!important;padding:12px}
   .kol{break-inside:avoid;margin-bottom:12px;background:#e9eef4!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .kol-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -633,6 +676,12 @@ window.B3_CASCA = true;
         <div class="ico g-amber"><svg viewBox="0 0 24 24"><use href="#i-package"/></svg></div>
         <h3>Suprimentos</h3>
         <p>Requisições e pedidos</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
+      </div>
+      <div class="home-card" onclick="abrirNotebook()">
+        <div class="ico g-brown"><svg viewBox="0 0 24 24"><use href="#i-robo"/></svg></div>
+        <h3>Notebook <span class="nb-tag">AI HUB</span></h3>
+        <p>Pergunte às fontes da obra e salve relatórios</p>
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
     </div>
@@ -1123,27 +1172,37 @@ window.B3_CASCA = true;
   <div class="sheet" id="sheet-corpo"></div>
 </div>
 
-<!-- BOTÃO FLUTUANTE DO ROBÔ — visível em qualquer aba -->
-<div class="fab-ia-wrap">
-  <button class="fab-ia-btn" onclick="abrirModalPerguntar()" title="Perguntar sobre os dados"><svg viewBox="0 0 24 24"><use href="#i-robo"/></svg></button>
-</div>
-
-<!-- MODAL PERGUNTAR (robô) -->
-<div class="modal-overlay" id="modalPerguntar">
-  <div class="modal">
-    <div class="modal-title">
-      🤖 Perguntar sobre os dados
-      <button class="modal-close" onclick="fecharModalPerguntar()">✕</button>
-    </div>
-    <p style="font-size:12px;color:var(--ink);margin:-8px 0 12px;font-style:italic">
-      Pergunte sobre RDOs, pautas, check-ins, notas fiscais, medições, documentos e mural. Ex.: "está tudo batendo com o contrato, orçamento e prazo?"
-    </p>
-    <div class="frow">
-      <textarea id="perguntarInput" style="min-height:70px" placeholder="Ex.: Quantos bags de areia fizemos em julho? Quais pautas estão atrasadas? Quanto gastamos com cimento?"></textarea>
-    </div>
-    <div id="perguntarResposta" style="display:none;margin-top:4px;padding:12px;background:var(--bg-card);border:1px solid var(--line);border-radius:8px;font-size:14px;line-height:1.5;white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
-    <div id="perguntarLoading" style="display:none;margin-top:4px;font-size:13px;color:var(--ink)">⏳ Consultando os dados...</div>
-    <button class="btn btn-primary btn-full" id="btnPerguntarEnviar" style="margin-top:12px" onclick="enviarPergunta()">PERGUNTAR</button>
+<!-- NOTEBOOK (AI HUB) — fontes ativas / conversa com citações / relatórios salvos -->
+<div class="nb-overlay" id="modalNotebook" role="dialog" aria-modal="true" aria-label="Notebook">
+  <div class="nb-shell">
+    <section class="nb-col nb-chat-col">
+      <div class="nb-cab">
+        <h3>Notebook <span class="nb-tag">AI HUB</span></h3>
+        <div class="nb-acoes-cab">
+          <button type="button" class="nb-link" onclick="nbNovaConversa()">Nova conversa</button>
+          <button type="button" class="nb-fechar" onclick="fecharNotebook()" aria-label="Fechar">✕</button>
+        </div>
+      </div>
+      <div id="nbMensagens" class="nb-mensagens"><p class="nb-vazio nb-vazio-chat">Faça uma pergunta sobre os dados da obra. As respostas trazem citações [n] das fontes ativas.</p></div>
+      <div id="nbAviso" class="nb-aviso" role="status"></div>
+      <div class="nb-entrada">
+        <textarea id="nbInput" rows="2" placeholder="Ex.: Quais pautas estão atrasadas? Quanto gastamos com cimento em julho?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();nbPerguntar();}"></textarea>
+        <button type="button" id="nbEnviar" class="btn btn-primary" onclick="nbPerguntar()">Perguntar</button>
+      </div>
+    </section>
+    <aside class="nb-col nb-fontes-col">
+      <div class="nb-cab"><h3>Fontes ativas</h3></div>
+      <span id="nbContagem" class="nb-contagem"></span>
+      <div id="nbFontes" class="nb-fontes"><p class="nb-vazio">Carregando fontes...</p></div>
+    </aside>
+    <aside class="nb-col nb-rel-col">
+      <div class="nb-cab"><h3>Relatórios Salvos</h3></div>
+      <div class="nb-salvar">
+        <input id="nbTituloRel" type="text" placeholder="Título do relatório (opcional)">
+        <button type="button" id="nbSalvar" class="btn btn-primary" disabled onclick="nbSalvarRelatorio()">Salvar como Relatório</button>
+      </div>
+      <div id="nbRelatorios" class="nb-relatorios"></div>
+    </aside>
   </div>
 </div>
 
@@ -1314,8 +1373,8 @@ function abrirRelatorios() {
 function abrirMais() {
   marcarNav('mais');
   abrirSheet('<h2>Mais módulos</h2><div class="sheet-sub">Outras áreas da plataforma.</div>' + listaModulos(MODULOS_EXTRAS) +
-    (ehAdminCasca() ? '<div class="sheet-lista" style="margin-top:8px"><button class="sheet-item" onclick="fecharSheet();abrirModalPerguntar()"><span class="ico g-brown">' + _svg('robo') +
-    '</span><span><b>Perguntar à IA</b><small>Tire dúvidas sobre os dados da obra</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>' : ''));
+    '<div class="sheet-lista" style="margin-top:8px"><button class="sheet-item" onclick="fecharSheet();abrirNotebook()"><span class="ico g-brown">' + _svg('robo') +
+    '</span><span><b>Notebook (AI HUB)</b><small>Pergunte às fontes da obra e salve relatórios</small></span><span class="chev">' + _svg('chevron-right') + '</span></button></div>');
 }
 
 // ── sino: pendências do Check-in ──
@@ -1380,8 +1439,6 @@ function avisoAcesso() {
 
 function aplicarPapel() {
   document.querySelectorAll('.home-card[data-mod]').forEach(c => { c.hidden = !podeVer(c.dataset.mod); c.style.display = c.hidden ? 'none' : ''; });
-  const adm = ehAdminCasca();
-  document.querySelectorAll('.fab-ia-wrap').forEach(e => { e.style.display = adm ? '' : 'none'; });
   const semSino = !podeVer('checkin');
   document.querySelectorAll('.hero-btn[aria-label="Pendências"]').forEach(b => { b.style.display = semSino ? 'none' : ''; });
   atualizarSino();
@@ -1778,184 +1835,206 @@ function obraNotify(msg, cor) {
   setTimeout(() => n.classList.remove('show'), 2500);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ROBÔ — PERGUNTAS SOBRE OS DADOS DA PLANILHA
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// NOTEBOOK (AI HUB) — perguntas às fontes da obra, com citações [n]
+// Consulta: Edge Function notebook-perguntar (busca em tempo real no Supabase).
+// Relatórios: tabela notebook_saved_reports. Sem chamada direta a LLM no navegador.
+// ═══════════════════════════════════════════════════════════════════
+let nbFontes = [];        // [{codigo, nome, ativo}] vindas de notebook_sources
+let nbAtivas = new Set(); // códigos de módulos marcados como fontes ativas
+let nbSessionId = null;   // sessão da conversa atual (criada pela Edge Function)
+let nbUltimaResposta = null; // {pergunta, resposta, fontes} da última resposta
+let nbCarregouFontes = false;
 
-function abrirModalPerguntar() {
-  document.getElementById('perguntarInput').value = '';
-  document.getElementById('perguntarResposta').style.display = 'none';
-  document.getElementById('perguntarLoading').style.display = 'none';
-  document.getElementById('modalPerguntar').classList.add('open');
-  document.getElementById('perguntarInput').focus();
+function nbAviso(msg, tipo) {
+  const el = document.getElementById('nbAviso');
+  el.textContent = msg || '';
+  el.className = 'nb-aviso' + (tipo ? ' ' + tipo : '');
 }
 
-function fecharModalPerguntar() {
-  document.getElementById('modalPerguntar').classList.remove('open');
+function nbAtualizaContagem() {
+  const total = nbFontes.length;
+  document.getElementById('nbContagem').textContent = nbAtivas.size + ' de ' + total + ' fontes ativas';
+  document.getElementById('nbEnviar').disabled = nbAtivas.size === 0;
 }
 
-document.getElementById('modalPerguntar').addEventListener('click', function(e) {
-  if (e.target === this) fecharModalPerguntar();
-});
-
-// Reúne o que existe só neste navegador (Medições, Documentos e Mural) num
-// resumo compacto para o robô conseguir cruzar com o que já lê da planilha.
-// É SÓ LEITURA: nada aqui grava, altera ou apaga qualquer dado — se algo der
-// errado, devolve o que conseguiu montar e o robô segue com o resto.
-// O conteúdo de arquivos anexados (base64) fica de fora de propósito: só o
-// título/categoria interessa, e o arquivo inteiro estouraria o limite do envio.
-function montarContextoLocal() {
-  const ctx = {};
-
-  try {
-    const obra = obraCompartilhada();
-    if (obra && Object.keys(obra).length) {
-      ctx.obra = {
-        nome: obra.nome || '', empresa: obra.empresa || '', local: obra.local || '',
-        descricao: obra.descricao || '', contrato: obra.contrato || '', cliente: obra.cliente || '',
-        gestor: obra.gestor || '', dataInicio: obra.dataInicio || '', dataTermino: obra.dataTermino || ''
-      };
-    }
-  } catch (e) { /* obra fica de fora */ }
-
-  try {
-    const contratos = JSON.parse(localStorage.getItem('med_contratos') || '[]');
-    if (contratos.length) {
-      ctx.medicoes = contratos.map(c => ({
-        nome: c.nome, tipo: c.tipo === 'cliente' ? 'Cliente' : 'Empreiteiro/Terceiro',
-        empresa: c.empresa || '', numeroContrato: c.numeroContrato || '',
-        especialidade: c.especialidade || '',
-        itens_do_escopo: (c.itens || []).map(it => ({
-          item: it.item, descricao: it.descricao, unidade: it.unidade,
-          quantidade_contratada: it.quantidade, valor_unitario: it.valorUnitario,
-          total_do_item: (it.quantidade || 0) * (it.valorUnitario || 0)
-        })),
-        medicoes_realizadas: (c.medicoes || []).map(m => ({
-          numero: m.numero, mes: m.mesReferencia,
-          periodo: `${m.dataInicio} a ${m.dataFim}`,
-          itens_medidos: (c.itens || []).map(it => ({
-            item: it.item, descricao: it.descricao,
-            quantidade_medida: m.linhas[it.id] || 0,
-            valor_medido: (m.linhas[it.id] || 0) * (it.valorUnitario || 0)
-          })).filter(l => l.quantidade_medida > 0),
-          total_da_medicao: (c.itens || []).reduce((s, it) => s + (m.linhas[it.id] || 0) * (it.valorUnitario || 0), 0)
-        }))
-      }));
-    }
-  } catch (e) { /* medições ficam de fora */ }
-
-  try {
-    const documentos = JSON.parse(localStorage.getItem('doc_arquivos') || '[]');
-    if (documentos.length) {
-      ctx.documentos = documentos.map(d => ({
-        categoria: d.categoria, titulo: d.titulo,
-        valor_do_orcamento: d.valorOrcamento,
-        data_termino_cronograma: d.dataCronograma,
-        notas: d.notas || '', atualizado_em: d.atualizadoEm,
-        guardado_como: d.tipo === 'arquivo' ? 'arquivo anexado' : 'link'
-      }));
-    }
-  } catch (e) { /* documentos ficam de fora */ }
-
-  try {
-    const mural = JSON.parse(localStorage.getItem('manut_mural') || '[]');
-    if (mural.length) {
-      ctx.mural_da_obra = mural
-        .sort((a, b) => b.criadoEm - a.criadoEm)
-        .slice(0, 50)
-        .map(m => ({ autor: m.autor, mensagem: m.texto, quando: new Date(m.criadoEm).toISOString() }));
-    }
-  } catch (e) { /* mural fica de fora */ }
-
-  return Object.keys(ctx).length ? ctx : null;
-}
-
-// Busca no Supabase da obra ativa o que a IA usava direto da planilha antes
-// da migração (RDO, Notas Fiscais) e mais o que já está em memória (Pauta,
-// Check-in) — ver montarContextoParaIA() em BuildlyBackend.gs, que agora
-// prefere estes campos e só volta a ler a planilha se não vierem. Recorte de
-// 3 meses no RDO e nas Notas Fiscais espelha MESES_CONTEXTO_IA do Apps
-// Script, pelo mesmo motivo: sem corte, o contexto cresceria a cada dia até
-// estourar o limite do modelo. Fotos e assinaturas (base64) ficam de fora —
-// só interessam texto e números para a IA responder.
-async function montarContextoNuvem() {
-  const ctx = {};
-  const corte = new Date();
-  corte.setMonth(corte.getMonth() - 3);
-  const desde = corte.toISOString().slice(0, 10);
-
-  try {
-    const { data: rdo } = await B3Obras.cliente().from('rdo_snapshot').select('history').eq('id', 1).maybeSingle();
-    if (rdo && rdo.history) {
-      ctx.rdos_diario = Object.values(rdo.history)
-        .filter(d => d && d.data && d.data >= desde)
-        .map(({ fotos, assinaturas, horimetros, ...resto }) => resto)
-        .sort((a, b) => String(a.data).localeCompare(String(b.data)));
-    }
-  } catch (e) { /* RDO fica de fora se a consulta falhar */ }
-
-  try {
-    const cli = B3Obras.cliente();
-    const { data: nfs } = await cli.from('custos_notas_fiscais').select('*').gte('data_emissao', desde);
-    if (nfs && nfs.length) {
-      ctx.notas_fiscais = nfs;
-      const { data: itens } = await cli.from('custos_itens_nf').select('*').in('nf_id', nfs.map(nf => nf.id));
-      if (itens) ctx.itens_nf = itens;
-    }
-  } catch (e) { /* Custos ficam de fora se a consulta falhar */ }
-
-  if (typeof pautaAssuntos !== 'undefined' && pautaAssuntos.length) ctx.pautas = pautaAssuntos;
-  if (typeof checkinAssuntos !== 'undefined' && checkinAssuntos.length) ctx.checkins = checkinAssuntos;
-
-  return ctx;
-}
-
-function obterOuGerarDeviceId() {
-  const chave = 'buildly3::device_id';
-  let id = localStorage.getItem(chave);
-  if (!id) {
-    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    try { localStorage.setItem(chave, id); } catch (e) {}
+function nbRenderFontes() {
+  const box = document.getElementById('nbFontes');
+  if (!nbFontes.length) {
+    box.innerHTML = '<p class="nb-vazio">Nenhuma fonte cadastrada.</p>';
+    nbAtualizaContagem();
+    return;
   }
-  return id;
+  box.innerHTML = nbFontes.map(f =>
+    '<label class="nb-fonte"><input type="checkbox" value="' + _esc(f.codigo) + '"' +
+    (nbAtivas.has(f.codigo) ? ' checked' : '') + ' onchange="nbToggleFonte(this)"><span>' + _esc(f.nome || f.codigo) + '</span></label>'
+  ).join('');
+  nbAtualizaContagem();
 }
-async function enviarPergunta() {
-  const input = document.getElementById('perguntarInput');
-  const pergunta = input.value.trim();
-  if (!pergunta) return;
 
-  const respostaBox = document.getElementById('perguntarResposta');
-  const loading = document.getElementById('perguntarLoading');
-  const btn = document.getElementById('btnPerguntarEnviar');
-  respostaBox.style.display = 'none';
-  loading.style.display = 'block';
+function nbToggleFonte(cb) {
+  if (cb.checked) nbAtivas.add(cb.value); else nbAtivas.delete(cb.value);
+  nbAtualizaContagem();
+}
+
+async function nbCarregarFontes() {
+  if (nbCarregouFontes) return;
+  try {
+    const { data, error } = await B3Obras.cliente().from('notebook_sources')
+      .select('codigo,nome,ativo').eq('ativo', true).order('nome');
+    if (error) throw error;
+    nbFontes = data || [];
+    if (!nbAtivas.size) nbFontes.forEach(f => nbAtivas.add(f.codigo));
+    nbCarregouFontes = true;
+    nbRenderFontes();
+  } catch (e) {
+    document.getElementById('nbFontes').innerHTML = '<p class="nb-vazio nb-erro">Não foi possível carregar as fontes.</p>';
+    nbAviso('Erro ao carregar fontes: ' + (e.message || e), 'erro');
+  }
+}
+
+async function nbCarregarRelatorios() {
+  const box = document.getElementById('nbRelatorios');
+  try {
+    const { data, error } = await B3Obras.cliente().from('notebook_saved_reports')
+      .select('id,title,content,created_at').order('created_at', { ascending: false }).limit(30);
+    if (error) throw error;
+    if (!data || !data.length) {
+      box.innerHTML = '<p class="nb-vazio">Nenhum relatório salvo ainda.</p>';
+      return;
+    }
+    box.innerHTML = data.map(r =>
+      '<button type="button" class="nb-rel" onclick="nbVerRelatorio(\'' + _esc(String(r.id)) + '\')">' +
+      '<span>' + _esc(r.title || '(sem título)') + '</span>' +
+      '<small>' + _esc(new Date(r.created_at).toLocaleDateString('pt-BR')) + '</small></button>'
+    ).join('');
+    box._dados = data;
+  } catch (e) {
+    box.innerHTML = '<p class="nb-vazio nb-erro">Não foi possível carregar os relatórios.</p>';
+  }
+}
+
+function nbVerRelatorio(id) {
+  const box = document.getElementById('nbRelatorios');
+  const r = (box._dados || []).find(x => String(x.id) === String(id));
+  if (!r) return;
+  const msgs = document.getElementById('nbMensagens');
+  msgs.innerHTML = '<div class="nb-balao nb-assistant"><b>' + _esc(r.title || 'Relatório') + '</b><br>' +
+    _esc(r.content || '').replace(/\n/g, '<br>') + '</div>';
+  nbAviso('Relatório aberto. Use "Nova conversa" para voltar às perguntas.', 'ok');
+}
+
+function nbRenderMensagemAssistente(texto, fontes, idx) {
+  const safe = _esc(texto || '').replace(/\[(\d+)\]/g,
+    (m, n) => '<button type="button" class="nb-cit" onclick="nbDestacaFonte(' + idx + ',' + n + ')">' + n + '</button>');
+  const lista = (fontes || []).map(f =>
+    '<div class="nb-src-item" id="nbsrc-' + idx + '-' + f.n + '">[' + f.n + '] ' + _esc(f.titulo || '') +
+    ' <small>(' + _esc(f.modulo || '') + (f.data_ref ? ', ' + _esc(f.data_ref) : '') + ')</small></div>'
+  ).join('');
+  return '<div class="nb-balao nb-assistant">' + safe.replace(/\n/g, '<br>') +
+    (lista ? '<div class="nb-src">' + lista + '</div>' : '') + '</div>';
+}
+
+function nbDestacaFonte(idx, n) {
+  document.querySelectorAll('[id^="nbsrc-' + idx + '-"]').forEach(e => e.classList.remove('nb-src-on'));
+  const el = document.getElementById('nbsrc-' + idx + '-' + n);
+  if (el) { el.classList.add('nb-src-on'); el.scrollIntoView({ block: 'nearest' }); }
+}
+
+function nbAdicionaBalao(html) {
+  const msgs = document.getElementById('nbMensagens');
+  const vazio = msgs.querySelector('.nb-vazio-chat');
+  if (vazio) vazio.remove();
+  msgs.insertAdjacentHTML('beforeend', html);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+let nbMsgIdx = 0;
+
+async function nbPerguntar() {
+  const input = document.getElementById('nbInput');
+  const pergunta = (input.value || '').trim();
+  if (!pergunta) { nbAviso('Digite uma pergunta.', 'erro'); return; }
+  if (!nbAtivas.size) { nbAviso('Ative pelo menos uma fonte.', 'erro'); return; }
+
+  const btn = document.getElementById('nbEnviar');
   btn.disabled = true;
+  nbAviso('Buscando nas fontes ativas...');
+  nbAdicionaBalao('<div class="nb-balao nb-user">' + _esc(pergunta) + '</div>');
+  input.value = '';
 
   try {
-    // Desde a migração para Supabase, o Apps Script não grava mais nada na
-    // planilha — o contexto que ele lia de lá (Diário, Pauta, Check-in,
-    // Notas Fiscais) ficaria congelado sem isto. Medições, Documentos e
-    // Mural (só existem neste navegador) vêm de montarContextoLocal(); RDO,
-    // Custos, Pauta e Check-in vêm do Supabase da obra ativa, buscados em
-    // montarContextoNuvem(). Se uma das buscas falhar, o robô segue com o
-    // que conseguiu montar.
-    const contextoLocal = montarContextoLocal() || {};
-    try { Object.assign(contextoLocal, await montarContextoNuvem()); }
-    catch (e) { /* segue só com o contexto local */ }
+    const body = { pergunta, modulos: Array.from(nbAtivas) };
+    if (nbSessionId) body.sessionId = nbSessionId;
+    const { data, error } = await B3Obras.cliente().functions.invoke('notebook-perguntar', { body });
+    if (error) throw error;
+    if (data && data.sessionId) nbSessionId = data.sessionId;
+    const idx = ++nbMsgIdx;
+    const resposta = (data && data.resposta) || 'Sem resposta.';
+    const fontes = (data && data.fontes) || [];
+    nbUltimaResposta = { pergunta, resposta, fontes };
+    nbAdicionaBalao(nbRenderMensagemAssistente(resposta, fontes, idx));
+    document.getElementById('nbSalvar').disabled = false;
+    nbAviso(data && data.logSalvo === false ? 'Resposta gerada, mas o log não foi salvo.' : '', data && data.logSalvo === false ? 'erro' : '');
+  } catch (e) {
+    nbAdicionaBalao('<div class="nb-balao nb-assistant nb-erro">Não foi possível responder agora.</div>');
+    nbAviso('Erro: ' + (e.message || e), 'erro');
+  } finally {
+    btn.disabled = nbAtivas.size === 0;
+  }
+}
 
-    const { data, error } = await B3Obras.cliente().functions.invoke('ia-perguntar', {
-      body: { pergunta, contextoLocal, deviceId: obterOuGerarDeviceId() }
+function nbNovaConversa() {
+  nbSessionId = null;
+  nbUltimaResposta = null;
+  document.getElementById('nbSalvar').disabled = true;
+  document.getElementById('nbMensagens').innerHTML =
+    '<p class="nb-vazio nb-vazio-chat">Faça uma pergunta sobre os dados da obra. As respostas trazem citações [n] das fontes ativas.</p>';
+  nbAviso('');
+}
+
+async function nbSalvarRelatorio() {
+  if (!nbUltimaResposta) { nbAviso('Faça uma pergunta antes de salvar.', 'erro'); return; }
+  const titulo = (document.getElementById('nbTituloRel').value || '').trim() ||
+    ('Relatório ' + new Date().toLocaleDateString('pt-BR'));
+  const u = nbUltimaResposta;
+  const conteudo = 'Pergunta: ' + u.pergunta + '\n\n' + u.resposta + '\n\nFontes:\n' +
+    u.fontes.map(f => '[' + f.n + '] ' + (f.titulo || '') + ' (' + (f.modulo || '') + (f.data_ref ? ', ' + f.data_ref : '') + ')').join('\n');
+  const btn = document.getElementById('nbSalvar');
+  btn.disabled = true;
+  try {
+    const { data: ures } = await B3Obras.cliente().auth.getUser();
+    const { error } = await B3Obras.cliente().from('notebook_saved_reports').insert({
+      title: titulo,
+      content: conteudo,
+      category: 'notebook',
+      created_by: ures && ures.user ? ures.user.id : null
     });
     if (error) throw error;
-    respostaBox.textContent = (data && data.resposta) || '❌ Não foi possível obter resposta.';
-  } catch (err) {
-    respostaBox.textContent = '❌ Erro de conexão: ' + err.message;
+    document.getElementById('nbTituloRel').value = '';
+    nbAviso('Relatório salvo.', 'ok');
+    nbCarregarRelatorios();
+  } catch (e) {
+    nbAviso('Erro ao salvar relatório: ' + (e.message || e), 'erro');
   } finally {
-    respostaBox.style.display = 'block';
-    loading.style.display = 'none';
     btn.disabled = false;
   }
 }
+
+function abrirNotebook() {
+  document.getElementById('modalNotebook').classList.add('open');
+  nbCarregarFontes();
+  nbCarregarRelatorios();
+  setTimeout(() => document.getElementById('nbInput').focus(), 50);
+}
+
+function fecharNotebook() {
+  document.getElementById('modalNotebook').classList.remove('open');
+}
+
+document.getElementById('modalNotebook').addEventListener('click', function(e) {
+  if (e.target === this) fecharNotebook();
+});
 
 // O elemento hdr-date nunca existiu nesta pagina. Sem a guarda abaixo, a
 // atribuicao em null lancava TypeError no carregamento e matava o script a
