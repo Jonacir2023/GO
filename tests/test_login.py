@@ -68,8 +68,8 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/buildly-completo.html")
     page.wait_for_timeout(1200)
     check(not login_visivel(page), "administrador logado não vê o login")
-    check(len(cartoes_visiveis(page)) == 13, f"administrador vê os 13 módulos ({len(cartoes_visiveis(page))})")
-    check(page.evaluate("() => getComputedStyle(document.querySelector('.fab-ia-wrap')).display") != "none", "administrador vê o robô")
+    check(len(cartoes_visiveis(page)) == 14, f"administrador vê os 14 módulos ({len(cartoes_visiveis(page))})")
+    # Robô flutuante removido em favor do Notebook (AI HUB)
     page.evaluate("abrirPerfil()")
     txt = page.inner_text("#sheet-corpo")
     check("Administrador" in txt and "Usuários e acessos" in txt and "Trocar senha" in txt and "Sair" in txt,
@@ -86,7 +86,7 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/buildly-completo.html")
     page.wait_for_timeout(1200)
     check(cartoes_visiveis(page) == ["custos"], f"portaria vê só o módulo Entradas ({cartoes_visiveis(page)})")
-    check(page.evaluate("() => getComputedStyle(document.querySelector('.fab-ia-wrap')).display") == "none", "portaria não vê o robô")
+    # Robô flutuante removido em favor do Notebook (AI HUB) — portaria não o vê
     page.evaluate("switchTab('rdo')")
     check(page.evaluate("() => currentTab") == "home", "portaria não consegue abrir o RDO nem por script")
     page.evaluate("switchTab('custos')")
