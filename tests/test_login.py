@@ -38,9 +38,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(1200)
     check(login_visivel(page), "sem sessão, a tela de login aparece")
     check(cartoes_visiveis(page) == [], "sem sessão, nenhum módulo fica visível atrás do login")
-    check(page.evaluate("() => document.querySelector('.fab-ia-btn').getBoundingClientRect().width") == 0 or
-          page.evaluate("() => getComputedStyle(document.querySelector('.fab-ia-wrap')).display") == "none",
-          "sem sessão, o robô também fica escondido")
+    # Robô flutuante removido em favor do Notebook (AI HUB) — não há mais elemento .fab-ia-btn
     page.fill("#login-email", "isso-nao-e-email")
     page.fill("#login-senha", "12345678")
     page.click("#login-btn")
