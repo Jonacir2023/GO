@@ -482,8 +482,12 @@ html.b3-trancado body{overflow:hidden}
     setItem: function (k, v) { real.setItem(P + k, v); },
     removeItem: function (k) { real.removeItem(P + k); },
     // clear() apaga só o que é do BUILDLy — nunca o armazenamento dos outros
-    // apps da mesma origem.
-    clear: function () { nossas().forEach(function (k) { real.removeItem(k); }); }
+    // apps da mesma origem. Usa loop porque alguns navegadores reindexam
+    // durante a iteração; repetir até nenhuma chave ficar.
+    clear: function () {
+      var k;
+      while ((k = nossas()[0])) { real.removeItem(k); }
+    }
   };
 
   try {
