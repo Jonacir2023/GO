@@ -55,7 +55,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .nb-tag{display:inline-block;font-size:10px;letter-spacing:.08em;padding:2px 6px;border-radius:4px;background:var(--accent);color:#fff;vertical-align:middle;margin-left:4px}
 .nb-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);display:none}
 .nb-overlay.open{display:block}
-.nb-shell{height:100%;max-width:1200px;margin:0 auto;background:var(--bg-card);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.nb-shell{height:100%;max-width:none;margin:0;background:var(--bg-card);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
 .nb-col{min-width:0;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line)}
 .nb-col:first-child{border-top:none}
 .nb-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
@@ -79,20 +79,21 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .nb-aviso.erro,.nb-erro{color:#c0392b}
 .nb-entrada{display:flex;gap:8px;align-items:flex-end}
 .nb-entrada textarea{flex:1;min-width:0;resize:vertical}
-.nb-salvar{display:flex;flex-direction:column;gap:8px}
-.nb-salvar input{width:100%;min-width:0;box-sizing:border-box}
-.nb-relatorios{display:flex;flex-direction:column;gap:6px}
-.nb-rel{text-align:left;background:var(--bg-mid);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
+.nb-rodape{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:10px}
+.nb-salvar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto}
+.nb-salvar input{width:200px;max-width:100%;min-width:0;box-sizing:border-box}
+.nb-relatorios{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;flex:1 1 200px;min-width:0;max-height:76px;overflow-y:auto}
+.nb-relatorios > .nb-vazio{align-self:center}
+.nb-rel{text-align:left;background:var(--bg-mid);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;max-width:100%;overflow-wrap:anywhere}
 .nb-rel small{font-size:11px;opacity:.8}
 .nb-vazio{font-size:12px;color:var(--ink);font-style:italic;margin:0}
 @media (min-width: 900px){
-  .nb-overlay{padding:24px}
-  .nb-shell{flex-direction:row;height:100%;overflow:hidden;border-radius:12px}
+  .nb-overlay{padding:0}
+  .nb-shell{flex-direction:row;height:100%;overflow:hidden;border-radius:0}
   .nb-col{border-top:none;border-left:1px solid var(--line);overflow-y:auto}
   .nb-col:first-child{border-left:none}
-  .nb-fontes-col{flex:0 0 240px}
+  .nb-fontes-col{flex:0 0 260px}
   .nb-chat-col{flex:1 1 auto;min-height:0}
-  .nb-rel-col{flex:0 0 280px}
   .nb-mensagens{flex:1;min-height:0;max-height:none}
 }
 @media (max-width: 899px){
@@ -1175,6 +1176,11 @@ window.B3_CASCA = true;
 <!-- NOTEBOOK (AI HUB) — fontes ativas / conversa com citações / relatórios salvos -->
 <div class="nb-overlay" id="modalNotebook" role="dialog" aria-modal="true" aria-label="Notebook">
   <div class="nb-shell">
+    <aside class="nb-col nb-fontes-col">
+      <div class="nb-cab"><h3>Fontes ativas</h3></div>
+      <span id="nbContagem" class="nb-contagem"></span>
+      <div id="nbFontes" class="nb-fontes"><p class="nb-vazio">Carregando fontes...</p></div>
+    </aside>
     <section class="nb-col nb-chat-col">
       <div class="nb-cab">
         <h3>Notebook <span class="nb-tag">AI HUB</span></h3>
@@ -1189,20 +1195,14 @@ window.B3_CASCA = true;
         <textarea id="nbInput" rows="2" placeholder="Ex.: Quais pautas estão atrasadas? Quanto gastamos com cimento em julho?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();nbPerguntar();}"></textarea>
         <button type="button" id="nbEnviar" class="btn btn-primary" onclick="nbPerguntar()">Perguntar</button>
       </div>
-    </section>
-    <aside class="nb-col nb-fontes-col">
-      <div class="nb-cab"><h3>Fontes ativas</h3></div>
-      <span id="nbContagem" class="nb-contagem"></span>
-      <div id="nbFontes" class="nb-fontes"><p class="nb-vazio">Carregando fontes...</p></div>
-    </aside>
-    <aside class="nb-col nb-rel-col">
-      <div class="nb-cab"><h3>Relatórios Salvos</h3></div>
-      <div class="nb-salvar">
-        <input id="nbTituloRel" type="text" placeholder="Título do relatório (opcional)">
-        <button type="button" id="nbSalvar" class="btn btn-primary" disabled onclick="nbSalvarRelatorio()">Salvar como Relatório</button>
+      <div class="nb-rodape">
+        <div id="nbRelatorios" class="nb-relatorios"></div>
+        <div class="nb-salvar">
+          <input id="nbTituloRel" type="text" placeholder="Título do relatório (opcional)">
+          <button type="button" id="nbSalvar" class="btn btn-primary" disabled onclick="nbSalvarRelatorio()">Salvar como Relatório</button>
+        </div>
       </div>
-      <div id="nbRelatorios" class="nb-relatorios"></div>
-    </aside>
+    </section>
   </div>
 </div>
 
