@@ -1924,21 +1924,14 @@ function nbVerRelatorio(id) {
   nbAviso('Relatório aberto. Use "Nova conversa" para voltar às perguntas.', 'ok');
 }
 
-function nbRenderMensagemAssistente(texto, fontes, idx) {
-  const safe = _esc(texto || '').replace(/\[(\d+)\]/g,
-    (m, n) => '<button type="button" class="nb-cit" onclick="nbDestacaFonte(' + idx + ',' + n + ')">' + n + '</button>');
-  const lista = (fontes || []).map(f =>
-    '<div class="nb-src-item" id="nbsrc-' + idx + '-' + f.n + '">[' + f.n + '] ' + _esc(f.titulo || '') +
-    ' <small>(' + _esc(f.modulo || '') + (f.data_ref ? ', ' + _esc(f.data_ref) : '') + ')</small></div>'
-  ).join('');
-  return '<div class="nb-balao nb-assistant">' + safe.replace(/\n/g, '<br>') +
-    (lista ? '<div class="nb-src">' + lista + '</div>' : '') + '</div>';
-}
-
-function nbDestacaFonte(idx, n) {
-  document.querySelectorAll('[id^="nbsrc-' + idx + '-"]').forEach(e => e.classList.remove('nb-src-on'));
-  const el = document.getElementById('nbsrc-' + idx + '-' + n);
-  if (el) { el.classList.add('nb-src-on'); el.scrollIntoView({ block: 'nearest' }); }
+function nbRenderMensagemAssistente(texto, fontes) {
+  // Citações [n] viram marcas com a fonte no tooltip; a lista de fontes não aparece na conversa
+  const safe = _esc(texto || '').replace(/\[(\d+)\]/g, (m, n) => {
+    const f = (fontes || []).find(x => String(x.n) === n);
+    const dica = f ? _esc('[' + n + '] ' + (f.titulo || '') + ' (' + (f.modulo || '') + ')') : '';
+    return '<span class="nb-cit" title="' + dica + '">' + n + '</span>';
+  });
+  return '<div class="nb-balao nb-assistant">' + safe.replace(/\n/g, '<br>') + '</div>';
 }
 
 function nbAdicionaBalao(html) {
@@ -1948,8 +1941,6 @@ function nbAdicionaBalao(html) {
   msgs.insertAdjacentHTML('beforeend', html);
   msgs.scrollTop = msgs.scrollHeight;
 }
-
-let nbMsgIdx = 0;
 
 async function nbPerguntar() {
   const input = document.getElementById('nbInput');
@@ -1969,11 +1960,10 @@ async function nbPerguntar() {
     const { data, error } = await B3Obras.cliente().functions.invoke('notebook-perguntar', { body });
     if (error) throw error;
     if (data && data.sessionId) nbSessionId = data.sessionId;
-    const idx = ++nbMsgIdx;
     const resposta = (data && data.resposta) || 'Sem resposta.';
     const fontes = (data && data.fontes) || [];
     nbUltimaResposta = { pergunta, resposta, fontes };
-    nbAdicionaBalao(nbRenderMensagemAssistente(resposta, fontes, idx));
+    nbAdicionaBalao(nbRenderMensagemAssistente(resposta, fontes));
     document.getElementById('nbSalvar').disabled = false;
     nbAviso(data && data.logSalvo === false ? 'Resposta gerada, mas o log não foi salvo.' : '', data && data.logSalvo === false ? 'erro' : '');
   } catch (e) {
