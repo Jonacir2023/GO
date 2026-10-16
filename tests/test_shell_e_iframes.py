@@ -26,7 +26,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(1500)
 
     check(page.evaluate("() => !!localStorage.__buildly3"), "shell com espaço próprio")
-    check(page.evaluate("() => !!document.querySelector('.fab-ia-btn')"), "robô flutuante presente")
+    check(not page.evaluate("() => !!document.querySelector('.fab-ia-btn')"), "robô flutuante removido em favor do Notebook (AI HUB)")
 
     # o nome da obra é compartilhado ENTRE os apps do BUILDLy (mesmo prefixo)
     page.evaluate("localStorage.setItem('b3_obra', JSON.stringify({nome:'Obra Teste B3'}))")
