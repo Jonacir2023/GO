@@ -1,0 +1,118 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║          INSTRUÇÕES: POPULAR NOTEBOOK_SOURCES (2 minutos)                      ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+PROBLEMA: Notebook retorna resultados genéricos porque tabela notebook_sources
+está vazia.
+
+SOLUÇÃO: Executar SQL em ambas as obras do Supabase.
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+OBRA 1 (Eólica GranSul)
+─────────────────────────────────────────────────────────────────────────────────
+
+1. Acesse: https://dashboard.supabase.com
+
+2. Localize projeto: "ivssgstckfcuiyetxdze" (Obra 1)
+
+3. Clique em: "SQL Editor" (painel esquerdo)
+
+4. Crie nova query (botão + New Query)
+
+5. Cole EXATAMENTE isto:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ DELETE FROM public.notebook_sources;                                       │
+│                                                                             │
+│ INSERT INTO public.notebook_sources (codigo, nome, ativo) VALUES           │
+│   ('planejamento', 'Planejamento (Atividades e Cronogramas)', true),       │
+│   ('rdo', 'RDO (Relatório Diário de Obras)', true),                        │
+│   ('custos', 'Entradas (Custos e Financeiro)', true),                      │
+│   ('medicao', 'Medições (Cliente e Empreiteiros)', true),                  │
+│   ('documentos', 'Documentos da Obra', true),                              │
+│   ('pauta', 'Pauta de Reuniões', true),                                    │
+│   ('checkin', 'Check-in (Pendências)', true),                              │
+│   ('manutencao', 'Manutenção (Mural)', true),                              │
+│   ('reuniao', 'Reuniões (Atas)', true);                                    │
+│                                                                             │
+│ SELECT COUNT(*) as total_inserido FROM public.notebook_sources;            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+6. Clique em: "RUN" (ou Ctrl+Enter)
+
+7. Resultado esperado no console:
+   ✓ "9 rows affected"
+   ✓ "total_inserido: 9"
+
+8. PRONTO! Obra 1 configurada.
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+OBRA 2 (Vazia)
+─────────────────────────────────────────────────────────────────────────────────
+
+1. Volte a https://dashboard.supabase.com
+
+2. Mude para projeto: "lwjbuzubnxnzkofcrhah" (Obra 2)
+
+3. SQL Editor
+
+4. Nova query
+
+5. Cole O MESMO SQL (4 linhas acima)
+
+6. RUN
+
+7. Confirmação: "total_inserido: 9"
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+TESTE PÓS-INSTALAÇÃO (opcional, mas recomendado)
+─────────────────────────────────────────────────────────────────────────────────
+
+Para verificar que funcionou:
+
+Em qualquer SQL Editor (Obra 1 ou 2), execute:
+
+┌──────────────────────────────────────────────────┐
+│ SELECT * FROM public.notebook_sources ORDER BY   │
+│ codigo;                                          │
+└──────────────────────────────────────────────────┘
+
+Deve retornar 9 linhas com os módulos.
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+PRÓXIMO PASSO
+─────────────────────────────────────────────────────────────────────────────────
+
+Após executar o SQL nas duas obras:
+
+1. Abra o BUILDLy Notebook no app
+2. Selecione "Planejamento" como fonte ativa
+3. Pergunte: "Quais atividades envolvem plataforma?"
+4. Deve retornar atividades específicas (GS2, GS3, etc)
+   em vez de 2378 itens genéricos
+
+Se ainda retornar genérico → Claude implementará a melhoria
+na Edge Function (PASSO 2).
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+DÚVIDAS?
+─────────────────────────────────────────────────────────────────────────────────
+
+- Erro "permission denied"?
+  → Use a chave de "Service Role" se disponível
+  → Ou peça acesso de admin do Supabase
+
+- Tabela não existe?
+  → Contacte o time de backend (tabelas devem ter sido criadas)
+
+- Query está corta?
+  → Copie também os ponto-e-vírgulas (;) finais
+
+═══════════════════════════════════════════════════════════════════════════════════

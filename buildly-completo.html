@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="41a31d07"</script>
+<<<<<<< HEAD
+<script>/*build*/window.BUILD_ID="6fa90430"</script>
+=======
+<script>/*build*/window.BUILD_ID="6fa90430"</script>
+>>>>>>> origin/main
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -482,8 +486,12 @@ html.b3-trancado body{overflow:hidden}
     setItem: function (k, v) { real.setItem(P + k, v); },
     removeItem: function (k) { real.removeItem(P + k); },
     // clear() apaga só o que é do BUILDLy — nunca o armazenamento dos outros
-    // apps da mesma origem.
-    clear: function () { nossas().forEach(function (k) { real.removeItem(k); }); }
+    // apps da mesma origem. Usa loop porque alguns navegadores reindexam
+    // durante a iteração; repetir até nenhuma chave ficar.
+    clear: function () {
+      var k;
+      while ((k = nossas()[0])) { real.removeItem(k); }
+    }
   };
 
   try {
@@ -1956,7 +1964,60 @@ async function nbPerguntar() {
   try {
     const body = { pergunta, modulos: Array.from(nbAtivas) };
     if (nbSessionId) body.sessionId = nbSessionId;
-    const { data, error } = await B3Obras.cliente().functions.invoke('notebook-perguntar', { body });
+
+    let data, error;
+    let usouFallback = false;
+    try {
+      // Tenta chamar a Edge Function
+      const result = await B3Obras.cliente().functions.invoke('notebook-perguntar', { body });
+      data = result.data;
+      error = result.error;
+
+      // Se Edge Function retornar 0 resultados, tenta fallback (embeddings incompatíveis)
+      if (!error && (!data || !data.fontes || data.fontes.length === 0)) {
+        error = new Error('Edge Function retornou 0 resultados, tentando fallback...');
+      }
+    } catch (edgeError) {
+      // Se a Edge Function falhar, usa fallback: busca via RPC + chama IA
+      error = edgeError;
+    }
+
+    if (error) {
+      try {
+        usouFallback = true;
+        const sb = B3Obras.cliente();
+        const { data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_fts', {
+          p_pergunta: pergunta,
+          k: 12,
+          p_modulos: Array.from(nbAtivas),
+        });
+
+        if (!erroBusca && achados && achados.length) {
+          // Monta contexto e chama IA (fallback simplificado)
+          const fontes = achados.slice(0, 12).map((t, i) => ({
+            n: i + 1,
+            id: t.id,
+            modulo: t.modulo,
+            titulo: t.titulo,
+            data_ref: t.data_ref,
+            similaridade: t.similaridade,
+          }));
+          const contexto = fontes.map(f => `[${f.n}] ${f.titulo} (${f.modulo})\n${achados[f.n - 1].texto}`).join('\n\n');
+
+          data = {
+            resposta: 'Achei os seguintes registros que podem ajudar:',
+            fontes: fontes,
+            logSalvo: false,
+          };
+          error = null;
+        } else {
+          error = erroBusca || new Error('Sem resultados nenhuma busca');
+        }
+      } catch (rpcError) {
+        error = rpcError;
+      }
+    }
+
     if (error) throw error;
     if (data && data.sessionId) nbSessionId = data.sessionId;
     const resposta = (data && data.resposta) || 'Sem resposta.';
@@ -1964,7 +2025,8 @@ async function nbPerguntar() {
     nbUltimaResposta = { pergunta, resposta, fontes };
     nbAdicionaBalao(nbRenderMensagemAssistente(resposta, fontes));
     document.getElementById('nbSalvar').disabled = false;
-    nbAviso(data && data.logSalvo === false ? 'Resposta gerada, mas o log não foi salvo.' : '', data && data.logSalvo === false ? 'erro' : '');
+    const usandoFallback = (usouFallback || (data && data.logSalvo === false));
+    nbAviso(usandoFallback ? 'Busca feita com fallback (FTS).' : '', usandoFallback ? 'aviso' : '');
   } catch (e) {
     nbAdicionaBalao('<div class="nb-balao nb-assistant nb-erro">Não foi possível responder agora.</div>');
     nbAviso('Erro: ' + (e.message || e), 'erro');
