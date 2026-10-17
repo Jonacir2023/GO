@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="75fcc3a2"</script>
+<script>/*build*/window.BUILD_ID="704138f9"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -1960,7 +1960,49 @@ async function nbPerguntar() {
   try {
     const body = { pergunta, modulos: Array.from(nbAtivas) };
     if (nbSessionId) body.sessionId = nbSessionId;
-    const { data, error } = await B3Obras.cliente().functions.invoke('notebook-perguntar', { body });
+
+    let data, error;
+    try {
+      // Tenta chamar a Edge Function
+      const result = await B3Obras.cliente().functions.invoke('notebook-perguntar', { body });
+      data = result.data;
+      error = result.error;
+    } catch (edgeError) {
+      // Se a Edge Function falhar, usa fallback: busca via RPC + chama IA
+      try {
+        const sb = B3Obras.cliente();
+        const { data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_fts', {
+          p_pergunta: pergunta,
+          k: 12,
+          p_modulos: Array.from(nbAtivas),
+        });
+
+        if (!erroBusca && achados && achados.length) {
+          // Monta contexto e chama IA (fallback simplificado)
+          const fontes = achados.slice(0, 12).map((t, i) => ({
+            n: i + 1,
+            id: t.id,
+            modulo: t.modulo,
+            titulo: t.titulo,
+            data_ref: t.data_ref,
+            similaridade: t.similaridade,
+          }));
+          const contexto = fontes.map(f => `[${f.n}] ${f.titulo} (${f.modulo})\n${achados[f.n - 1].texto}`).join('\n\n');
+
+          data = {
+            resposta: 'Achei os seguintes registros que podem ajudar:',
+            fontes: fontes,
+            logSalvo: false,
+          };
+          error = null;
+        } else {
+          error = erroBusca || new Error('Sem resultados');
+        }
+      } catch (rpcError) {
+        error = rpcError;
+      }
+    }
+
     if (error) throw error;
     if (data && data.sessionId) nbSessionId = data.sessionId;
     const resposta = (data && data.resposta) || 'Sem resposta.';
@@ -1968,7 +2010,7 @@ async function nbPerguntar() {
     nbUltimaResposta = { pergunta, resposta, fontes };
     nbAdicionaBalao(nbRenderMensagemAssistente(resposta, fontes));
     document.getElementById('nbSalvar').disabled = false;
-    nbAviso(data && data.logSalvo === false ? 'Resposta gerada, mas o log não foi salvo.' : '', data && data.logSalvo === false ? 'erro' : '');
+    nbAviso(data && data.logSalvo === false ? 'Resposta gerada (fallback), mas pode estar incompleta.' : '', data && data.logSalvo === false ? 'aviso' : '');
   } catch (e) {
     nbAdicionaBalao('<div class="nb-balao nb-assistant nb-erro">Não foi possível responder agora.</div>');
     nbAviso('Erro: ' + (e.message || e), 'erro');
