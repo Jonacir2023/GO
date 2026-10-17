@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="704138f9"</script>
+<script>/*build*/window.BUILD_ID="dc4c3d56"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -1962,14 +1962,25 @@ async function nbPerguntar() {
     if (nbSessionId) body.sessionId = nbSessionId;
 
     let data, error;
+    let usouFallback = false;
     try {
       // Tenta chamar a Edge Function
       const result = await B3Obras.cliente().functions.invoke('notebook-perguntar', { body });
       data = result.data;
       error = result.error;
+
+      // Se Edge Function retornar 0 resultados, tenta fallback (embeddings incompatíveis)
+      if (!error && (!data || !data.fontes || data.fontes.length === 0)) {
+        error = new Error('Edge Function retornou 0 resultados, tentando fallback...');
+      }
     } catch (edgeError) {
       // Se a Edge Function falhar, usa fallback: busca via RPC + chama IA
+      error = edgeError;
+    }
+
+    if (error) {
       try {
+        usouFallback = true;
         const sb = B3Obras.cliente();
         const { data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_fts', {
           p_pergunta: pergunta,
@@ -1996,7 +2007,7 @@ async function nbPerguntar() {
           };
           error = null;
         } else {
-          error = erroBusca || new Error('Sem resultados');
+          error = erroBusca || new Error('Sem resultados nenhuma busca');
         }
       } catch (rpcError) {
         error = rpcError;
@@ -2010,7 +2021,8 @@ async function nbPerguntar() {
     nbUltimaResposta = { pergunta, resposta, fontes };
     nbAdicionaBalao(nbRenderMensagemAssistente(resposta, fontes));
     document.getElementById('nbSalvar').disabled = false;
-    nbAviso(data && data.logSalvo === false ? 'Resposta gerada (fallback), mas pode estar incompleta.' : '', data && data.logSalvo === false ? 'aviso' : '');
+    const usandoFallback = (usouFallback || (data && data.logSalvo === false));
+    nbAviso(usandoFallback ? 'Busca feita com fallback (FTS).' : '', usandoFallback ? 'aviso' : '');
   } catch (e) {
     nbAdicionaBalao('<div class="nb-balao nb-assistant nb-erro">Não foi possível responder agora.</div>');
     nbAviso('Erro: ' + (e.message || e), 'erro');
