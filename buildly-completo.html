@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
 <<<<<<< HEAD
-<script>/*build*/window.BUILD_ID="6fa90430"</script>
+<script>/*build*/window.BUILD_ID="330f2305"</script>
 =======
-<script>/*build*/window.BUILD_ID="6fa90430"</script>
+<script>/*build*/window.BUILD_ID="330f2305"</script>
 >>>>>>> origin/main
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
@@ -1973,9 +1973,13 @@ async function nbPerguntar() {
       data = result.data;
       error = result.error;
 
+      // Debug: log resposta da Edge Function
+      console.log('Edge Function response:', { data, error, fontes_length: data?.fontes?.length });
+
       // Se Edge Function retornar 0 resultados, tenta fallback (embeddings incompatíveis)
       if (!error && (!data || !data.fontes || data.fontes.length === 0)) {
         error = new Error('Edge Function retornou 0 resultados, tentando fallback...');
+        console.log('Fallback acionado: fontes vazias');
       }
     } catch (edgeError) {
       // Se a Edge Function falhar, usa fallback: busca via RPC + chama IA
