@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<<<<<<< HEAD
 <script>/*build*/window.BUILD_ID="6fa90430"</script>
-=======
-<script>/*build*/window.BUILD_ID="6fa90430"</script>
->>>>>>> origin/main
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -1191,7 +1187,7 @@ window.B3_CASCA = true;
     </aside>
     <section class="nb-col nb-chat-col">
       <div class="nb-cab">
-        <h3>Notebook <span class="nb-tag">AI HUB</span></h3>
+        <h3>Notebook <span class="nb-tag">AI HUB</span> <small id="nbObraNome" style="font-weight:400;opacity:.7"></small></h3>
         <div class="nb-acoes-cab">
           <button type="button" class="nb-link" onclick="nbNovaConversa()">Nova conversa</button>
           <button type="button" class="nb-fechar" onclick="fecharNotebook()" aria-label="Fechar">✕</button>
@@ -1986,11 +1982,11 @@ async function nbPerguntar() {
       try {
         usouFallback = true;
         const sb = B3Obras.cliente();
-        const { data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_fts', {
-          p_pergunta: pergunta,
-          k: 12,
-          p_modulos: Array.from(nbAtivas),
-        });
+        // 1º: busca híbrida (código exato como GS_01 + texto, só da obra atual); se a função
+        // ainda não existir no banco desta obra, cai para a busca por texto antiga.
+        const argsBusca = { p_pergunta: pergunta, k: 12, p_modulos: Array.from(nbAtivas) };
+        let { data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_hibrido', argsBusca);
+        if (erroBusca) ({ data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_fts', argsBusca));
 
         if (!erroBusca && achados && achados.length) {
           // Monta contexto e chama IA (fallback simplificado)
@@ -2005,7 +2001,8 @@ async function nbPerguntar() {
           const contexto = fontes.map(f => `[${f.n}] ${f.titulo} (${f.modulo})\n${achados[f.n - 1].texto}`).join('\n\n');
 
           data = {
-            resposta: 'Achei os seguintes registros que podem ajudar:',
+            resposta: 'Achei estes registros (busca sem IA):\n' + achados.slice(0, 5).map((t, i) =>
+              '[' + (i + 1) + '] ' + t.titulo + ' — ' + String(t.texto || '').replace(/\s+/g, ' ').slice(0, 200)).join('\n'),
             fontes: fontes,
             logSalvo: false,
           };
@@ -2074,6 +2071,7 @@ async function nbSalvarRelatorio() {
 
 function abrirNotebook() {
   document.getElementById('modalNotebook').classList.add('open');
+  try { document.getElementById('nbObraNome').textContent = '· ' + ((B3Obras.atual() || {}).nome || ''); } catch (e) {}
   nbCarregarFontes();
   nbCarregarRelatorios();
   setTimeout(() => document.getElementById('nbInput').focus(), 50);
