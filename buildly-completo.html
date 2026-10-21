@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="73606cff"</script>
+<script>/*build*/window.BUILD_ID="8aedc6b4"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -3567,6 +3567,163 @@ function abrirCadastroLocais() {
   w.atualizarLocaisDaObra();
   w.abrirEditarLocais();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// GOOGLE NOTEBOOK — sincronização e Q&A com Gemini
+// ═══════════════════════════════════════════════════════════════
+
+let gnCarregandoAnotacoes = false;
+let gnAnotacoesCache = [];
+
+async function gnSincronizar() {
+  if (gnCarregandoAnotacoes) return;
+  gnCarregandoAnotacoes = true;
+  const btn = document.getElementById('gnEnviar').closest('section').previousElementSibling.querySelector('button');
+  const txt = btn.textContent;
+  btn.textContent = '⏳ Sincronizando...';
+  btn.disabled = true;
+
+  try {
+    const obraId = B3Obras.atualId();
+    if (!obraId) throw new Error('Nenhuma obra selecionada');
+
+    // Chamar Apps Script para buscar do Google Notebooks API e salvar no Supabase
+    const resp = await fetch('https://script.google.com/macros/d/AKfycbxYmPxC8hL4aLnGmUEYFNvqkL7TrNyIZHZH4v_o6cDHZg8_3sI/usercache', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acao: 'sincronizarGoogleNotebook', obraId})
+    });
+
+    // Carregar anotações do Supabase
+    gnCarregarAnotacoes();
+    obraNotify('✓ Anotações sincronizadas', 'var(--green)');
+  } catch (e) {
+    console.error('Erro ao sincronizar:', e);
+    obraNotify('❌ Erro ao sincronizar anotações', 'var(--red)');
+  } finally {
+    gnCarregandoAnotacoes = false;
+    btn.textContent = txt;
+    btn.disabled = false;
+  }
+}
+
+async function gnCarregarAnotacoes() {
+  try {
+    const obraId = B3Obras.atualId();
+    if (!obraId) return;
+
+    const {data, error} = await B3_SUP.from('google_notebooks')
+      .select('*')
+      .eq('obra_id', obraId)
+      .order('data_anotacao', {ascending: false});
+
+    if (error) throw error;
+
+    gnAnotacoesCache = data || [];
+    const cont = document.getElementById('gnAnotacoes');
+
+    if (!gnAnotacoesCache.length) {
+      cont.innerHTML = '<p class="gn-vazio">Nenhuma anotação sincronizada. Clique em "Sincronizar" para carregar.</p>';
+      return;
+    }
+
+    cont.innerHTML = gnAnotacoesCache.map(a => `
+      <div class="gn-card" onclick="gnMostrarDetalhes('${a.id}')">
+        <div class="gn-card-data">${new Date(a.data_anotacao || a.created_at).toLocaleDateString('pt-BR')}</div>
+        <div class="gn-card-titulo">${a.titulo || 'Sem título'}</div>
+        <div class="gn-card-conteudo">${a.conteudo || ''}</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Erro ao carregar anotações:', e);
+    document.getElementById('gnAnotacoes').innerHTML = '<p class="gn-vazio">❌ Erro ao carregar anotações</p>';
+  }
+}
+
+function gnMostrarDetalhes(id) {
+  const a = gnAnotacoesCache.find(x => x.id === id);
+  if (!a) return;
+  const resp = document.getElementById('gnResposta');
+  resp.innerHTML = `
+    <div class="gn-resposta-conteudo">
+      <strong>${a.titulo || 'Sem título'}</strong><br>
+      ${a.conteudo || ''}<br><br>
+      <small style="color:var(--ink-faint)">${new Date(a.data_anotacao || a.created_at).toLocaleString('pt-BR')}</small>
+    </div>
+  `;
+}
+
+async function gnPerguntar() {
+  const input = document.getElementById('gnInput');
+  const pergunta = input.value.trim();
+  if (!pergunta) return obraNotify('Digite uma pergunta', 'var(--yellow)');
+
+  const btn = document.getElementById('gnEnviar');
+  const resp = document.getElementById('gnResposta');
+
+  btn.disabled = true;
+  resp.innerHTML = '<p class="gn-carregando">⏳ Analisando anotações...</p>';
+
+  try {
+    const obraId = B3Obras.atualId();
+    if (!obraId) throw new Error('Nenhuma obra selecionada');
+
+    // Contexto das anotações
+    const contexto = gnAnotacoesCache
+      .slice(0, 10)
+      .map(a => `[${new Date(a.data_anotacao || a.created_at).toLocaleDateString('pt-BR')}] ${a.titulo}: ${a.conteudo}`)
+      .join('\n\n');
+
+    if (!contexto) {
+      resp.innerHTML = '<p class="gn-vazio">❌ Sincronize anotações primeiro</p>';
+      btn.disabled = false;
+      return;
+    }
+
+    // Chamar Apps Script para usar Gemini API
+    const r = await fetch('https://script.google.com/macros/d/AKfycbxYmPxC8hL4aLnGmUEYFNvqkL7TrNyIZHZH4v_o6cDHZg8_3sI/usercache', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acao: 'responderComGemini', obraId, pergunta, contexto})
+    });
+
+    // Mensagem de sucesso — resposta virá do Apps Script
+    resp.innerHTML = '<p class="gn-carregando">✓ Processando resposta do Gemini...</p>';
+    setTimeout(() => gnCarregarResposta(), 500);
+  } catch (e) {
+    console.error('Erro:', e);
+    resp.innerHTML = '<p class="gn-vazio">❌ Erro ao processar pergunta</p>';
+  } finally {
+    btn.disabled = false;
+    input.value = '';
+  }
+}
+
+async function gnCarregarResposta() {
+  try {
+    const {data} = await B3_SUP.from('google_notebooks')
+      .select('*')
+      .order('updated_at', {ascending: false})
+      .limit(1);
+
+    if (data && data[0] && data[0].conteudo && data[0].conteudo.includes('Resposta:')) {
+      document.getElementById('gnResposta').innerHTML = `<div class="gn-resposta-conteudo">${data[0].conteudo.split('Resposta:')[1]}</div>`;
+    }
+  } catch (e) {
+    console.log('Aguardando resposta...');
+  }
+}
+
+// Inicializar anotações ao abrir página
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (window.B3Obras && document.getElementById('page-google-notebook')) {
+      gnCarregarAnotacoes();
+    }
+  }, 500);
+});
 
 document.querySelectorAll('.modal-overlay,.config-modal').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
