@@ -141,6 +141,23 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
   #page-pauta,#page-checkin,#page-rdo,#page-custos,#page-reuniao,#page-resumo-tempo,#page-medicao,#page-documentos,#page-manutencao,#page-eap,#page-planejamento,#page-financeiro,#page-suprimentos{padding-left:0;padding-right:0}
 }
 
+/* GOOGLE NOTEBOOK */
+.gn-container{max-width:900px;margin:0 auto}
+.gn-anotacoes,.gn-perguntas{background:var(--bg-card);border-radius:var(--radius);padding:16px;border:1px solid var(--line)}
+.gn-anotacoes h3,.gn-perguntas h3{margin:0 0 12px 0;font-size:18px;font-weight:600;color:var(--ink)}
+.gn-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.gn-card{background:var(--bg-mid);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer;transition:all .2s}
+.gn-card:hover{background:var(--bg-dark);border-color:var(--accent)}
+.gn-card-data{font-size:12px;color:var(--ink-faint);margin-bottom:8px}
+.gn-card-titulo{font-weight:600;margin-bottom:6px;color:var(--ink)}
+.gn-card-conteudo{font-size:14px;color:var(--ink);line-height:1.4;max-height:100px;overflow:hidden;text-overflow:ellipsis}
+.gn-entrada{display:flex;gap:8px;align-items:flex-end}
+.gn-entrada textarea{flex:1;padding:10px;background:var(--bg-dark);color:var(--ink);border:1px solid var(--line);border-radius:6px;font-family:var(--sans);resize:vertical}
+.gn-resposta{background:var(--bg-dark);border-left:3px solid var(--accent);padding:12px;border-radius:6px;margin-top:12px;min-height:60px}
+.gn-resposta-conteudo{color:var(--ink);line-height:1.6;white-space:pre-wrap}
+.gn-vazio{font-size:14px;color:var(--ink-faint);font-style:italic;padding:20px;text-align:center}
+.gn-carregando{text-align:center;color:var(--ink-faint);padding:12px}
+
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 
@@ -702,6 +719,12 @@ window.B3_CASCA = true;
         <p>Pergunte às fontes da obra e salve relatórios</p>
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
+      <div class="home-card" data-mod="google-notebook" onclick="switchTab('google-notebook')">
+        <div class="ico g-blue"><svg viewBox="0 0 24 24"><use href="#i-doc"/></svg></div>
+        <h3>Google Notebook</h3>
+        <p>Anotações diárias & perguntas</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
+      </div>
     </div>
     <div class="home-footer"><p>v1.0 | BUILDLy Premium</p></div>
   </div>
@@ -1233,6 +1256,36 @@ window.B3_CASCA = true;
   </div>
 </div>
 
+<!-- GOOGLE NOTEBOOK PAGE -->
+<div class="page" id="page-google-notebook">
+  <header class="hdr" style="position:fixed;top:0;left:0;right:0;z-index:101;width:100%;height:70px">
+    <div class="hdr-top">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-admin" onclick="switchTab('home', document.querySelectorAll('.tab')[0] || this)" style="font-size:20px;padding:4px 8px">⬅️</button>
+        <div>
+          <div class="hdr-logo">GOOGLE<span>NOTEBOOK</span></div>
+          <div class="hdr-sub">Anotações & Perguntas</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="gnSincronizar()" style="margin-right:16px">🔄 Sincronizar</button>
+    </div>
+  </header>
+  <div class="gn-container" style="margin-top:70px;padding:16px;display:flex;flex-direction:column;gap:16px">
+    <section class="gn-anotacoes">
+      <h3>Anotações do Google Notebook</h3>
+      <div id="gnAnotacoes" class="gn-cards"><p class="gn-vazio">Clique em "Sincronizar" para carregar as anotações...</p></div>
+    </section>
+    <section class="gn-perguntas">
+      <h3>Faça uma Pergunta</h3>
+      <div class="gn-entrada">
+        <textarea id="gnInput" rows="3" placeholder="Ex.: Resumo das anotações de hoje. Quais são os próximos passos?"></textarea>
+        <button type="button" id="gnEnviar" class="btn btn-primary" onclick="gnPerguntar()">Perguntar</button>
+      </div>
+      <div id="gnResposta" class="gn-resposta"><p class="gn-vazio">Aguardando pergunta...</p></div>
+    </section>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════
 // MAIN NAVIGATION
@@ -1294,7 +1347,7 @@ function switchTab(tab, el) {
 // ═══════════════════════════════════════════════════════════════
 // CASCA — hero, barra inferior e painéis (padrão visual claro)
 // ═══════════════════════════════════════════════════════════════
-const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Mediçao Cliente", "desc": "Medições de clientes", "i": "ruler", "c": "slate", "t": "MEDIÇÕES CLIENTE", "s": "Medições de Clientes"}, "medicao_empreiteiros": {"nome": "Mediação de Empreiteiros", "desc": "Medições de empreiteiros e terceiros", "i": "ruler", "c": "slate", "t": "MEDIAÇÕES", "s": "Mediações de Empreiteiros"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}, "notebook": {"nome": "Notebook", "desc": "Pergunte às fontes da obra e salve relatórios", "i": "robo", "c": "brown", "t": "NOTEBOOK", "s": "Notebook (AI HUB)"}};
+const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Mediçao Cliente", "desc": "Medições de clientes", "i": "ruler", "c": "slate", "t": "MEDIÇÕES CLIENTE", "s": "Medições de Clientes"}, "medicao_empreiteiros": {"nome": "Mediação de Empreiteiros", "desc": "Medições de empreiteiros e terceiros", "i": "ruler", "c": "slate", "t": "MEDIAÇÕES", "s": "Mediações de Empreiteiros"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}, "notebook": {"nome": "Notebook", "desc": "Pergunte às fontes da obra e salve relatórios", "i": "robo", "c": "brown", "t": "NOTEBOOK", "s": "Notebook (AI HUB)"}, "google-notebook": {"nome": "Google Notebook", "desc": "Anotações diárias & perguntas", "i": "doc", "c": "blue", "t": "GOOGLE NOTEBOOK", "s": "Anotações & Perguntas"}};
 const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "financeiro", "suprimentos"];
 
 function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }
