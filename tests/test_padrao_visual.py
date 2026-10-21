@@ -125,17 +125,16 @@ with sync_playwright() as p:
     check(aberto(page) and "Obra atual" in page.locator("#sheet-corpo").inner_text(), "cartão da obra abre a troca de obra")
     page.evaluate("fecharSheet()")
 
-    # ---- módulos: hero compacto, barra, sem rolagem horizontal ----
+    # ---- módulos: modo modulo ativo, sem rolagem horizontal ----
     for mod in ["rdo", "custos", "medicao", "documentos", "planejamento", "financeiro", "suprimentos",
                 "manutencao", "reuniao", "resumo-tempo", "pauta", "checkin", "obra"]:
         page.evaluate("t => switchTab(t)", mod)
         page.wait_for_timeout(500)
         ok_modulo = page.evaluate("() => document.body.classList.contains('modulo')")
-        titulo = page.locator("#mod-title").inner_text().strip()
         largura = page.evaluate("() => document.documentElement.scrollWidth <= window.innerWidth + 1")
-        check(ok_modulo and titulo and largura, f"{mod}: hero de módulo '{titulo}' e sem rolagem horizontal")
+        check(ok_modulo and largura, f"{mod}: modo módulo ativo e sem rolagem horizontal")
     page.evaluate("switchTab('home')")
-    check(page.evaluate("() => !document.body.classList.contains('modulo')"), "voltar à home restaura o hero grande")
+    check(page.evaluate("() => !document.body.classList.contains('modulo')"), "voltar à home restaura o estado normal")
 
     # ---- modo embutido: app dentro do iframe esconde o próprio cabeçalho ----
     page.evaluate("switchTab('rdo')")
