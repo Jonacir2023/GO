@@ -1,7 +1,7 @@
 // Configuração para Google Notebooks API
 // Este arquivo deve ser preenchido com as credenciais do Google OAuth
 
-const GN_CONFIG = {
+window.GN_CONFIG = {
   // Google OAuth Client ID (obtido em https://console.cloud.google.com/)
   // Substitua pelo seu client ID real
   GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID_HERE',
