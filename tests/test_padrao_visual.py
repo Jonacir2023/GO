@@ -67,9 +67,9 @@ with sync_playwright() as p:
     page.wait_for_timeout(1500)
 
     # ---- home ----
-    check(page.locator(".home-card").count() == 14, "home com 14 cartões de módulo (13 + Notebook)")
+    check(page.locator(".home-card").count() == 15, "home com 15 cartões de módulo (14 + Google Notebook)")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
-    check(visiveis == 14, f"celular mostra os 14 cartões, nenhum escondido ({visiveis})")
+    check(visiveis == 15, f"celular mostra os 15 cartões, nenhum escondido ({visiveis})")
     check(page.locator('.home-card[data-mod="custos"] .selo').inner_text().strip().lower() == "ativo", "selo 'Ativo' do módulo Entradas")
     check(page.evaluate("() => getComputedStyle(document.body).backgroundColor") != "rgb(74, 81, 98)",
           "fundo da casca não é mais o escuro antigo")
@@ -170,7 +170,7 @@ with sync_playwright() as p:
     check(page.evaluate("() => document.querySelector('.hero-home').getBoundingClientRect().width > 900"),
           "desktop: hero ocupa a largura útil")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
-    check(visiveis == 14, f"desktop mostra os 14 cartões ({visiveis})")
+    check(visiveis == 15, f"desktop mostra os 15 cartões ({visiveis})")
 
     # ---- auto-atualização: versao.json diferente do carimbo => recarrega uma única vez ----
     velha = ctx.new_page()
