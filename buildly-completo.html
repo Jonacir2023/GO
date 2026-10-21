@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="749551b6"</script>
+<script>/*build*/window.BUILD_ID="859d5438"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -1969,9 +1969,10 @@ async function nbPerguntar() {
       data = result.data;
       error = result.error;
 
-      // Se Edge Function retornar 0 resultados, tenta fallback (embeddings incompatíveis)
+      // A função já funde busca vetorial + híbrida (código exato como GS_01). Só cai no fallback
+      // daqui se ela falhar ou vier sem nenhuma fonte.
       if (!error && (!data || !data.fontes || data.fontes.length === 0)) {
-        error = new Error('Edge Function retornou 0 resultados, tentando fallback...');
+        error = new Error('Edge Function retornou 0 fontes, tentando fallback...');
       }
     } catch (edgeError) {
       // Se a Edge Function falhar, usa fallback: busca via RPC + chama IA
@@ -2023,7 +2024,10 @@ async function nbPerguntar() {
     nbAdicionaBalao(nbRenderMensagemAssistente(resposta, fontes));
     document.getElementById('nbSalvar').disabled = false;
     const usandoFallback = (usouFallback || (data && data.logSalvo === false));
-    nbAviso(usandoFallback ? 'Busca feita com fallback (FTS).' : '', usandoFallback ? 'aviso' : '');
+    const soVetorial = !usandoFallback && data && data.busca === 'vetorial';
+    nbAviso(usandoFallback ? 'Busca feita com fallback (por texto, sem IA).'
+      : soVetorial ? 'Esta obra ainda não tem a busca híbrida (migração 015): resultado só por similaridade.' : '',
+      (usandoFallback || soVetorial) ? 'aviso' : '');
   } catch (e) {
     nbAdicionaBalao('<div class="nb-balao nb-assistant nb-erro">Não foi possível responder agora.</div>');
     nbAviso('Erro: ' + (e.message || e), 'erro');
