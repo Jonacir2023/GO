@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="603835c3"</script>
+<script>/*build*/window.BUILD_ID="b3d70919"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -137,7 +137,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
    não tem esse aninhamento. */
 #page-pauta .page,#page-checkin .page{padding-left:0;padding-right:0}
 @media (min-width: 900px){
-  .page{max-width:none}
+  .page{max-width:none;padding-left:0;padding-right:0;margin-left:0;margin-right:0}
+  #page-pauta,#page-checkin,#page-rdo,#page-custos,#page-reuniao,#page-resumo-tempo,#page-medicao,#page-documentos,#page-manutencao,#page-eap,#page-planejamento,#page-financeiro,#page-suprimentos{padding-left:0;padding-right:0}
 }
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
