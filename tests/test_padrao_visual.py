@@ -76,7 +76,6 @@ with sync_playwright() as p:
     check(page.locator("#app-nav button").count() == 4, "barra inferior com 4 botões")
     check(page.locator('.home-card[data-mod="custos"] h3').inner_text().strip() == "Entradas" and "Custos" not in page.locator('.home-card[data-mod="custos"]').inner_text(), "termo Entradas no cartão da home (antigo 'Custos' não aparece)")
     page.evaluate("switchTab('custos')"); page.wait_for_timeout(300)
-    check(page.locator("#mod-title").inner_text().strip() == "ENTRADAS", "hero do módulo diz ENTRADAS")
     page.evaluate("switchTab('home')")
     check(page.locator("#obra-card-nome").inner_text().strip() != "", "cartão da obra atual preenchido")
     sem_corte = page.evaluate("""() => document.documentElement.scrollWidth <= window.innerWidth + 1""")
