@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="749551b6"</script>
+<script>/*build*/window.BUILD_ID="0a8c7a9c"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -39,8 +39,14 @@
 }
 html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh;width:100%}
 body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-direction:column;position:relative}
+@media (min-width: 900px){
+  body{max-width:none;padding-left:0;padding-right:0}
+}
 
-.hdr{background:var(--bg-dark);color:#ffffff;padding:16px 16px;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent);height:70px;display:flex;flex-direction:column;justify-content:center;width:100%;max-width:480px}
+.hdr{background:var(--bg-dark);color:#ffffff;padding:16px 16px;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent);height:70px;display:flex;flex-direction:column;justify-content:center;width:100%}
+@media (max-width: 899px){
+  .hdr{left:50%;transform:translateX(-50%);max-width:480px}
+}
 .hdr-home{position:relative;padding:12px 16px;height:auto}
 #page-home .hdr{position:relative;padding:12px 16px;position:static;width:auto;max-width:none}
 .hdr-home .hdr-top{flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:0}
@@ -51,11 +57,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
    tem seu próprio cabeçalho (ou nenhum) e nenhuma delas reserva espaço
    fixo pro cabeçalho da casca. Um botão flutuante evita ter que mexer no
    layout de cada uma: fica por cima de tudo, sempre no mesmo lugar. */
-/* NOTEBOOK (AI HUB) — modal de 3 colunas: fontes / chat / relatórios */
+/* NOTEBOOK (AI HUB) — 3 colunas: fontes / chat / relatórios */
 .nb-tag{display:inline-block;font-size:10px;letter-spacing:.08em;padding:2px 6px;border-radius:4px;background:var(--accent);color:#fff;vertical-align:middle;margin-left:4px}
-.nb-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);display:none}
-.nb-overlay.open{display:block}
-.nb-shell{height:100%;max-width:none;margin:0;background:var(--bg-card);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.nb-overlay{display:none}
+.nb-overlay.open{display:none}
+.nb-shell{flex:1;width:100%;background:var(--bg-card);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
 .nb-col{min-width:0;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line)}
 .nb-col:first-child{border-top:none}
 .nb-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
@@ -88,13 +94,13 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .nb-rel small{font-size:11px;opacity:.8}
 .nb-vazio{font-size:12px;color:var(--ink);font-style:italic;margin:0}
 @media (min-width: 900px){
-  .nb-overlay{padding:0}
-  .nb-shell{flex-direction:row;height:100%;overflow:hidden;border-radius:0}
+  .nb-shell{flex-direction:row;height:calc(100vh - 70px);overflow:hidden}
   .nb-col{border-top:none;border-left:1px solid var(--line);overflow-y:auto}
   .nb-col:first-child{border-left:none}
   .nb-fontes-col{flex:0 0 260px}
   .nb-chat-col{flex:1 1 auto;min-height:0}
   .nb-mensagens{flex:1;min-height:0;max-height:none}
+  #page-notebook{padding:0}
 }
 @media (max-width: 899px){
   .nb-chat-col{order:-1}
@@ -109,7 +115,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .btn-admin{background:none;border:1px solid rgba(255,255,255,.2);color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border-radius:6px;cursor:pointer;text-transform:uppercase;font-family:var(--serif)}
 .btn-admin:hover{background:rgba(255,255,255,.08)}
 
-.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;background:var(--bg-dark);border-top:1px solid rgba(255,255,255,.08);padding:0;margin:0;position:fixed;top:70px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:99}
+.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;background:var(--bg-dark);border-top:1px solid rgba(255,255,255,.08);padding:0;margin:0;position:fixed;top:70px;left:0;right:0;width:100%;z-index:99}
+@media (max-width: 899px){
+  .tabs{left:50%;transform:translateX(-50%);max-width:480px}
+}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;padding:14px 16px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:var(--ink);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;background:transparent}
 .tab.active{color:var(--ink);border-bottom-color:var(--accent)}
@@ -120,11 +129,16 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 #page-home{margin-top:0;padding:0;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
 #page-home:not(.active){display:none !important}
 #page-pauta,#page-checkin{padding-top:130px !important;position:relative}
+#page-notebook{padding-top:0;display:flex;flex-direction:column}
+#page-notebook.active{display:flex}
 /* Pauta e Check-in aninham .page dentro de .page (a aba e cada sub-tela
    dela usam a mesma classe). Sem isto, o padding lateral de 16px conta
    duas vezes e os campos ficam ~32px mais estreitos que na aba RDO, que
    não tem esse aninhamento. */
 #page-pauta .page,#page-checkin .page{padding-left:0;padding-right:0}
+@media (min-width: 900px){
+  .page{max-width:none}
+}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px}
@@ -1178,8 +1192,19 @@ window.B3_CASCA = true;
 </div>
 
 <!-- NOTEBOOK (AI HUB) — fontes ativas / conversa com citações / relatórios salvos -->
-<div class="nb-overlay" id="modalNotebook" role="dialog" aria-modal="true" aria-label="Notebook">
-  <div class="nb-shell">
+<div class="page" id="page-notebook">
+  <header class="hdr" style="position:fixed;top:0;left:0;right:0;z-index:101;width:100%;height:70px">
+    <div class="hdr-top">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-admin" onclick="switchTab('home', document.querySelectorAll('.tab')[0] || this)" style="font-size:20px;padding:4px 8px">⬅️</button>
+        <div>
+          <div class="hdr-logo">NOTE<span>BOOK</span></div>
+          <div class="hdr-sub">AI HUB — Pergunte às fontes</div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="nb-shell" style="margin-top:70px">
     <aside class="nb-col nb-fontes-col">
       <div class="nb-cab"><h3>Fontes ativas</h3></div>
       <span id="nbContagem" class="nb-contagem"></span>
@@ -1187,10 +1212,9 @@ window.B3_CASCA = true;
     </aside>
     <section class="nb-col nb-chat-col">
       <div class="nb-cab">
-        <h3>Notebook <span class="nb-tag">AI HUB</span> <small id="nbObraNome" style="font-weight:400;opacity:.7"></small></h3>
+        <h3>Notebook <span class="nb-tag">AI HUB</span></h3>
         <div class="nb-acoes-cab">
           <button type="button" class="nb-link" onclick="nbNovaConversa()">Nova conversa</button>
-          <button type="button" class="nb-fechar" onclick="fecharNotebook()" aria-label="Fechar">✕</button>
         </div>
       </div>
       <div id="nbMensagens" class="nb-mensagens"><p class="nb-vazio nb-vazio-chat">Faça uma pergunta sobre os dados da obra. As respostas trazem citações [n] das fontes ativas.</p></div>
@@ -1969,9 +1993,13 @@ async function nbPerguntar() {
       data = result.data;
       error = result.error;
 
+      // Debug: log resposta da Edge Function
+      console.log('Edge Function response:', { data, error, fontes_length: data?.fontes?.length });
+
       // Se Edge Function retornar 0 resultados, tenta fallback (embeddings incompatíveis)
       if (!error && (!data || !data.fontes || data.fontes.length === 0)) {
         error = new Error('Edge Function retornou 0 resultados, tentando fallback...');
+        console.log('Fallback acionado: fontes vazias');
       }
     } catch (edgeError) {
       // Se a Edge Function falhar, usa fallback: busca via RPC + chama IA
@@ -1982,11 +2010,11 @@ async function nbPerguntar() {
       try {
         usouFallback = true;
         const sb = B3Obras.cliente();
-        // 1º: busca híbrida (código exato como GS_01 + texto, só da obra atual); se a função
-        // ainda não existir no banco desta obra, cai para a busca por texto antiga.
-        const argsBusca = { p_pergunta: pergunta, k: 12, p_modulos: Array.from(nbAtivas) };
-        let { data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_hibrido', argsBusca);
-        if (erroBusca) ({ data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_fts', argsBusca));
+        const { data: achados, error: erroBusca } = await sb.rpc('notebook_buscar_fts', {
+          p_pergunta: pergunta,
+          k: 12,
+          p_modulos: Array.from(nbAtivas),
+        });
 
         if (!erroBusca && achados && achados.length) {
           // Monta contexto e chama IA (fallback simplificado)
@@ -2001,8 +2029,7 @@ async function nbPerguntar() {
           const contexto = fontes.map(f => `[${f.n}] ${f.titulo} (${f.modulo})\n${achados[f.n - 1].texto}`).join('\n\n');
 
           data = {
-            resposta: 'Achei estes registros (busca sem IA):\n' + achados.slice(0, 5).map((t, i) =>
-              '[' + (i + 1) + '] ' + t.titulo + ' — ' + String(t.texto || '').replace(/\s+/g, ' ').slice(0, 200)).join('\n'),
+            resposta: 'Achei os seguintes registros que podem ajudar:',
             fontes: fontes,
             logSalvo: false,
           };
@@ -2070,20 +2097,15 @@ async function nbSalvarRelatorio() {
 }
 
 function abrirNotebook() {
-  document.getElementById('modalNotebook').classList.add('open');
-  try { document.getElementById('nbObraNome').textContent = '· ' + ((B3Obras.atual() || {}).nome || ''); } catch (e) {}
+  switchTab('notebook');
   nbCarregarFontes();
   nbCarregarRelatorios();
   setTimeout(() => document.getElementById('nbInput').focus(), 50);
 }
 
 function fecharNotebook() {
-  document.getElementById('modalNotebook').classList.remove('open');
+  switchTab('home');
 }
-
-document.getElementById('modalNotebook').addEventListener('click', function(e) {
-  if (e.target === this) fecharNotebook();
-});
 
 // O elemento hdr-date nunca existiu nesta pagina. Sem a guarda abaixo, a
 // atribuicao em null lancava TypeError no carregamento e matava o script a
