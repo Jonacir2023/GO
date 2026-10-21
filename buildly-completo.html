@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="0a8c7a9c"</script>
+<script>/*build*/window.BUILD_ID="8aedc6b4"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -95,7 +95,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .nb-vazio{font-size:12px;color:var(--ink);font-style:italic;margin:0}
 @media (min-width: 900px){
   .nb-shell{flex-direction:row;height:calc(100vh - 70px);overflow:hidden}
-  .nb-col{border-top:none;border-left:1px solid var(--line);overflow-y:auto}
+  .nb-col{border-top:none;border-left:1px solid var(--line);overflow-y:auto;padding-left:0;padding-right:0}
   .nb-col:first-child{border-left:none}
   .nb-fontes-col{flex:0 0 260px}
   .nb-chat-col{flex:1 1 auto;min-height:0}
@@ -137,8 +137,26 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
    não tem esse aninhamento. */
 #page-pauta .page,#page-checkin .page{padding-left:0;padding-right:0}
 @media (min-width: 900px){
-  .page{max-width:none}
+  .page{max-width:none;padding-left:0;padding-right:0;margin-left:0;margin-right:0}
+  #page-pauta,#page-checkin,#page-rdo,#page-custos,#page-reuniao,#page-resumo-tempo,#page-medicao,#page-documentos,#page-manutencao,#page-eap,#page-planejamento,#page-financeiro,#page-suprimentos{padding-left:0;padding-right:0}
 }
+
+/* GOOGLE NOTEBOOK */
+.gn-container{max-width:900px;margin:0 auto}
+.gn-anotacoes,.gn-perguntas{background:var(--bg-card);border-radius:var(--radius);padding:16px;border:1px solid var(--line)}
+.gn-anotacoes h3,.gn-perguntas h3{margin:0 0 12px 0;font-size:18px;font-weight:600;color:var(--ink)}
+.gn-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.gn-card{background:var(--bg-mid);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer;transition:all .2s}
+.gn-card:hover{background:var(--bg-dark);border-color:var(--accent)}
+.gn-card-data{font-size:12px;color:var(--ink-faint);margin-bottom:8px}
+.gn-card-titulo{font-weight:600;margin-bottom:6px;color:var(--ink)}
+.gn-card-conteudo{font-size:14px;color:var(--ink);line-height:1.4;max-height:100px;overflow:hidden;text-overflow:ellipsis}
+.gn-entrada{display:flex;gap:8px;align-items:flex-end}
+.gn-entrada textarea{flex:1;padding:10px;background:var(--bg-dark);color:var(--ink);border:1px solid var(--line);border-radius:6px;font-family:var(--sans);resize:vertical}
+.gn-resposta{background:var(--bg-dark);border-left:3px solid var(--accent);padding:12px;border-radius:6px;margin-top:12px;min-height:60px}
+.gn-resposta-conteudo{color:var(--ink);line-height:1.6;white-space:pre-wrap}
+.gn-vazio{font-size:14px;color:var(--ink-faint);font-style:italic;padding:20px;text-align:center}
+.gn-carregando{text-align:center;color:var(--ink-faint);padding:12px}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px}
@@ -382,8 +400,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
    max-width:480px em style inline, que só perde para !important.
    ══════════════════════════════════════════════════════════════ */
 @media (min-width: 900px) {
-  body { max-width: 1100px; }
-  .hdr, .tabs, #obra-scroll-body { max-width: 1100px !important; }
+  /* Full-width em desktop: eliminar limites de largura */
   /* 5 colunas de botões aproveitam a largura sem esticar os cards */
   .home-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; padding: 12px 16px 0; }
   /* Os apps em iframe têm cabeçalho próprio; sobra mais altura útil */
@@ -597,7 +614,6 @@ window.B3_CASCA = true;
       <button class="hero-btn" onclick="abrirPerfil()" aria-label="Perfil"><svg viewBox="0 0 24 24"><use href="#i-user"/></svg></button>
     </div>
   </div>
-  <div class="mod-card"><span class="mod-ico ico" id="mod-ico"></span><span><b id="mod-title"></b><small id="mod-sub"></small></span></div>
 </header>
 
 
@@ -701,6 +717,12 @@ window.B3_CASCA = true;
         <div class="ico g-brown"><svg viewBox="0 0 24 24"><use href="#i-robo"/></svg></div>
         <h3>Notebook <span class="nb-tag">AI HUB</span></h3>
         <p>Pergunte às fontes da obra e salve relatórios</p>
+        <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
+      </div>
+      <div class="home-card" data-mod="google-notebook" onclick="switchTab('google-notebook')">
+        <div class="ico g-blue"><svg viewBox="0 0 24 24"><use href="#i-doc"/></svg></div>
+        <h3>Google Notebook</h3>
+        <p>Anotações diárias & perguntas</p>
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
     </div>
@@ -1234,6 +1256,36 @@ window.B3_CASCA = true;
   </div>
 </div>
 
+<!-- GOOGLE NOTEBOOK PAGE -->
+<div class="page" id="page-google-notebook">
+  <header class="hdr" style="position:fixed;top:0;left:0;right:0;z-index:101;width:100%;height:70px">
+    <div class="hdr-top">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-admin" onclick="switchTab('home', document.querySelectorAll('.tab')[0] || this)" style="font-size:20px;padding:4px 8px">⬅️</button>
+        <div>
+          <div class="hdr-logo">GOOGLE<span>NOTEBOOK</span></div>
+          <div class="hdr-sub">Anotações & Perguntas</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="gnSincronizar()" style="margin-right:16px">🔄 Sincronizar</button>
+    </div>
+  </header>
+  <div class="gn-container" style="margin-top:70px;padding:16px;display:flex;flex-direction:column;gap:16px">
+    <section class="gn-anotacoes">
+      <h3>Anotações do Google Notebook</h3>
+      <div id="gnAnotacoes" class="gn-cards"><p class="gn-vazio">Clique em "Sincronizar" para carregar as anotações...</p></div>
+    </section>
+    <section class="gn-perguntas">
+      <h3>Faça uma Pergunta</h3>
+      <div class="gn-entrada">
+        <textarea id="gnInput" rows="3" placeholder="Ex.: Resumo das anotações de hoje. Quais são os próximos passos?"></textarea>
+        <button type="button" id="gnEnviar" class="btn btn-primary" onclick="gnPerguntar()">Perguntar</button>
+      </div>
+      <div id="gnResposta" class="gn-resposta"><p class="gn-vazio">Aguardando pergunta...</p></div>
+    </section>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════
 // MAIN NAVIGATION
@@ -1269,7 +1321,6 @@ function switchTab(tab, el) {
     homeHeader.style.display = tab === 'home' ? 'block' : 'none';
   }
   document.body.classList.toggle('modulo', tab !== 'home');
-  if (tab !== 'home') atualizarHeroModulo(tab);
   if (typeof fecharSheet === 'function') fecharSheet();
   if (typeof atualizarSino === 'function') atualizarSino();
   window.scrollTo(0, 0);
@@ -1296,21 +1347,11 @@ function switchTab(tab, el) {
 // ═══════════════════════════════════════════════════════════════
 // CASCA — hero, barra inferior e painéis (padrão visual claro)
 // ═══════════════════════════════════════════════════════════════
-const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Mediçao Cliente", "desc": "Medições de clientes", "i": "ruler", "c": "slate", "t": "MEDIÇÕES CLIENTE", "s": "Medições de Clientes"}, "medicao_empreiteiros": {"nome": "Mediação de Empreiteiros", "desc": "Medições de empreiteiros e terceiros", "i": "ruler", "c": "slate", "t": "MEDIAÇÕES", "s": "Mediações de Empreiteiros"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}, "notebook": {"nome": "Notebook", "desc": "Pergunte às fontes da obra e salve relatórios", "i": "robo", "c": "brown", "t": "NOTEBOOK", "s": "Notebook (AI HUB)"}};
+const MODULOS = {"pauta": {"nome": "Pautas", "desc": "Assuntos e ações da obra", "i": "clipboard", "c": "tan", "t": "PAUTA", "s": "Assuntos da Obra"}, "checkin": {"nome": "Check-in", "desc": "Reuniões diárias e acompanhamento", "i": "check", "c": "green", "t": "CHECK-IN", "s": "Reuniões Diárias"}, "rdo": {"nome": "RDO", "desc": "Relatório Diário de Obras", "i": "file", "c": "blue", "t": "RDO", "s": "Relatório Diário de Obras"}, "custos": {"nome": "Entradas", "desc": "Materiais recebidos na obra", "i": "dollar", "c": "orange", "t": "ENTRADAS", "s": "Entrada de materiais"}, "medicao": {"nome": "Mediçao Cliente", "desc": "Medições de clientes", "i": "ruler", "c": "slate", "t": "MEDIÇÕES CLIENTE", "s": "Medições de Clientes"}, "medicao_empreiteiros": {"nome": "Mediação de Empreiteiros", "desc": "Medições de empreiteiros e terceiros", "i": "ruler", "c": "slate", "t": "MEDIAÇÕES", "s": "Mediações de Empreiteiros"}, "documentos": {"nome": "Documentos", "desc": "Projetos, contratos e registros", "i": "folder", "c": "purple", "t": "DOCUMENTOS", "s": "Arquivos da obra"}, "obra": {"nome": "Obras", "desc": "Cadastro e acompanhamento", "i": "building", "c": "red", "t": "OBRAS", "s": "Cadastro e acompanhamento"}, "reuniao": {"nome": "Reuniões", "desc": "Agendas, atas e decisões", "i": "users", "c": "teal", "t": "ATA DE REUNIÃO", "s": "Registro e decisões"}, "planejamento": {"nome": "Planejamento", "desc": "Cronograma e marcos", "i": "bars", "c": "gray", "t": "PLANEJAMENTO", "s": "Cronograma e marcos"}, "resumo-tempo": {"nome": "Resumo do Tempo", "desc": "Condições climáticas", "i": "cloud", "c": "sky", "t": "RESUMO DO TEMPO", "s": "Condições e histórico"}, "manutencao": {"nome": "Manutenção", "desc": "Equipamentos e veículos", "i": "wrench", "c": "brown", "t": "MANUTENÇÃO", "s": "Equipamentos e Veículos"}, "financeiro": {"nome": "Financeiro", "desc": "Medições e aprovações", "i": "card", "c": "emerald", "t": "FINANCEIRO", "s": "Medições e aprovações"}, "suprimentos": {"nome": "Suprimentos", "desc": "Requisições e pedidos", "i": "package", "c": "amber", "t": "SUPRIMENTOS", "s": "Requisições e pedidos"}, "notebook": {"nome": "Notebook", "desc": "Pergunte às fontes da obra e salve relatórios", "i": "robo", "c": "brown", "t": "NOTEBOOK", "s": "Notebook (AI HUB)"}, "google-notebook": {"nome": "Google Notebook", "desc": "Anotações diárias & perguntas", "i": "doc", "c": "blue", "t": "GOOGLE NOTEBOOK", "s": "Anotações & Perguntas"}};
 const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "financeiro", "suprimentos"];
 
 function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }
 function _esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-function atualizarHeroModulo(tab) {
-  const m = MODULOS[tab];
-  if (!m) return;
-  const ico = document.getElementById('mod-ico');
-  ico.className = 'mod-ico ico g-' + m.c;
-  ico.innerHTML = _svg(m.i);
-  document.getElementById('mod-title').textContent = m.t;
-  document.getElementById('mod-sub').textContent = m.s;
-}
 
 function marcarNav(qual) {
   document.querySelectorAll('#app-nav button').forEach(b => b.classList.toggle('ativo', b.dataset.nav === qual));
@@ -3526,6 +3567,163 @@ function abrirCadastroLocais() {
   w.atualizarLocaisDaObra();
   w.abrirEditarLocais();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// GOOGLE NOTEBOOK — sincronização e Q&A com Gemini
+// ═══════════════════════════════════════════════════════════════
+
+let gnCarregandoAnotacoes = false;
+let gnAnotacoesCache = [];
+
+async function gnSincronizar() {
+  if (gnCarregandoAnotacoes) return;
+  gnCarregandoAnotacoes = true;
+  const btn = document.getElementById('gnEnviar').closest('section').previousElementSibling.querySelector('button');
+  const txt = btn.textContent;
+  btn.textContent = '⏳ Sincronizando...';
+  btn.disabled = true;
+
+  try {
+    const obraId = B3Obras.atualId();
+    if (!obraId) throw new Error('Nenhuma obra selecionada');
+
+    // Chamar Apps Script para buscar do Google Notebooks API e salvar no Supabase
+    const resp = await fetch('https://script.google.com/macros/d/AKfycbxYmPxC8hL4aLnGmUEYFNvqkL7TrNyIZHZH4v_o6cDHZg8_3sI/usercache', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acao: 'sincronizarGoogleNotebook', obraId})
+    });
+
+    // Carregar anotações do Supabase
+    gnCarregarAnotacoes();
+    obraNotify('✓ Anotações sincronizadas', 'var(--green)');
+  } catch (e) {
+    console.error('Erro ao sincronizar:', e);
+    obraNotify('❌ Erro ao sincronizar anotações', 'var(--red)');
+  } finally {
+    gnCarregandoAnotacoes = false;
+    btn.textContent = txt;
+    btn.disabled = false;
+  }
+}
+
+async function gnCarregarAnotacoes() {
+  try {
+    const obraId = B3Obras.atualId();
+    if (!obraId) return;
+
+    const {data, error} = await B3_SUP.from('google_notebooks')
+      .select('*')
+      .eq('obra_id', obraId)
+      .order('data_anotacao', {ascending: false});
+
+    if (error) throw error;
+
+    gnAnotacoesCache = data || [];
+    const cont = document.getElementById('gnAnotacoes');
+
+    if (!gnAnotacoesCache.length) {
+      cont.innerHTML = '<p class="gn-vazio">Nenhuma anotação sincronizada. Clique em "Sincronizar" para carregar.</p>';
+      return;
+    }
+
+    cont.innerHTML = gnAnotacoesCache.map(a => `
+      <div class="gn-card" onclick="gnMostrarDetalhes('${a.id}')">
+        <div class="gn-card-data">${new Date(a.data_anotacao || a.created_at).toLocaleDateString('pt-BR')}</div>
+        <div class="gn-card-titulo">${a.titulo || 'Sem título'}</div>
+        <div class="gn-card-conteudo">${a.conteudo || ''}</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Erro ao carregar anotações:', e);
+    document.getElementById('gnAnotacoes').innerHTML = '<p class="gn-vazio">❌ Erro ao carregar anotações</p>';
+  }
+}
+
+function gnMostrarDetalhes(id) {
+  const a = gnAnotacoesCache.find(x => x.id === id);
+  if (!a) return;
+  const resp = document.getElementById('gnResposta');
+  resp.innerHTML = `
+    <div class="gn-resposta-conteudo">
+      <strong>${a.titulo || 'Sem título'}</strong><br>
+      ${a.conteudo || ''}<br><br>
+      <small style="color:var(--ink-faint)">${new Date(a.data_anotacao || a.created_at).toLocaleString('pt-BR')}</small>
+    </div>
+  `;
+}
+
+async function gnPerguntar() {
+  const input = document.getElementById('gnInput');
+  const pergunta = input.value.trim();
+  if (!pergunta) return obraNotify('Digite uma pergunta', 'var(--yellow)');
+
+  const btn = document.getElementById('gnEnviar');
+  const resp = document.getElementById('gnResposta');
+
+  btn.disabled = true;
+  resp.innerHTML = '<p class="gn-carregando">⏳ Analisando anotações...</p>';
+
+  try {
+    const obraId = B3Obras.atualId();
+    if (!obraId) throw new Error('Nenhuma obra selecionada');
+
+    // Contexto das anotações
+    const contexto = gnAnotacoesCache
+      .slice(0, 10)
+      .map(a => `[${new Date(a.data_anotacao || a.created_at).toLocaleDateString('pt-BR')}] ${a.titulo}: ${a.conteudo}`)
+      .join('\n\n');
+
+    if (!contexto) {
+      resp.innerHTML = '<p class="gn-vazio">❌ Sincronize anotações primeiro</p>';
+      btn.disabled = false;
+      return;
+    }
+
+    // Chamar Apps Script para usar Gemini API
+    const r = await fetch('https://script.google.com/macros/d/AKfycbxYmPxC8hL4aLnGmUEYFNvqkL7TrNyIZHZH4v_o6cDHZg8_3sI/usercache', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acao: 'responderComGemini', obraId, pergunta, contexto})
+    });
+
+    // Mensagem de sucesso — resposta virá do Apps Script
+    resp.innerHTML = '<p class="gn-carregando">✓ Processando resposta do Gemini...</p>';
+    setTimeout(() => gnCarregarResposta(), 500);
+  } catch (e) {
+    console.error('Erro:', e);
+    resp.innerHTML = '<p class="gn-vazio">❌ Erro ao processar pergunta</p>';
+  } finally {
+    btn.disabled = false;
+    input.value = '';
+  }
+}
+
+async function gnCarregarResposta() {
+  try {
+    const {data} = await B3_SUP.from('google_notebooks')
+      .select('*')
+      .order('updated_at', {ascending: false})
+      .limit(1);
+
+    if (data && data[0] && data[0].conteudo && data[0].conteudo.includes('Resposta:')) {
+      document.getElementById('gnResposta').innerHTML = `<div class="gn-resposta-conteudo">${data[0].conteudo.split('Resposta:')[1]}</div>`;
+    }
+  } catch (e) {
+    console.log('Aguardando resposta...');
+  }
+}
+
+// Inicializar anotações ao abrir página
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (window.B3Obras && document.getElementById('page-google-notebook')) {
+      gnCarregarAnotacoes();
+    }
+  }, 500);
+});
 
 document.querySelectorAll('.modal-overlay,.config-modal').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });

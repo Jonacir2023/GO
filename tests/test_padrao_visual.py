@@ -67,16 +67,15 @@ with sync_playwright() as p:
     page.wait_for_timeout(1500)
 
     # ---- home ----
-    check(page.locator(".home-card").count() == 14, "home com 14 cartões de módulo (13 + Notebook)")
+    check(page.locator(".home-card").count() == 15, "home com 15 cartões de módulo (14 + Google Notebook)")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
-    check(visiveis == 14, f"celular mostra os 14 cartões, nenhum escondido ({visiveis})")
+    check(visiveis == 15, f"celular mostra os 15 cartões, nenhum escondido ({visiveis})")
     check(page.locator('.home-card[data-mod="custos"] .selo').inner_text().strip().lower() == "ativo", "selo 'Ativo' do módulo Entradas")
     check(page.evaluate("() => getComputedStyle(document.body).backgroundColor") != "rgb(74, 81, 98)",
           "fundo da casca não é mais o escuro antigo")
     check(page.locator("#app-nav button").count() == 4, "barra inferior com 4 botões")
     check(page.locator('.home-card[data-mod="custos"] h3').inner_text().strip() == "Entradas" and "Custos" not in page.locator('.home-card[data-mod="custos"]').inner_text(), "termo Entradas no cartão da home (antigo 'Custos' não aparece)")
     page.evaluate("switchTab('custos')"); page.wait_for_timeout(300)
-    check(page.locator("#mod-title").inner_text().strip() == "ENTRADAS", "hero do módulo diz ENTRADAS")
     page.evaluate("switchTab('home')")
     check(page.locator("#obra-card-nome").inner_text().strip() != "", "cartão da obra atual preenchido")
     sem_corte = page.evaluate("""() => document.documentElement.scrollWidth <= window.innerWidth + 1""")
@@ -126,17 +125,16 @@ with sync_playwright() as p:
     check(aberto(page) and "Obra atual" in page.locator("#sheet-corpo").inner_text(), "cartão da obra abre a troca de obra")
     page.evaluate("fecharSheet()")
 
-    # ---- módulos: hero compacto, barra, sem rolagem horizontal ----
+    # ---- módulos: modo modulo ativo, sem rolagem horizontal ----
     for mod in ["rdo", "custos", "medicao", "documentos", "planejamento", "financeiro", "suprimentos",
                 "manutencao", "reuniao", "resumo-tempo", "pauta", "checkin", "obra"]:
         page.evaluate("t => switchTab(t)", mod)
         page.wait_for_timeout(500)
         ok_modulo = page.evaluate("() => document.body.classList.contains('modulo')")
-        titulo = page.locator("#mod-title").inner_text().strip()
         largura = page.evaluate("() => document.documentElement.scrollWidth <= window.innerWidth + 1")
-        check(ok_modulo and titulo and largura, f"{mod}: hero de módulo '{titulo}' e sem rolagem horizontal")
+        check(ok_modulo and largura, f"{mod}: modo módulo ativo e sem rolagem horizontal")
     page.evaluate("switchTab('home')")
-    check(page.evaluate("() => !document.body.classList.contains('modulo')"), "voltar à home restaura o hero grande")
+    check(page.evaluate("() => !document.body.classList.contains('modulo')"), "voltar à home restaura o estado normal")
 
     # ---- modo embutido: app dentro do iframe esconde o próprio cabeçalho ----
     page.evaluate("switchTab('rdo')")
@@ -172,7 +170,7 @@ with sync_playwright() as p:
     check(page.evaluate("() => document.querySelector('.hero-home').getBoundingClientRect().width > 900"),
           "desktop: hero ocupa a largura útil")
     visiveis = page.evaluate("() => [...document.querySelectorAll('.home-card')].filter(c => c.offsetParent).length")
-    check(visiveis == 14, f"desktop mostra os 14 cartões ({visiveis})")
+    check(visiveis == 15, f"desktop mostra os 15 cartões ({visiveis})")
 
     # ---- auto-atualização: versao.json diferente do carimbo => recarrega uma única vez ----
     velha = ctx.new_page()
