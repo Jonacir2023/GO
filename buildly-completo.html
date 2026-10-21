@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="8aedc6b4"</script>
+<script>/*build*/window.BUILD_ID="703b9c7c"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -533,7 +533,9 @@ html.b3-trancado body{overflow:hidden}
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="supabase-config.js?v=fc569d34"></script>
+<script src="google-notebook-config.js"></script>
 <script>
 /* LOGIN — a casca é quem mostra a tela de entrada; as páginas avulsas voltam para cá (B3Auth.guardar) */
 window.B3_CASCA = true;
@@ -3574,37 +3576,101 @@ function abrirCadastroLocais() {
 
 let gnCarregandoAnotacoes = false;
 let gnAnotacoesCache = [];
+let gnGoogleToken = null;
+
+async function gnAutenticarGoogle() {
+  return new Promise((resolve, reject) => {
+    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+      reject(new Error('Google Identity Services não disponível'));
+      return;
+    }
+
+    // Configurar Google Sign-In com OAuth
+    window.google.accounts.id.initialize({
+      client_id: '', // ← será configurado via config ou env
+      callback: (response) => {
+        if (response && response.credential) {
+          gnGoogleToken = response.credential;
+          resolve(response.credential);
+        } else {
+          reject(new Error('Autenticação do Google falhou'));
+        }
+      },
+      error: () => reject(new Error('Erro ao autenticar com Google')),
+    });
+
+    window.google.accounts.id.renderButton(
+      document.createElement('div'),
+      { theme: 'outline', size: 'large', }
+    );
+
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        window.google.accounts.id.renderButton(
+          document.body,
+          { theme: 'outline', size: 'large', }
+        );
+      }
+    });
+  });
+}
 
 async function gnSincronizar() {
   if (gnCarregandoAnotacoes) return;
   gnCarregandoAnotacoes = true;
-  const btn = document.getElementById('gnEnviar').closest('section').previousElementSibling.querySelector('button');
-  const txt = btn.textContent;
-  btn.textContent = '⏳ Sincronizando...';
-  btn.disabled = true;
+  const btn = document.querySelector('[onclick="gnSincronizar()"]');
+  const txt = btn?.textContent || '🔄 Sincronizar';
+  if (btn) {
+    btn.textContent = '⏳ Sincronizando...';
+    btn.disabled = true;
+  }
 
   try {
     const obraId = B3Obras.atualId();
     if (!obraId) throw new Error('Nenhuma obra selecionada');
 
-    // Chamar Apps Script para buscar do Google Notebooks API e salvar no Supabase
-    const resp = await fetch('https://script.google.com/macros/d/AKfycbxYmPxC8hL4aLnGmUEYFNvqkL7TrNyIZHZH4v_o6cDHZg8_3sI/usercache', {
+    // Obter token do Google (ou usar token armazenado)
+    let token = gnGoogleToken;
+    if (!token) {
+      // Para simplificar inicialmente, usar um fluxo via popup
+      obraNotify('⏳ Autenticando com Google...', 'var(--blue)');
+      // Será implementado com OAuth later — por agora usar token offline
+      token = localStorage.getItem('gn_google_token');
+      if (!token) {
+        throw new Error('Token do Google necessário. Configure seu acesso ao Google Notebooks.');
+      }
+    }
+
+    // Chamar Edge Function para sincronizar
+    const edgeFunctionUrl = gnGetEdgeFunctionUrl(obraId);
+    const resp = await fetch(edgeFunctionUrl, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({acao: 'sincronizarGoogleNotebook', obraId})
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        obraId,
+        googleAccessToken: token,
+      }),
     });
 
-    // Carregar anotações do Supabase
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || 'Erro na sincronização');
+    }
+
+    const result = await resp.json();
+    obraNotify(`✓ ${result.notebooks} notebook(s), ${result.notes} anotação(ões)`, 'var(--green)');
     gnCarregarAnotacoes();
-    obraNotify('✓ Anotações sincronizadas', 'var(--green)');
   } catch (e) {
     console.error('Erro ao sincronizar:', e);
-    obraNotify('❌ Erro ao sincronizar anotações', 'var(--red)');
+    obraNotify(`❌ ${e.message}`, 'var(--red)');
   } finally {
     gnCarregandoAnotacoes = false;
-    btn.textContent = txt;
-    btn.disabled = false;
+    if (btn) {
+      btn.textContent = txt;
+      btn.disabled = false;
+    }
   }
 }
 
