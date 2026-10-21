@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="b3d70919"</script>
+<script>/*build*/window.BUILD_ID="5037f060"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -597,7 +597,6 @@ window.B3_CASCA = true;
       <button class="hero-btn" onclick="abrirPerfil()" aria-label="Perfil"><svg viewBox="0 0 24 24"><use href="#i-user"/></svg></button>
     </div>
   </div>
-  <div class="mod-card"><span class="mod-ico ico" id="mod-ico"></span><span><b id="mod-title"></b><small id="mod-sub"></small></span></div>
 </header>
 
 
@@ -1269,7 +1268,6 @@ function switchTab(tab, el) {
     homeHeader.style.display = tab === 'home' ? 'block' : 'none';
   }
   document.body.classList.toggle('modulo', tab !== 'home');
-  if (tab !== 'home') atualizarHeroModulo(tab);
   if (typeof fecharSheet === 'function') fecharSheet();
   if (typeof atualizarSino === 'function') atualizarSino();
   window.scrollTo(0, 0);
@@ -1301,16 +1299,6 @@ const MODULOS_EXTRAS = ["resumo-tempo", "manutencao", "financeiro", "suprimentos
 
 function _svg(n) { return '<svg viewBox="0 0 24 24"><use href="#i-' + n + '"/></svg>'; }
 function _esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-function atualizarHeroModulo(tab) {
-  const m = MODULOS[tab];
-  if (!m) return;
-  const ico = document.getElementById('mod-ico');
-  ico.className = 'mod-ico ico g-' + m.c;
-  ico.innerHTML = _svg(m.i);
-  document.getElementById('mod-title').textContent = m.t;
-  document.getElementById('mod-sub').textContent = m.s;
-}
 
 function marcarNav(qual) {
   document.querySelectorAll('#app-nav button').forEach(b => b.classList.toggle('ativo', b.dataset.nav === qual));
