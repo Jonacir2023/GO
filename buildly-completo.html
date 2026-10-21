@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="0a8c7a9c"</script>
+<script>/*build*/window.BUILD_ID="603835c3"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -382,8 +382,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
    max-width:480px em style inline, que só perde para !important.
    ══════════════════════════════════════════════════════════════ */
 @media (min-width: 900px) {
-  body { max-width: 1100px; }
-  .hdr, .tabs, #obra-scroll-body { max-width: 1100px !important; }
+  /* Full-width em desktop: eliminar limites de largura */
   /* 5 colunas de botões aproveitam a largura sem esticar os cards */
   .home-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; padding: 12px 16px 0; }
   /* Os apps em iframe têm cabeçalho próprio; sobra mais altura útil */
