@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="703b9c7c"</script>
+<script>/*build*/window.BUILD_ID="7a187463"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -129,8 +129,9 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 #page-home{margin-top:0;padding:0;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
 #page-home:not(.active){display:none !important}
 #page-pauta,#page-checkin{padding-top:130px !important;position:relative}
-#page-notebook{padding-top:0;display:flex;flex-direction:column}
+#page-notebook{padding-top:0;display:none;flex-direction:column}
 #page-notebook.active{display:flex}
+#page-notebook header{display:block}
 /* Pauta e Check-in aninham .page dentro de .page (a aba e cada sub-tela
    dela usam a mesma classe). Sem isto, o padding lateral de 16px conta
    duas vezes e os campos ficam ~32px mais estreitos que na aba RDO, que
@@ -722,7 +723,7 @@ window.B3_CASCA = true;
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
       </div>
       <div class="home-card" data-mod="google-notebook" onclick="switchTab('google-notebook')">
-        <div class="ico g-blue"><svg viewBox="0 0 24 24"><use href="#i-doc"/></svg></div>
+        <div class="ico g-blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H6zm1 2h10v2H7V4zm0 4h10v2H7V8zm0 4h10v2H7v-2zm0 4h6v2H7v-2z"/></svg></div>
         <h3>Google Notebook</h3>
         <p>Anotações diárias & perguntas</p>
         <span class="chev"><svg viewBox="0 0 24 24"><use href="#i-chevron-right"/></svg></span>
