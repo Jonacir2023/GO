@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="7a187463"</script>
+<script>/*build*/window.BUILD_ID="0969c9d8"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -90,8 +90,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .nb-salvar input{width:200px;max-width:100%;min-width:0;box-sizing:border-box}
 .nb-relatorios{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;flex:1 1 200px;min-width:0;max-height:76px;overflow-y:auto}
 .nb-relatorios > .nb-vazio{align-self:center}
-.nb-rel{text-align:left;background:var(--bg-mid);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.nb-rel{text-align:left;background:var(--bg-mid);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--ink);cursor:pointer;display:flex;flex-direction:row;align-items:center;gap:8px;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.nb-rel > div:first-child{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .nb-rel small{font-size:11px;opacity:.8}
+.nb-rel .nb-excluir{background:transparent;border:none;color:var(--ink);cursor:pointer;font-size:16px;padding:0;flex-shrink:0;opacity:.6;transition:opacity .2s}
+.nb-rel .nb-excluir:hover{opacity:1}
 .nb-vazio{font-size:12px;color:var(--ink);font-style:italic;margin:0}
 @media (min-width: 900px){
   .nb-shell{flex-direction:row;height:calc(100vh - 70px);overflow:hidden}
@@ -1976,8 +1979,12 @@ async function nbCarregarRelatorios() {
     }
     box.innerHTML = data.map(r =>
       '<button type="button" class="nb-rel" onclick="nbVerRelatorio(\'' + _esc(String(r.id)) + '\')">' +
+      '<div>' +
       '<span>' + _esc(r.title || '(sem título)') + '</span>' +
-      '<small>' + _esc(new Date(r.created_at).toLocaleDateString('pt-BR')) + '</small></button>'
+      '<small>' + _esc(new Date(r.created_at).toLocaleDateString('pt-BR')) + '</small>' +
+      '</div>' +
+      '<button type="button" class="nb-excluir" onclick="nbExcluirRelatorio(\'' + _esc(String(r.id)) + '\', event)" title="Excluir relatório">🗑</button>' +
+      '</button>'
     ).join('');
     box._dados = data;
   } catch (e) {
@@ -1993,6 +2000,20 @@ function nbVerRelatorio(id) {
   msgs.innerHTML = '<div class="nb-balao nb-assistant"><b>' + _esc(r.title || 'Relatório') + '</b><br>' +
     _esc(r.content || '').replace(/\n/g, '<br>') + '</div>';
   nbAviso('Relatório aberto. Use "Nova conversa" para voltar às perguntas.', 'ok');
+}
+
+async function nbExcluirRelatorio(id, event) {
+  event.stopPropagation();
+  event.preventDefault();
+  if (!confirm('Tem certeza que deseja excluir este relatório?')) return;
+  try {
+    const { error } = await B3Obras.cliente().from('notebook_saved_reports').delete().eq('id', id);
+    if (error) throw error;
+    nbAviso('Relatório excluído com sucesso.', 'ok');
+    nbCarregarRelatorios();
+  } catch (e) {
+    nbAviso('Erro ao excluir relatório: ' + (e.message || 'desconhecido'), 'erro');
+  }
 }
 
 function nbRenderMensagemAssistente(texto, fontes) {
