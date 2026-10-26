@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>/*build*/window.BUILD_ID="17949d6f"</script>
+<script>/*build*/window.BUILD_ID="09775f56"</script>
 <script>/*autoatualizar*/
 // Confere com versao.json (sem cache) se esta cópia da casca é a publicada; se não for, recarrega
 // uma vez numa URL nova. Resolve o Safari servindo versão velha por até 10 min depois de cada deploy.
@@ -3020,7 +3020,10 @@ function checkinRenderKanban() {
         </div>
         ${cards.length ? cards.map(a => (c.status === 'cancelado' || c.status === 'concluido') ? `
           <div class="card card-so-nome">
-            <div class="card-title">${a.assunto}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <div class="card-title">${a.assunto}</div>
+              <button class="card-btn" onclick="checkinRemoverAssunto('${a.id}')" title="Excluir">🗑️</button>
+            </div>
           </div>
         ` : `
           <div class="card">
@@ -3047,6 +3050,7 @@ function checkinRenderKanban() {
                 ${c.status !== 'concluido' ? `<button class="card-btn" onclick="checkinMoverCard('${a.id}','concluido')" title="Concluir">✅</button>` : ''}
                 ${c.status !== 'cancelado' && c.status !== 'concluido' ? `<button class="card-btn" onclick="checkinMoverCard('${a.id}','cancelado')" title="Cancelar">🚫</button>` : ''}
                 <button class="card-btn" onclick="checkinEditarAssunto('${a.id}')" title="Editar">✏️</button>
+                <button class="card-btn" onclick="checkinRemoverAssunto('${a.id}')" title="Excluir">🗑️</button>
               </div>
             </div>
           </div>
@@ -3248,7 +3252,12 @@ function checkinRemoverAssunto(id) {
   // Apaga de verdade no Supabase — sem isto, a linha continuava lá e a
   // próxima busca do servidor trazia o assunto de volta como se fosse novo.
   B3Obras.cliente().from('checkin_assuntos').delete().eq('id', String(id))
-    .then(({ error }) => { if (error) console.warn('Check-in: não foi possível remover no Supabase:', error.message); });
+    .then(({ error }) => {
+      if (error) {
+        console.warn('Check-in: não foi possível remover no Supabase:', error.message);
+        checkinNotify('Não consegui apagar no servidor. Ele pode voltar ao atualizar.', 'var(--red)');
+      }
+    });
 }
 
 // Salvar a reunião fecha o dia: os status passam a valer como registrados.
